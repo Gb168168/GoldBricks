@@ -740,7 +740,7 @@ const EmployeeLeaveSystem = () => {
                           </th>
                         );
                       })}
-                         <th className="border p-2 bg-gray-50 w-20 text-sm md:text-base">已選天數</th>
+                        <th className="border p-2 bg-gray-50 w-24 whitespace-nowrap text-sm md:text-base">已選天數</th>
                       <th className="border p-2 bg-gray-50 w-40 text-sm md:text-base">國定假日/星期/日期/備註</th>
                     </tr>
                   </thead>
@@ -793,7 +793,7 @@ const EmployeeLeaveSystem = () => {
                                 </td>
                               );
                             })}
-                            <td className="border p-2 text-center font-medium text-indigo-600 text-sm md:text-base">
+                           <td className="border p-2 text-center font-medium text-indigo-600 w-24 whitespace-nowrap text-sm md:text-base">
                                      {(data.vacationSchedule[user.id] && Object.values(data.vacationSchedule[user.id]).filter(Boolean).length) || 0}
                             </td>
                             <td className="border p-2">

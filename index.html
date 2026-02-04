@@ -163,6 +163,7 @@
 
             const [showAddUser, setShowAddUser] = useState(false);
             const [newUserForm, setNewUserForm] = useState({
+                id: '',
                 username: '',
                 password: '',
                 name: '',
@@ -214,9 +215,21 @@
 
             const handleAddUser = (e) => {
                 e.preventDefault();
+                
+                // 檢查員工代號是否已存在
+                if (data.users.find(u => u.id === newUserForm.id)) {
+                    alert('員工代號已存在,請使用其他代號!');
+                    return;
+                }
+                
+                // 檢查帳號是否已存在
+                if (data.users.find(u => u.username === newUserForm.username)) {
+                    alert('帳號已存在,請使用其他帳號!');
+                    return;
+                }
+                
                 const newUser = {
                     ...newUserForm,
-                    id: 'E' + String(data.users.length + 1).padStart(3, '0'),
                     isAdmin: false,
                     usedAnnualLeave: 0
                 };
@@ -228,11 +241,12 @@
                         timestamp: new Date().toISOString(),
                         user: currentUser.name,
                         action: '新增員工',
-                        details: newUser.name
+                        details: `${newUser.id} - ${newUser.name}`
                     }]
                 }));
                 
                 setNewUserForm({
+                    id: '',
                     username: '',
                     password: '',
                     name: '',
@@ -493,12 +507,26 @@
                                         <h3 className="text-lg font-bold mb-4">新增員工</h3>
                                         <form onSubmit={handleAddUser} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
+                                                <label className="block text-sm font-medium mb-1">員工代號 *</label>
+                                                <input
+                                                    type="text"
+                                                    value={newUserForm.id}
+                                                    onChange={(e) => setNewUserForm({...newUserForm, id: e.target.value})}
+                                                    className="w-full px-3 py-2 border rounded-lg"
+                                                    placeholder="例如: E003"
+                                                    required
+                                                />
+                                                <p className="text-xs text-gray-500 mt-1">請輸入唯一的員工代號</p>
+                                            </div>
+                                            
+                                            <div>
                                                 <label className="block text-sm font-medium mb-1">帳號 *</label>
                                                 <input
                                                     type="text"
                                                     value={newUserForm.username}
                                                     onChange={(e) => setNewUserForm({...newUserForm, username: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
+                                                    placeholder="登入用帳號"
                                                     required
                                                 />
                                             </div>

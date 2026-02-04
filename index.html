@@ -313,16 +313,75 @@
 
             const exportToCSV = (type) => {
                 let csv = '';
+                let filename = '';
+                
                 if (type === 'users') {
-                    csv = '員工代號,姓名,地區,部門\n';
+                    csv = '員工代號,姓名,地區,部門,職稱,Email,電話,生日,班別,總特休,已使用特休,剩餘特休\n';
                     data.users.forEach(u => {
-                        csv += `${u.id},${u.name},${u.region},${u.department}\n`;
+                        const usedLeave = data.leaves.filter(l => l.userId === u.id && l.type === '特休' && l.status === '已核准').length;
+                        csv += `${u.id},${u.name},${u.region},${u.department},${u.position},${u.email},${u.phone},${u.birthday},${u.shift.join('/')},${u.annualLeave},${usedLeave},${u.annualLeave - usedLeave}\n`;
                     });
+                    filename = '人員管理.csv';
+                } else if (type === 'vacation') {
+                    csv = '員工代號,姓名,地區,部門,班別,';
+                    const days = getMonthDays(selectedMonth);
+                    days.forEach(day => {
+                        csv += `${day.getMonth()+1}/${day.getDate()},`;
+                    });
+                    csv += '總請假天數\n';
+                    
+                    data.users.forEach(user => {
+                        const userLeaves = data.leaves.filter(l => l.userId === user.id && l.status === '已核准');
+                        csv += `${user.id},${user.name},${user.region},${user.department},${user.shift.join('/')},`;
+                        days.forEach(day => {
+                            const dateStr = day.toISOString().split('T')[0];
+                            const leave = userLeaves.find(l => dateStr >= l.startDate && dateStr <= l.endDate);
+                            csv += `${leave ? leave.type : ''},`;
+                        });
+                        csv += `${userLeaves.filter(l => new Date(l.startDate).getMonth() === selectedMonth.getMonth()).length}\n`;
+                    });
+                    filename = `休假表_${selectedMonth.getFullYear()}年${selectedMonth.getMonth()+1}月.csv`;
+                } else if (type === 'compensatory') {
+                    csv = '員工代號,姓名,地區,部門,補休(時)已使用,補休(天)已使用\n';
+                    data.users.forEach(u => {
+                        const compHours = data.leaves.filter(l => l.userId === u.id && l.type === '補休(時)' && l.status === '已核准');
+                        const compDays = data.leaves.filter(l => l.userId === u.id && l.type === '補休(天)' && l.status === '已核准');
+                        const totalHours = compHours.reduce((sum, l) => sum + (l.hours || 0), 0);
+                        csv += `${u.id},${u.name},${u.region},${u.department},${totalHours},${compDays.length}\n`;
+                    });
+                    filename = '補休表.csv';
+                } else if (type === 'schedule') {
+                    csv = '日期,標題,內容\n';
+                    if (data.schedules && data.schedules.length > 0) {
+                        data.schedules.forEach(s => {
+                            csv += `${s.date},${s.title || ''},${s.content || ''}\n`;
+                        });
+                    } else {
+                        csv += '目前沒有排程資料\n';
+                    }
+                    filename = '排程表.csv';
+                } else if (type === 'leaves') {
+                    csv = '申請日期,員工代號,姓名,地區,部門,假別,開始日期,結束日期,時數,事由,狀態,審核人,審核時間\n';
+                    data.leaves.forEach(l => {
+                        const user = data.users.find(u => u.id === l.userId);
+                        csv += `${new Date(l.submittedAt).toLocaleDateString('zh-TW')},${user?.id || ''},${l.userName},${l.region},${l.department},${l.type},${l.startDate},${l.endDate},${l.hours},${l.reason},${l.status},${l.approvedBy || ''},${l.approvedAt ? new Date(l.approvedAt).toLocaleDateString('zh-TW') : ''}\n`;
+                    });
+                    filename = '請假紀錄.csv';
+                } else if (type === 'annual') {
+                    csv = '員工代號,姓名,地區,部門,職稱,總特休天數,已使用天數,剩餘天數,使用日期明細\n';
+                    data.users.forEach(u => {
+                        const annualLeaves = data.leaves.filter(l => l.userId === u.id && l.type === '特休' && l.status === '已核准');
+                        const usedDays = annualLeaves.length;
+                        const dates = annualLeaves.map(l => `${l.startDate}~${l.endDate}`).join('; ');
+                        csv += `${u.id},${u.name},${u.region},${u.department},${u.position},${u.annualLeave},${usedDays},${u.annualLeave - usedDays},"${dates}"\n`;
+                    });
+                    filename = '特休總覽.csv';
                 }
-                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv' });
+                
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = '員工資料.csv';
+                link.download = filename;
                 link.click();
             };
 
@@ -462,6 +521,8 @@
                                 {[
                                     { id: 'management', label: '人員管理', icon: Users, admin: true },
                                     { id: 'vacation', label: '休假表', icon: Calendar },
+                                    { id: 'compensatory', label: '補休表', icon: Clock },
+                                    { id: 'schedule', label: '排程表', icon: Clipboard },
                                     { id: 'leave', label: '請假', icon: FileText },
                                     { id: 'annual', label: '特休', icon: Calendar }
                                 ].map(tab => {
@@ -747,7 +808,16 @@
 
                         {activeTab === 'vacation' && (
                             <div className="space-y-4">
-                                <h2 className="text-2xl font-bold">休假表</h2>
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-2xl font-bold">休假表</h2>
+                                    <button
+                                        onClick={() => exportToCSV('vacation')}
+                                        className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                    >
+                                        <Download size={18} />
+                                        <span>匯出Excel</span>
+                                    </button>
+                                </div>
                                 
                                 <div className="bg-white rounded-lg shadow p-4">
                                     <div className="flex justify-between mb-4">
@@ -807,7 +877,16 @@
 
                         {activeTab === 'leave' && (
                             <div className="space-y-4">
-                                <h2 className="text-2xl font-bold">請假申請</h2>
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-2xl font-bold">請假申請</h2>
+                                    <button
+                                        onClick={() => exportToCSV('leaves')}
+                                        className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                    >
+                                        <Download size={18} />
+                                        <span>匯出Excel</span>
+                                    </button>
+                                </div>
                                 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <div className="bg-white rounded-lg shadow p-6">
@@ -881,7 +960,42 @@
 
                         {activeTab === 'annual' && (
                             <div className="space-y-4">
-                                <h2 className="text-2xl font-bold">特休總覽</h2>
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-2xl font-bold">特休總覽</h2>
+                                    <div className="flex space-x-2">
+                                        <select
+                                            value={filterRegion}
+                                            onChange={(e) => setFilterRegion(e.target.value)}
+                                            className="px-4 py-2 border rounded-lg"
+                                        >
+                                            <option>全部</option>
+                                            <option>新竹區</option>
+                                            <option>台中區</option>
+                                            <option>嘉義區</option>
+                                        </select>
+                                        <select
+                                            value={filterDepartment}
+                                            onChange={(e) => setFilterDepartment(e.target.value)}
+                                            className="px-4 py-2 border rounded-lg"
+                                        >
+                                            <option>全部</option>
+                                            <option>管理部</option>
+                                            <option>TSE</option>
+                                            <option>FAE</option>
+                                            <option>新場</option>
+                                            <option>倉管</option>
+                                            <option>RD</option>
+                                            <option>線上客服</option>
+                                        </select>
+                                        <button
+                                            onClick={() => exportToCSV('annual')}
+                                            className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                        >
+                                            <Download size={18} />
+                                            <span>匯出Excel</span>
+                                        </button>
+                                    </div>
+                                </div>
                                 <div className="bg-white rounded-lg shadow overflow-x-auto">
                                     <table className="w-full">
                                         <thead className="bg-gray-50">
@@ -910,6 +1024,296 @@
                                             })}
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 補休表 */}
+                        {activeTab === 'compensatory' && (
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-2xl font-bold">補休表</h2>
+                                    <div className="flex space-x-2">
+                                        <select
+                                            value={filterRegion}
+                                            onChange={(e) => setFilterRegion(e.target.value)}
+                                            className="px-4 py-2 border rounded-lg"
+                                        >
+                                            <option>全部</option>
+                                            <option>新竹區</option>
+                                            <option>台中區</option>
+                                            <option>嘉義區</option>
+                                        </select>
+                                        <select
+                                            value={filterDepartment}
+                                            onChange={(e) => setFilterDepartment(e.target.value)}
+                                            className="px-4 py-2 border rounded-lg"
+                                        >
+                                            <option>全部</option>
+                                            <option>管理部</option>
+                                            <option>TSE</option>
+                                            <option>FAE</option>
+                                            <option>新場</option>
+                                            <option>倉管</option>
+                                            <option>RD</option>
+                                            <option>線上客服</option>
+                                        </select>
+                                        <button
+                                            onClick={() => exportToCSV('compensatory')}
+                                            className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                        >
+                                            <Download size={18} />
+                                            <span>匯出Excel</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* 本月統計 */}
+                                    <div className="bg-white rounded-lg shadow p-6">
+                                        <h3 className="text-lg font-bold mb-4">本月補休統計</h3>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th className="px-4 py-3 text-left text-xs">員工</th>
+                                                        <th className="px-4 py-3 text-left text-xs">部門</th>
+                                                        <th className="px-4 py-3 text-left text-xs">補休(時)</th>
+                                                        <th className="px-4 py-3 text-left text-xs">補休(天)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {data.users
+                                                        .filter(u => 
+                                                            (filterRegion === '全部' || u.region === filterRegion) &&
+                                                            (filterDepartment === '全部' || u.department === filterDepartment)
+                                                        )
+                                                        .map(user => {
+                                                            const thisMonth = new Date().getMonth();
+                                                            const compHours = data.leaves.filter(l => 
+                                                                l.userId === user.id && 
+                                                                l.type === '補休(時)' && 
+                                                                l.status === '已核准' &&
+                                                                new Date(l.startDate).getMonth() === thisMonth
+                                                            );
+                                                            const compDays = data.leaves.filter(l => 
+                                                                l.userId === user.id && 
+                                                                l.type === '補休(天)' && 
+                                                                l.status === '已核准' &&
+                                                                new Date(l.startDate).getMonth() === thisMonth
+                                                            );
+                                                            const totalHours = compHours.reduce((sum, l) => sum + (l.hours || 0), 0);
+                                                            
+                                                            return (
+                                                                <tr key={user.id}>
+                                                                    <td className="px-4 py-3 text-sm">{user.name}</td>
+                                                                    <td className="px-4 py-3 text-sm">{user.department}</td>
+                                                                    <td className="px-4 py-3 text-sm">{totalHours} 小時</td>
+                                                                    <td className="px-4 py-3 text-sm">{compDays.length} 天</td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    {/* 上月統計 */}
+                                    <div className="bg-white rounded-lg shadow p-6">
+                                        <h3 className="text-lg font-bold mb-4">上月補休統計</h3>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th className="px-4 py-3 text-left text-xs">員工</th>
+                                                        <th className="px-4 py-3 text-left text-xs">部門</th>
+                                                        <th className="px-4 py-3 text-left text-xs">補休(時)</th>
+                                                        <th className="px-4 py-3 text-left text-xs">補休(天)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {data.users
+                                                        .filter(u => 
+                                                            (filterRegion === '全部' || u.region === filterRegion) &&
+                                                            (filterDepartment === '全部' || u.department === filterDepartment)
+                                                        )
+                                                        .map(user => {
+                                                            const lastMonth = new Date().getMonth() - 1;
+                                                            const compHours = data.leaves.filter(l => 
+                                                                l.userId === user.id && 
+                                                                l.type === '補休(時)' && 
+                                                                l.status === '已核准' &&
+                                                                new Date(l.startDate).getMonth() === lastMonth
+                                                            );
+                                                            const compDays = data.leaves.filter(l => 
+                                                                l.userId === user.id && 
+                                                                l.type === '補休(天)' && 
+                                                                l.status === '已核准' &&
+                                                                new Date(l.startDate).getMonth() === lastMonth
+                                                            );
+                                                            const totalHours = compHours.reduce((sum, l) => sum + (l.hours || 0), 0);
+                                                            
+                                                            return (
+                                                                <tr key={user.id}>
+                                                                    <td className="px-4 py-3 text-sm">{user.name}</td>
+                                                                    <td className="px-4 py-3 text-sm">{user.department}</td>
+                                                                    <td className="px-4 py-3 text-sm">{totalHours} 小時</td>
+                                                                    <td className="px-4 py-3 text-sm">{compDays.length} 天</td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 補休明細 */}
+                                <div className="bg-white rounded-lg shadow p-6">
+                                    <h3 className="text-lg font-bold mb-4">補休使用明細</h3>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-left text-xs">日期</th>
+                                                    <th className="px-4 py-3 text-left text-xs">員工</th>
+                                                    <th className="px-4 py-3 text-left text-xs">部門</th>
+                                                    <th className="px-4 py-3 text-left text-xs">類型</th>
+                                                    <th className="px-4 py-3 text-left text-xs">時數</th>
+                                                    <th className="px-4 py-3 text-left text-xs">狀態</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {data.leaves
+                                                    .filter(l => l.type === '補休(時)' || l.type === '補休(天)')
+                                                    .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+                                                    .map(leave => (
+                                                        <tr key={leave.id}>
+                                                            <td className="px-4 py-3 text-sm">{leave.startDate}</td>
+                                                            <td className="px-4 py-3 text-sm">{leave.userName}</td>
+                                                            <td className="px-4 py-3 text-sm">{leave.department}</td>
+                                                            <td className="px-4 py-3 text-sm">{leave.type}</td>
+                                                            <td className="px-4 py-3 text-sm">{leave.hours}</td>
+                                                            <td className="px-4 py-3 text-sm">
+                                                                <span className={`px-2 py-1 text-xs rounded ${
+                                                                    leave.status === '已核准' ? 'bg-green-100 text-green-800' :
+                                                                    leave.status === '已拒絕' ? 'bg-red-100 text-red-800' :
+                                                                    'bg-yellow-100 text-yellow-800'
+                                                                }`}>
+                                                                    {leave.status}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                {data.leaves.filter(l => l.type === '補休(時)' || l.type === '補休(天)').length === 0 && (
+                                                    <tr>
+                                                        <td colSpan="6" className="px-4 py-8 text-center text-gray-500">
+                                                            目前沒有補休紀錄
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 排程表 */}
+                        {activeTab === 'schedule' && (
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-2xl font-bold">排程表</h2>
+                                    <button
+                                        onClick={() => exportToCSV('schedule')}
+                                        className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                    >
+                                        <Download size={18} />
+                                        <span>匯出Excel</span>
+                                    </button>
+                                </div>
+
+                                <div className="bg-white rounded-lg shadow p-6">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <button
+                                            onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))}
+                                            className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                        >
+                                            上個月
+                                        </button>
+                                        <h3 className="text-xl font-bold">
+                                            {selectedMonth.getFullYear()}年 {selectedMonth.getMonth() + 1}月 排程
+                                        </h3>
+                                        <button
+                                            onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))}
+                                            className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                        >
+                                            下個月
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-7 gap-2">
+                                        {['日', '一', '二', '三', '四', '五', '六'].map(day => (
+                                            <div key={day} className="text-center font-bold py-2 bg-gray-50 rounded">
+                                                {day}
+                                            </div>
+                                        ))}
+                                        
+                                        {getMonthDays(selectedMonth).map(day => {
+                                            const holiday = isHoliday(day);
+                                            const weekend = isWeekend(day);
+                                            const dateStr = day.toISOString().split('T')[0];
+                                            const schedules = data.schedules?.filter(s => s.date === dateStr) || [];
+                                            
+                                            return (
+                                                <div
+                                                    key={day.toISOString()}
+                                                    className={`min-h-24 p-2 border rounded-lg ${
+                                                        holiday ? 'bg-red-50' :
+                                                        weekend ? 'bg-blue-50' :
+                                                        'bg-white'
+                                                    } hover:shadow-md cursor-pointer transition-shadow`}
+                                                    onClick={() => {
+                                                        const title = prompt('排程標題:');
+                                                        const content = prompt('排程內容:');
+                                                        if (title && content) {
+                                                            setData(prev => ({
+                                                                ...prev,
+                                                                schedules: [
+                                                                    ...(prev.schedules || []),
+                                                                    {
+                                                                        id: Date.now().toString(),
+                                                                        date: dateStr,
+                                                                        title,
+                                                                        content
+                                                                    }
+                                                                ]
+                                                            }));
+                                                        }
+                                                    }}
+                                                >
+                                                    <div className="font-bold text-sm mb-1">
+                                                        {day.getDate()}
+                                                        {holiday && <span className="ml-1 text-xs text-red-600">{holiday.name}</span>}
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        {schedules.map(schedule => (
+                                                            <div key={schedule.id} className="text-xs bg-indigo-100 text-indigo-800 p-1 rounded">
+                                                                <div className="font-medium">{schedule.title}</div>
+                                                                <div className="text-xs">{schedule.content}</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <p className="text-sm text-blue-800">
+                                        💡 點擊日期可以新增排程。排程資料會自動儲存。
+                                    </p>
                                 </div>
                             </div>
                         )}

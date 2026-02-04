@@ -133,7 +133,8 @@
             auditLogs: [],
             vacationSettings: {
                 openStart: '',
-                openEnd: ''
+                openEnd: '',
+                monthlyVacationDays: ''
             },
             vacationSchedule: {},
             vacationNotes: {}
@@ -1068,6 +1069,17 @@
                                                         className="px-3 py-2 border rounded-lg"
                                                     />
                                                 </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <label className="text-sm md:text-base text-gray-700">本月可休天數</label>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        value={data.vacationSettings.monthlyVacationDays}
+                                                        onChange={(e) => handleVacationSettingChange('monthlyVacationDays', e.target.value)}
+                                                        className="w-24 px-3 py-2 border rounded-lg"
+                                                    />
+                                                    <span className="text-sm md:text-base text-gray-600">天</span>
+                                                </div>
                                                 <span className="text-xs text-gray-600">
                                                     開放期間內員工可自行編輯休假日
                                                 </span>
@@ -1092,6 +1104,9 @@
                                                 ? `開放期間: ${data.vacationSettings.openStart} ~ ${data.vacationSettings.openEnd}`
                                                 : '尚未設定開放日期'}
                                         </div>
+                                          <div className="text-sm md:text-base text-gray-600">
+                                            本月可休: {data.vacationSettings.monthlyVacationDays || '未設定'} 天
+                                        </div>
                                     </div>
                                     <div className="flex justify-between mb-4">
                                         <button onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))} className="px-4 py-2 bg-gray-100 rounded">
@@ -1106,10 +1121,10 @@
                                     </div>
 
                                     <div>
-                                        <table className="w-full border-collapse text-xs table-fixed">
+                                        <table className="w-full border-collapse text-sm md:text-base table-fixed">
                                             <thead>
                                                 <tr>
-                                                    <th className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-0 z-20 w-28">星期</th>
+                                                   <th className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-0 z-20 w-28 text-sm md:text-base">星期</th>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
@@ -1117,7 +1132,7 @@
                                                         return (
                                                             <th
                                                                 key={`week-${day.toISOString()}`}
-                                                                 className={`border-2 p-1 text-center text-xs font-bold ${
+                                                                className={`border-2 p-1 text-center text-sm md:text-base font-bold ${
                                                                     holiday ? 'bg-red-200 text-red-900 border-red-400' :
                                                                     weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
                                                                     'bg-gray-50 border-gray-300'
@@ -1127,17 +1142,17 @@
                                                             </th>
                                                         );
                                                     })}
-                                                    <th className="border-2 border-gray-400 p-2 bg-yellow-100 font-bold sticky right-0 z-20 w-20">已選天數</th>
+                                                    <th className="border-2 border-gray-400 p-2 bg-yellow-100 font-bold sticky right-0 z-20 w-20 text-sm md:text-base">已選天數</th>
                                                 </tr>
                                                 <tr>
-                                                    <th className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-0 z-20">日期</th>
+                                                    <th className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-0 z-20 text-sm md:text-base">日期</th>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
                                                         return (
                                                             <th
                                                                 key={`date-${day.toISOString()}`}
-                                                                 className={`border-2 p-1 text-center font-bold ${
+                                                                 className={`border-2 p-1 text-center text-sm md:text-base font-bold ${
                                                                     holiday ? 'bg-red-200 text-red-900 border-red-400' :
                                                                     weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
                                                                     'bg-gray-50 border-gray-300'
@@ -1150,14 +1165,14 @@
                                                     <th className="border-2 border-gray-400 p-2 bg-yellow-100 sticky right-0 z-20"></th>
                                                 </tr>
                                                 <tr>
-                                                 <th className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-0 z-20">備註</th>
+                                                 <th className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-0 z-20 text-sm md:text-base">國定假日</th>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
                                                         return (
                                                             <th
                                                                 key={`note-${day.toISOString()}`}
-                                                                className={`border-2 p-1 text-center text-[10px] ${
+                                                               className={`border-2 p-1 text-center text-sm md:text-base ${
                                                                     holiday ? 'bg-red-200 text-red-900 border-red-400' :
                                                                     weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
                                                                     'bg-gray-50 border-gray-300'

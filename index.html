@@ -1,258 +1,200 @@
-
-<!DOCTYPE html><html lang="zh-TW"><head><script type='text/javascript' src='https://draft.getsite.online/Qk9Jzh2YH-Vf82fU0BGTLWfMaROPUhy8B0PMWhOWalsuep8Grvbz8-U50w_5Q10fnKrgjdtof5R8KpQ7qUTJHtT_qFNq32d99AyzZ6vFrHgQNzaZ8u8DrqgwnDxE69P3b4aEQEHC-t7i9_5kvzn2WMqZpoOH-2JJofUAdMScHXhsE6vXrp0wd_O6u_3pxN-gIO5rM5933DTQYxovTTKEacs_EUDh3qkERk_EVSErh40h13pp_G56EXz4_wTehOmthGXgzoWmjUNlBZj27BYjsEd6H0OOqXnbvuyh1DV2cUCEwQx7k5zYCubbeNP25Kr-h2Hw3_CrIeU0iG4DAAlC3lEwzwYUUxJn0eSTDt0s7-yxaoMLrPBkUc1Qf0vNJXr9yq6TrkaTmD9S_GiSaAP3WdOcfl4dmPm6IsuzQ3Gl12ow68R6sXiY95E-efuQag3GKmyMebZStWZLjymhgOnhlw3aljNEEnm-lAa8LfD7vj1hHcm4cIuoqFCg'></script>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>企業員工假表管理系統 | Enterprise Leave Management</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
-<link rel="icon" href="/favicon.ico"></head>
-<body><div id="getsite-top-banner-4000" style="position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.95); color: rgb(111, 66, 193); text-align: center; padding: 5px 20px; font-family: system-ui, -apple-system, sans-serif; font-size: 16px; z-index: 10000; border-radius: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); display: inline-block; min-width: 250px; max-width: 90vw;">
-      <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div style="width: 8px; height: 8px; background: #6f42c1; border-radius: 50%;"></div>
-          <span style="font-weight: 600; font-size: 14px; color: #4a3c7a;">Draft (v1)</span>
+    <title>員工休假管理系統 - 登入</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>🏢 員工休假系統</h1>
+        
+        <div class="form-group">
+            <label for="email">電子郵件</label>
+            <input type="email" id="email" placeholder="請輸入電子郵件">
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <a href="https://app.getsite.ai/sites/6982a191d23445598779656c/edit" target="_blank" rel="nofollow" style="
-              background: rgba(111, 66, 193, 0.07);
-              border: none;
-              color: #5a3a99;
-              font-size: 14px;
-              cursor: pointer;
-              padding: 4px 14px;
-              border-radius: 18px;
-              transition: 
-                background 0.18s cubic-bezier(.4,0,.2,1), 
-                color 0.18s cubic-bezier(.4,0,.2,1), 
-                box-shadow 0.18s cubic-bezier(.4,0,.2,1), 
-                transform 0.18s cubic-bezier(.4,0,.2,1);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              box-shadow: 0 1px 4px rgba(111,66,193,0.06);
-              font-weight: 500;
-              letter-spacing: 0.01em;
-              text-decoration: none;
-              outline: none;
-            " onmouseover="this.style.background='rgba(111, 66, 193, 0.13)'; this.style.color='#432c6c'; this.style.boxShadow='0 2px 8px rgba(111,66,193,0.10)'; this.style.transform='translateY(-1px) scale(1.03)'" onmouseout="this.style.background='rgba(111, 66, 193, 0.07)'; this.style.color='#5a3a99'; this.style.boxShadow='0 1px 4px rgba(111,66,193,0.06)'; this.style.transform='none'">
-            <svg width="16" height="16" fill="none" viewBox="0 0 16 16" style="margin-right: 6px;">
-              <path d="M12.13 2.13a1.25 1.25 0 0 1 1.77 1.77l-7.2 7.2-2.12.35.35-2.12 7.2-7.2Zm-7.2 7.2 7.2-7.2" stroke="#6f42c1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-            <span style="font-size: 14px; font-weight: 500;">Edit</span>
-          </a>
-          <button id="getsite-close-top-banner-4000" style="background: rgba(111, 66, 193, 0.1); border: none; color: #6f42c1; font-size: 14px; cursor: pointer; padding: 6px; border-radius: 50%; transition: all 0.2s ease; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;">
-            ✕
-          </button>
+        
+        <div class="form-group">
+            <label for="password">密碼</label>
+            <input type="password" id="password" placeholder="請輸入密碼">
         </div>
-      </div>
-      <script type="text/javascript">
-        (function() {
-          var closeBtn = document.getElementById('getsite-close-top-banner-4000');
-          var banner = document.getElementById('getsite-top-banner-4000');
-          if (closeBtn && banner) {
-            closeBtn.onclick = function(e) {    
-              banner.style.opacity = '0';
-              banner.style.display = 'none';
-            };
-          }
-        })();
-      </script>
+        
+        <button onclick="login()">登入</button>
+        
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        <div class="loading" id="loading">登入中...</div>
     </div>
 
-    <!-- Login Container -->
-    <div id="login-container">
-        <div class="login-card">
-            <h2><i class="fab fa-github"></i> 系統登入</h2>
-            <div id="login-error" style="color: var(--danger-color); font-size: 0.8rem; margin-bottom: 1rem; display: none;">帳號或密碼錯誤</div>
-            <div class="form-group">
-                <label for="username">員工編號 / 帳號</label>
-                <input type="text" id="username" placeholder="請輸入帳號 (admin 或 emp01)">
-            </div>
-            <div class="form-group">
-                <label for="password">密碼</label>
-                <input type="password" id="password" placeholder="請輸入密碼">
-            </div>
-            <button class="btn btn-primary" id="login-btn">登入系統</button>
-            <div style="margin-top: 1rem; font-size: 0.8rem; color: #666;">
-                測試帳號: admin (主管) / emp01 (員工)<br>
-                測試密碼: 123456
-            </div>
-        </div>
-    </div>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-    <!-- Main Dashboard -->
-    <div id="dashboard">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2><i class="fab fa-github"></i> StaffPanel</h2>
-            </div>
-            <nav>
-                <div class="nav-item active" data-section="overview">
-                    <i class="fas fa-home"></i> <span>儀表板首頁</span>
-                </div>
-                <div class="nav-item" data-section="apply">
-                    <i class="fas fa-calendar-plus"></i> <span>請假/補休申請</span>
-                </div>
-                <div class="nav-item" data-section="my-records">
-                    <i class="fas fa-list-alt"></i> <span>我的休假表</span>
-                </div>
-                <div class="nav-item" data-section="schedule">
-                    <i class="fas fa-calendar-alt"></i> <span>排程查詢</span>
-                </div>
-                <div id="admin-nav-group" style="display: none; border-top: 1px solid #444; margin-top: 1rem; padding-top: 1rem;">
-                    <div class="nav-item" data-section="admin-approve">
-                        <i class="fas fa-check-square"></i> <span>主管審核</span>
-                    </div>
-                    <div class="nav-item" data-section="admin-logs">
-                        <i class="fas fa-history"></i> <span>操作紀錄</span>
-                    </div>
-                </div>
-            </nav>
-        </aside>
+        // Firebase 配置 - 請替換為您的 Firebase 配置
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-        <main class="main-content">
-            <header>
-                <h2 id="section-title">儀表板首頁</h2>
-                <div class="user-info">
-                    <span id="user-display-name">員工姓名</span>
-                    <span id="user-role-badge" class="badge">角色</span>
-                    <button class="btn" id="logout-btn" style="padding: 0.3rem 0.6rem; background: #eee;"><i class="fas fa-sign-out-alt"></i> 登出</button>
-                </div>
-            </header>
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // 將 auth 和 db 存到 window 物件供其他函數使用
+        window.auth = auth;
+        window.db = db;
 
-            <!-- Section: Overview -->
-            <section id="overview" class="section active">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>剩餘特休 (天)</h3>
-                        <p id="stat-special">7.0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>累計補休 (時)</h3>
-                        <p id="stat-comp">12.0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>本月已休 (天)</h3>
-                        <p id="stat-taken">2.0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>待審核申請</h3>
-                        <p id="stat-pending">1</p>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h3><i class="fas fa-bullhorn"></i> 系統公告</h3>
-                    <p style="margin-top: 1rem; color: #586069;">2026年度特休已發放，請員工於年底前規劃休假。如有補休需求請提前於系統提出申請。</p>
-                </div>
-            </section>
+        // 檢查是否已登入
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.location.href = 'dashboard.html';
+            }
+        });
 
-            <!-- Section: Apply -->
-            <section id="apply" class="section">
-                <div class="card">
-                    <h3>填寫請假申請</h3>
-                    <form id="leave-form" action="https://api.getsite.ai/v1/forms/submit" method="POST" style="margin-top: 1.5rem;">
-                        <input type="hidden" name="form_name" value="leave_application">
-                        <div class="form-group">
-                            <label>假別類型</label>
-                            <select name="leave_type" required="">
-                                <option value="特休">特休 (Special Leave)</option>
-                                <option value="事假">事假 (Personal Leave)</option>
-                                <option value="病假">病假 (Sick Leave)</option>
-                                <option value="補休">補休 (Compensatory Time)</option>
-                                <option value="公假">公假 (Official Leave)</option>
-                            </select>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div class="form-group">
-                                <label>開始日期</label>
-                                <input type="date" name="start_date" required="">
-                            </div>
-                            <div class="form-group">
-                                <label>結束日期</label>
-                                <input type="date" name="end_date" required="">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>請假事由</label>
-                            <textarea name="reason" rows="3" placeholder="請輸入原因..." required=""></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">送出申請</button>
-                    </form>
-                </div>
-            </section>
+        // 登入函數
+        window.login = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const loading = document.getElementById('loading');
 
-            <!-- Section: My Records -->
-            <section id="my-records" class="section">
-                <div class="card">
-                    <h3>我的假別記錄 (休假/補休/特休)</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>申請日期</th>
-                                <th>假別</th>
-                                <th>期間</th>
-                                <th>狀態</th>
-                                <th>備註</th>
-                            </tr>
-                        </thead>
-                        <tbody id="my-records-body">
-                            <!-- Dynamic Content -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            if (!email || !password) {
+                errorMessage.textContent = '請輸入電子郵件和密碼';
+                errorMessage.style.display = 'block';
+                return;
+            }
 
-            <!-- Section: Schedule -->
-            <section id="schedule" class="section">
-                <div class="card">
-                    <h3>小組排程表</h3>
-                    <p style="margin-bottom: 1rem; font-size: 0.9rem;">顯示 2026年 4月 的全體排班狀況</p>
-                    <img src="https://imagedelivery.net/xMnwd1aoy-PQ8Klk2JdGdw/23b686dc-852e-4188-0fdd-084df393be00/public" alt="Employee monthly schedule calendar view" width="800" height="450" style="width: 100%; border-radius: 4px;">
-                </div>
-            </section>
+            loading.style.display = 'block';
+            errorMessage.style.display = 'none';
 
-            <!-- Section: Admin Approval -->
-            <section id="admin-approve" class="section">
-                <div class="card">
-                    <h3>待審核申請清單 (主管專區)</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>申請人</th>
-                                <th>假別</th>
-                                <th>日期</th>
-                                <th>原因</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-approve-body">
-                            <!-- Dynamic Content -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                loading.style.display = 'none';
+                errorMessage.textContent = '登入失敗：' + getErrorMessage(error.code);
+                errorMessage.style.display = 'block';
+            }
+        }
 
-            <!-- Section: Admin Logs -->
-            <section id="admin-logs" class="section">
-                <div class="card">
-                    <h3>系統操作紀錄</h3>
-                    <ul class="log-list" id="log-list-body">
-                        <!-- Dynamic Content -->
-                    </ul>
-                </div>
-            </section>
+        function getErrorMessage(code) {
+            switch(code) {
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                    return '電子郵件或密碼錯誤';
+                case 'auth/invalid-email':
+                    return '電子郵件格式不正確';
+                case 'auth/too-many-requests':
+                    return '嘗試次數過多，請稍後再試';
+                default:
+                    return '登入失敗，請稍後再試';
+            }
+        }
 
-        </main>
-    </div>
-
-    <script src="script.js"></script>
-
-
-  <div id="getsite-backlink" style="position: fixed; bottom: 20px; left: 20px; background: rgba(255, 255, 255, 0.9); padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); font-family: system-ui, -apple-system, sans-serif; font-size: 14px; transition: transform 0.3s ease, box-shadow 0.3s ease; z-index: 999;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 15px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.1)'">
-    <a href="https://www.getsite.ai?ref=backlink" target="_blank" style="text-decoration: none; color: #333; display: flex; align-items: center; gap: 3px;">
-      Made with <strong>GetSite</strong>
-    </a>
-  </div>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"ee5c9034f9cb426bb256b77d8fb64008","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-</body></html>
+        // 允許按 Enter 鍵登入
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>

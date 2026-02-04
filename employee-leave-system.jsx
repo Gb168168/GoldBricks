@@ -40,17 +40,24 @@ const initialData = {
   leaves: [],
   compensatoryLeaves: [],
   schedules: [],
+  vacationSettings: {
+    openStart: '',
+    openEnd: ''
+  },
+  vacationSchedule: {},
+  vacationNotes: {},
   auditLogs: []
 };
 
 // 國定假日資料
 const holidays2026 = [
   { date: '2026-01-01', name: '元旦' },
+  { date: '2026-02-15', name: '小年夜' },
   { date: '2026-02-16', name: '農曆除夕' },
   { date: '2026-02-17', name: '春節初一' },
   { date: '2026-02-18', name: '春節初二' },
   { date: '2026-02-19', name: '春節初三' },
-  { date: '2026-02-20', name: '春節初四' },
+  { date: '2026-02-27', name: '和平紀念日前一日' },
   { date: '2026-02-28', name: '和平紀念日' },
   { date: '2026-04-03', name: '兒童節' },
   { date: '2026-04-04', name: '清明節' },
@@ -64,7 +71,18 @@ const EmployeeLeaveSystem = () => {
   const [activeTab, setActiveTab] = useState('management');
   const [data, setData] = useState(() => {
     const saved = localStorage.getItem('leaveSystemData');
-    return saved ? JSON.parse(saved) : initialData;
+    if (!saved) return initialData;
+    const parsed = JSON.parse(saved);
+    return {
+      ...initialData,
+      ...parsed,
+      vacationSettings: {
+        ...initialData.vacationSettings,
+        ...parsed.vacationSettings
+      },
+      vacationSchedule: parsed.vacationSchedule || {},
+      vacationNotes: parsed.vacationNotes || {}
+    };
   });
 
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
@@ -74,6 +92,7 @@ const EmployeeLeaveSystem = () => {
   const [filterShift, setFilterShift] = useState('全部');
   const [showAddUser, setShowAddUser] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [selectedVacationMarker, setSelectedVacationMarker] = useState('▲');
   const [newLeaveForm, setNewLeaveForm] = useState({
     type: '特休',
     startDate: '',
@@ -262,6 +281,55 @@ const EmployeeLeaveSystem = () => {
   const isHoliday = (date) => {
     const dateStr = date.toISOString().split('T')[0];
     return holidays2026.find(h => h.date === dateStr);
+  };
+
+  const isWithinOpenRange = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    const { openStart, openEnd } = data.vacationSettings;
+    if (!openStart || !openEnd) return false;
+    return dateStr >= openStart && dateStr <= openEnd;
+  };
+
+  const handleVacationSettingChange = (field, value) => {
+    setData(prev => ({
+      ...prev,
+      vacationSettings: {
+        ...prev.vacationSettings,
+        [field]: value
+      }
+    }));
+  };
+
+  const handleToggleVacation = (userId, dateStr) => {
+    if (!data.vacationSettings.openStart || !data.vacationSettings.openEnd) return;
+    const isOpen = dateStr >= data.vacationSettings.openStart && dateStr <= data.vacationSettings.openEnd;
+    if (!isOpen) return;
+    if (currentUser.id !== userId) return;
+    setData(prev => {
+      const userSchedule = prev.vacationSchedule[userId] || {};
+      const currentMarker = userSchedule[dateStr];
+      const nextMarker = currentMarker === selectedVacationMarker ? '' : selectedVacationMarker;
+      return {
+        ...prev,
+        vacationSchedule: {
+          ...prev.vacationSchedule,
+          [userId]: {
+            ...userSchedule,
+            [dateStr]: nextMarker
+          }
+        }
+      };
+    });
+  };
+
+  const handleVacationNoteChange = (userId, value) => {
+    setData(prev => ({
+      ...prev,
+      vacationNotes: {
+        ...prev.vacationNotes,
+        [userId]: value
+      }
+    }));
   };
 
   // 檢查是否為週末
@@ -562,6 +630,56 @@ const EmployeeLeaveSystem = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow p-4">
+                     {currentUser.isAdmin && (
+                <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
+                  <p className="text-sm font-medium text-indigo-700 mb-2">班表開放日期設定 (管理員)</p>
+                  <div className="flex flex-wrap gap-3 items-center">
+                    <div className="flex items-center space-x-2">
+                      <label className="text-sm text-gray-700">開始</label>
+                      <input
+                        type="date"
+                        value={data.vacationSettings.openStart}
+                        onChange={(e) => handleVacationSettingChange('openStart', e.target.value)}
+                        className="px-3 py-2 border rounded-lg"
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <label className="text-sm text-gray-700">結束</label>
+                      <input
+                        type="date"
+                        value={data.vacationSettings.openEnd}
+                        onChange={(e) => handleVacationSettingChange('openEnd', e.target.value)}
+                        className="px-3 py-2 border rounded-lg"
+                      />
+                    </div>
+                    <span className="text-xs text-gray-600">
+                      開放期間內員工可自行編輯休假日
+                    </span>
+                  </div>
+                </div>
+              )}
+              <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium text-gray-700">休假符號:</span>
+                  <button
+                    onClick={() => setSelectedVacationMarker('▲')}
+                    className={`px-2 py-1 rounded border ${selectedVacationMarker === '▲' ? 'border-gray-800 bg-gray-100' : 'border-gray-200'}`}
+                  >
+                    <span className="text-gray-900 font-bold">▲</span> 黑色
+                  </button>
+                  <button
+                    onClick={() => setSelectedVacationMarker('★')}
+                    className={`px-2 py-1 rounded border ${selectedVacationMarker === '★' ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
+                  >
+                    <span className="text-red-600 font-bold">★</span> 紅色
+                  </button>
+                </div>
+                <div className="text-xs text-gray-500">
+                  {data.vacationSettings.openStart && data.vacationSettings.openEnd
+                    ? `開放期間: ${data.vacationSettings.openStart} ~ ${data.vacationSettings.openEnd}`
+                    : '尚未設定開放日期'}
+                </div>
+              </div>
               <div className="flex justify-between items-center mb-4">
                 <button
                   onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))}
@@ -580,18 +698,18 @@ const EmployeeLeaveSystem = () => {
                 </button>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
+                <div>
+                <table className="w-full border-collapse table-fixed text-xs">
                   <thead>
                     <tr>
-                      <th className="border p-2 bg-gray-50 sticky left-0 z-10">員工</th>
+                     <th className="border p-2 bg-gray-50 sticky left-0 z-10 w-28">員工</th>
                       {getMonthDays(selectedMonth).map(day => {
                         const holiday = isHoliday(day);
                         const weekend = isWeekend(day);
                         return (
                           <th
                             key={day.toISOString()}
-                            className={`border p-2 text-xs ${
+                             className={`border p-1 ${
                               holiday ? 'bg-red-100 text-red-800' :
                               weekend ? 'bg-blue-50 text-blue-800' :
                               'bg-gray-50'
@@ -607,7 +725,8 @@ const EmployeeLeaveSystem = () => {
                           </th>
                         );
                       })}
-                      <th className="border p-2 bg-gray-50">已選天數</th>
+                        <th className="border p-2 bg-gray-50 w-20">已選天數</th>
+                      <th className="border p-2 bg-gray-50 w-40">備註</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -635,20 +754,44 @@ const EmployeeLeaveSystem = () => {
                               const leave = userLeaves.find(l => 
                                 dateStr >= l.startDate && dateStr <= l.endDate
                               );
+                             const customMarker = data.vacationSchedule[user.id]?.[dateStr];
+                              const isOpen = isWithinOpenRange(day);
+                              const isEditable = isOpen && currentUser.id === user.id;
                               
                               return (
                                 <td
                                   key={day.toISOString()}
-                                  className={`border p-1 text-center text-xs ${
+                                    onClick={() => handleToggleVacation(user.id, dateStr)}
+                                  className={`border p-1 text-center ${
                                     leave ? 'bg-orange-100 text-orange-800 font-medium' : ''
-                                  }`}
+                                 } ${isEditable ? 'cursor-pointer hover:bg-indigo-50' : ''}`}
                                 >
-                                  {leave ? leave.type : ''}
+                                    {leave ? (
+                                    <span className="text-purple-700 font-semibold">請</span>
+                                  ) : customMarker ? (
+                                    <span className={customMarker === '★' ? 'text-red-600 font-bold' : 'text-gray-900 font-bold'}>
+                                      {customMarker}
+                                    </span>
+                                  ) : (
+                                    ''
+                                  )}
                                 </td>
                               );
                             })}
                             <td className="border p-2 text-center font-medium text-indigo-600">
-                              {userLeaves.length}
+                                     {(data.vacationSchedule[user.id] && Object.values(data.vacationSchedule[user.id]).filter(Boolean).length) || 0}
+                            </td>
+                            <td className="border p-2">
+                              <input
+                                type="text"
+                                value={data.vacationNotes[user.id] || ''}
+                                onChange={(e) => handleVacationNoteChange(user.id, e.target.value)}
+                                className={`w-full px-2 py-1 border rounded text-xs ${
+                                  currentUser.isAdmin || currentUser.id === user.id ? '' : 'bg-gray-50'
+                                }`}
+                                disabled={!currentUser.isAdmin && currentUser.id !== user.id}
+                                placeholder="可輸入備註"
+                              />
                             </td>
                           </tr>
                         );

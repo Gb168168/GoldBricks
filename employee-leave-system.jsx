@@ -42,7 +42,8 @@ const initialData = {
   schedules: [],
   vacationSettings: {
     openStart: '',
-    openEnd: ''
+   openEnd: '',
+    monthlyVacationDays: ''
   },
   vacationSchedule: {},
   vacationNotes: {},
@@ -652,6 +653,17 @@ const EmployeeLeaveSystem = () => {
                         className="px-3 py-2 border rounded-lg"
                       />
                     </div>
+                     <div className="flex items-center space-x-2">
+                      <label className="text-sm md:text-base text-gray-700">本月可休天數</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={data.vacationSettings.monthlyVacationDays}
+                        onChange={(e) => handleVacationSettingChange('monthlyVacationDays', e.target.value)}
+                        className="w-24 px-3 py-2 border rounded-lg"
+                      />
+                      <span className="text-sm md:text-base text-gray-600">天</span>
+                    </div>
                     <span className="text-xs text-gray-600">
                       開放期間內員工可自行編輯休假日
                     </span>
@@ -679,6 +691,9 @@ const EmployeeLeaveSystem = () => {
                     ? `開放期間: ${data.vacationSettings.openStart} ~ ${data.vacationSettings.openEnd}`
                     : '尚未設定開放日期'}
                 </div>
+                 <div className="text-sm md:text-base text-gray-600">
+                  本月可休: {data.vacationSettings.monthlyVacationDays || '未設定'} 天
+                </div>
               </div>
               <div className="flex justify-between items-center mb-4">
                 <button
@@ -699,7 +714,7 @@ const EmployeeLeaveSystem = () => {
               </div>
 
                 <div>
-                <table className="w-full border-collapse table-fixed text-xs">
+                <table className="w-full border-collapse table-fixed text-sm md:text-base">
                   <thead>
                     <tr>
                      <th className="border p-2 bg-gray-50 sticky left-0 z-10 w-28">員工</th>
@@ -715,18 +730,18 @@ const EmployeeLeaveSystem = () => {
                               'bg-gray-50'
                             }`}
                           >
-                            <div>{day.getDate()}</div>
-                            <div className="text-xs font-normal">
+                           <div className="text-sm md:text-base font-semibold">{day.getDate()}</div>
+                            <div className="text-sm md:text-base font-normal">
                               {holiday ? holiday.name : ['日','一','二','三','四','五','六'][day.getDay()]}
                             </div>
-                            <div className="text-xs font-normal text-green-600">
+                           <div className="text-xs md:text-sm font-normal text-green-600">
                               {getWorkingCount(day)}人
                             </div>
                           </th>
                         );
                       })}
-                        <th className="border p-2 bg-gray-50 w-20">已選天數</th>
-                      <th className="border p-2 bg-gray-50 w-40">備註</th>
+                         <th className="border p-2 bg-gray-50 w-20 text-sm md:text-base">已選天數</th>
+                      <th className="border p-2 bg-gray-50 w-40 text-sm md:text-base">國定假日/星期/日期/備註</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -745,9 +760,9 @@ const EmployeeLeaveSystem = () => {
                         
                         return (
                           <tr key={user.id}>
-                            <td className="border p-2 font-medium bg-white sticky left-0 z-10">
+                            <td className="border p-2 font-medium bg-white sticky left-0 z-10 text-sm md:text-base">
                               {user.name}
-                              <div className="text-xs text-gray-500">{user.department}</div>
+                              <div className="text-xs md:text-sm text-gray-500">{user.department}</div>
                             </td>
                             {getMonthDays(selectedMonth).map(day => {
                               const dateStr = day.toISOString().split('T')[0];
@@ -778,7 +793,7 @@ const EmployeeLeaveSystem = () => {
                                 </td>
                               );
                             })}
-                            <td className="border p-2 text-center font-medium text-indigo-600">
+                            <td className="border p-2 text-center font-medium text-indigo-600 text-sm md:text-base">
                                      {(data.vacationSchedule[user.id] && Object.values(data.vacationSchedule[user.id]).filter(Boolean).length) || 0}
                             </td>
                             <td className="border p-2">
@@ -786,7 +801,7 @@ const EmployeeLeaveSystem = () => {
                                 type="text"
                                 value={data.vacationNotes[user.id] || ''}
                                 onChange={(e) => handleVacationNoteChange(user.id, e.target.value)}
-                                className={`w-full px-2 py-1 border rounded text-xs ${
+                                className={`w-full px-2 py-1 border rounded text-sm md:text-base ${
                                   currentUser.isAdmin || currentUser.id === user.id ? '' : 'bg-gray-50'
                                 }`}
                                 disabled={!currentUser.isAdmin && currentUser.id !== user.id}

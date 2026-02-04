@@ -906,15 +906,65 @@
 
                         {activeTab === 'vacation' && (
                             <div className="space-y-4">
+                                {/* 可休天數顯示 */}
+                                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <h3 className="text-lg opacity-90">我的可休天數</h3>
+                                            <p className="text-4xl font-bold mt-2">{currentUser.annualLeave - (data.leaves.filter(l => l.userId === currentUser.id && l.type === '特休' && l.status === '已核准').length)} 天</p>
+                                            <p className="text-sm opacity-75 mt-1">總特休: {currentUser.annualLeave} 天 | 已使用: {data.leaves.filter(l => l.userId === currentUser.id && l.type === '特休' && l.status === '已核准').length} 天</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-sm opacity-90">所有假別已使用</p>
+                                            <p className="text-3xl font-bold mt-2">{data.leaves.filter(l => l.userId === currentUser.id && l.status === '已核准').length} 天</p>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="flex justify-between items-center">
                                     <h2 className="text-2xl font-bold">休假表</h2>
-                                    <button
-                                        onClick={() => exportToCSV('vacation')}
-                                        className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                                    >
-                                        <Download size={18} />
-                                        <span>匯出Excel</span>
-                                    </button>
+                                    <div className="flex space-x-2">
+                                        <select
+                                            value={filterRegion}
+                                            onChange={(e) => setFilterRegion(e.target.value)}
+                                            className="px-4 py-2 border rounded-lg"
+                                        >
+                                            <option>全部</option>
+                                            <option>新竹區</option>
+                                            <option>台中區</option>
+                                            <option>嘉義區</option>
+                                        </select>
+                                        <select
+                                            value={filterDepartment}
+                                            onChange={(e) => setFilterDepartment(e.target.value)}
+                                            className="px-4 py-2 border rounded-lg"
+                                        >
+                                            <option>全部</option>
+                                            <option>管理部</option>
+                                            <option>TSE</option>
+                                            <option>FAE</option>
+                                            <option>新場</option>
+                                            <option>倉管</option>
+                                            <option>RD</option>
+                                            <option>線上客服</option>
+                                        </select>
+                                        <select
+                                            value={filterShift}
+                                            onChange={(e) => setFilterShift(e.target.value)}
+                                            className="px-4 py-2 border rounded-lg"
+                                        >
+                                            <option>全部</option>
+                                            <option>早</option>
+                                            <option>晚</option>
+                                        </select>
+                                        <button
+                                            onClick={() => exportToCSV('vacation')}
+                                            className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                        >
+                                            <Download size={18} />
+                                            <span>匯出Excel</span>
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <div className="bg-white rounded-lg shadow p-4">
@@ -934,40 +984,158 @@
                                         <table className="w-full border-collapse text-sm">
                                             <thead>
                                                 <tr>
-                                                    <th className="border p-2">員工</th>
+                                                    <th className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-0 z-10">員工</th>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
                                                         return (
-                                                            <th key={day} className={`border p-2 ${holiday ? 'bg-red-100' : weekend ? 'bg-blue-50' : ''}`}>
-                                                                <div>{day.getDate()}</div>
-                                                                <div className="text-xs">{holiday?.name || ['日','一','二','三','四','五','六'][day.getDay()]}</div>
-                                                                <div className="text-xs text-green-600">{getWorkingCount(day)}人</div>
+                                                            <th
+                                                                key={day.toISOString()}
+                                                                className={`border-2 p-2 text-xs ${
+                                                                    holiday ? 'bg-red-200 text-red-900 border-red-400' :
+                                                                    weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
+                                                                    'bg-gray-50 border-gray-300'
+                                                                }`}
+                                                            >
+                                                                <div className="font-bold">{day.getDate()}</div>
+                                                                <div className="text-xs font-normal">
+                                                                    {holiday ? holiday.name : ['日','一','二','三','四','五','六'][day.getDay()]}
+                                                                </div>
+                                                                {(holiday || weekend) && <div className="border-t-2 border-dashed border-gray-400 my-1"></div>}
+                                                                <div className="text-xs font-bold text-green-700">
+                                                                    上班 {getWorkingCount(day)}人
+                                                                </div>
                                                             </th>
                                                         );
                                                     })}
+                                                    <th className="border-2 border-gray-400 p-2 bg-yellow-100 font-bold">已選天數</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {data.users.map(user => {
-                                                    const userLeaves = data.leaves.filter(l => l.userId === user.id && l.status === '已核准');
-                                                    return (
-                                                        <tr key={user.id}>
-                                                            <td className="border p-2 font-medium">{user.name}</td>
-                                                            {getMonthDays(selectedMonth).map(day => {
-                                                                const dateStr = day.toISOString().split('T')[0];
-                                                                const leave = userLeaves.find(l => dateStr >= l.startDate && dateStr <= l.endDate);
-                                                                return (
-                                                                    <td key={day} className={`border p-1 text-center ${leave ? 'bg-orange-100' : ''}`}>
-                                                                        {leave?.type}
-                                                                    </td>
-                                                                );
-                                                            })}
-                                                        </tr>
-                                                    );
-                                                })}
+                                                {data.users
+                                                    .filter(u => 
+                                                        (filterRegion === '全部' || u.region === filterRegion) &&
+                                                        (filterDepartment === '全部' || u.department === filterDepartment) &&
+                                                        (filterShift === '全部' || u.shift.includes(filterShift))
+                                                    )
+                                                    .map(user => {
+                                                        const userLeaves = data.leaves.filter(l => 
+                                                            l.userId === user.id && 
+                                                            l.status === '已核准' &&
+                                                            new Date(l.startDate).getMonth() === selectedMonth.getMonth()
+                                                        );
+                                                        const isCurrentUser = user.id === currentUser.id;
+                                                        
+                                                        return (
+                                                            <tr key={user.id} className={isCurrentUser ? 'bg-indigo-50' : ''}>
+                                                                <td className="border-2 border-gray-400 p-2 font-medium bg-white sticky left-0 z-10">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <div>
+                                                                            {user.name}
+                                                                            {isCurrentUser && <span className="ml-2 text-xs bg-indigo-600 text-white px-2 py-1 rounded">我</span>}
+                                                                            <div className="text-xs text-gray-500">{user.department}</div>
+                                                                            <div className="flex gap-1 mt-1">
+                                                                                {user.shift.includes('早') && (
+                                                                                    <span className="px-1 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>
+                                                                                )}
+                                                                                {user.shift.includes('晚') && (
+                                                                                    <span className="px-1 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">晚</span>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                {getMonthDays(selectedMonth).map(day => {
+                                                                    const dateStr = day.toISOString().split('T')[0];
+                                                                    const leave = userLeaves.find(l => 
+                                                                        dateStr >= l.startDate && dateStr <= l.endDate
+                                                                    );
+                                                                    const holiday = isHoliday(day);
+                                                                    const weekend = isWeekend(day);
+                                                                    
+                                                                    return (
+                                                                        <td
+                                                                            key={day.toISOString()}
+                                                                            className={`border p-1 text-center text-xs cursor-pointer ${
+                                                                                leave ? 'bg-orange-100 text-orange-900 font-bold border-orange-300' : 
+                                                                                holiday ? 'bg-red-50 border-red-200' :
+                                                                                weekend ? 'bg-blue-50 border-blue-200' :
+                                                                                'hover:bg-gray-100 border-gray-200'
+                                                                            }`}
+                                                                            onClick={() => {
+                                                                                if (isCurrentUser && leave) {
+                                                                                    if (window.confirm('要刪除這個請假嗎?')) {
+                                                                                        setData(prev => ({
+                                                                                            ...prev,
+                                                                                            leaves: prev.leaves.filter(l => l.id !== leave.id)
+                                                                                        }));
+                                                                                    }
+                                                                                } else if (isCurrentUser && !leave) {
+                                                                                    // 快速新增請假
+                                                                                    const leaveType = prompt('請選擇假別:\n1. 特休\n2. 病假\n3. 事假\n4. 旅遊假\n5. 喪假\n6. 生理假\n7. 補休(時)\n8. 補休(天)\n9. 年假\n\n請輸入數字 (1-9):');
+                                                                                    const types = ['特休', '病假', '事假', '旅遊假', '喪假', '生理假', '補休(時)', '補休(天)', '年假'];
+                                                                                    if (leaveType && leaveType >= '1' && leaveType <= '9') {
+                                                                                        const reason = prompt('請假事由:') || '無';
+                                                                                        const newLeave = {
+                                                                                            id: Date.now().toString(),
+                                                                                            userId: currentUser.id,
+                                                                                            userName: currentUser.name,
+                                                                                            department: currentUser.department,
+                                                                                            region: currentUser.region,
+                                                                                            type: types[parseInt(leaveType) - 1],
+                                                                                            startDate: dateStr,
+                                                                                            endDate: dateStr,
+                                                                                            reason: reason,
+                                                                                            hours: 8,
+                                                                                            status: '待審核',
+                                                                                            submittedAt: new Date().toISOString()
+                                                                                        };
+                                                                                        setData(prev => ({
+                                                                                            ...prev,
+                                                                                            leaves: [...prev.leaves, newLeave]
+                                                                                        }));
+                                                                                        alert('請假已送出,等待審核');
+                                                                                    }
+                                                                                }
+                                                                            }}
+                                                                            title={isCurrentUser ? (leave ? '點擊刪除請假' : '點擊新增請假') : (leave ? leave.reason : '')}
+                                                                        >
+                                                                            {leave ? leave.type : ''}
+                                                                        </td>
+                                                                    );
+                                                                })}
+                                                                <td className="border-2 border-gray-400 p-2 text-center font-bold text-lg text-indigo-700 bg-yellow-50">
+                                                                    {userLeaves.length}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    {/* 圖例說明 */}
+                                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                                        <h4 className="font-bold mb-2 text-sm">圖例說明:</h4>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-4 h-4 bg-red-200 border-2 border-red-400"></div>
+                                                <span>國定假日</span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-4 h-4 bg-blue-200 border-2 border-blue-400"></div>
+                                                <span>週末</span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-4 h-4 bg-orange-100 border-2 border-orange-300"></div>
+                                                <span>已請假</span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-4 h-4 bg-indigo-50 border-2"></div>
+                                                <span>我的資料</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-gray-600 mt-2">💡 點擊自己的日期可以快速新增或刪除請假</p>
                                     </div>
                                 </div>
                             </div>

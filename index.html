@@ -558,8 +558,8 @@
 
             if (!currentUser) {
                 return (
-                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 text-base md:text-lg">
+                        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg">
                             <div className="text-center mb-8">
                                 <div className="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <Users size={32} className="text-white" />
@@ -570,7 +570,7 @@
                             
                             <form onSubmit={handleLogin} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">帳號</label>
+                                    <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">帳號</label>
                                     <input
                                         type="text"
                                         value={loginForm.username}
@@ -581,7 +581,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">密碼</label>
+                                    <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">密碼</label>
                                     <input
                                         type="password"
                                         value={loginForm.password}
@@ -596,7 +596,7 @@
                                 </button>
                             </form>
                             
-                            <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm">
+                           <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm md:text-base">
                                 <p className="font-medium">測試帳號:</p>
                                 <p>管理員 - admin / admin123</p>
                                 <p>員工 - user001 / pass123</p>
@@ -605,7 +605,7 @@
                             <div className="mt-4">
                                 <button 
                                     onClick={handleResetData}
-                                    className="w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm"
+                                    className="w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm md:text-base"
                                 >
                                     🔄 重置系統資料
                                 </button>
@@ -619,7 +619,7 @@
             }
 
             return (
-                <div className="min-h-screen bg-gray-50">
+                <div className="min-h-screen bg-gray-50 text-base md:text-lg">
                     <nav className="bg-white shadow-sm border-b">
                      <div className="max-w-screen-2xl mx-auto px-4 py-4">
                             <div className="flex justify-between items-center">
@@ -629,13 +629,13 @@
                                     </div>
                                     <div>
                                         <h1 className="text-xl font-bold">員工假勤系統</h1>
-                                        <p className="text-sm text-gray-500">歡迎, {currentUser.name}</p>
+                                       <p className="text-sm md:text-base text-gray-500">歡迎, {currentUser.name}</p>
                                     </div>
                                 </div>
                                 
                                 <div className="flex items-center space-x-4">
                                     <div className="text-right">
-                                        <p className="text-sm text-gray-600">可休特休</p>
+                                        <p className="text-sm md:text-base text-gray-600">可休特休</p>
                                         <p className="text-lg font-bold text-indigo-600">
                                             {currentUser.annualLeave} 天
                                         </p>
@@ -701,7 +701,7 @@
                                         <h3 className="text-lg font-bold mb-4">{editingUser ? '編輯員工' : '新增員工'}</h3>
                                         <form onSubmit={handleAddUser} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">員工代號 *</label>
+                                                <label className="block text-sm md:text-base font-medium mb-1">員工代號 *</label>
                                                 <input
                                                     type="text"
                                                     value={newUserForm.id}
@@ -715,7 +715,7 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">帳號 *</label>
+                                                <label className="block text-sm md:text-base font-medium mb-1">帳號 *</label>
                                                 <input
                                                     type="text"
                                                     value={newUserForm.username}
@@ -727,7 +727,7 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">密碼 *</label>
+                                                 <label className="block text-sm md:text-base font-medium mb-1">密碼 *</label>
                                                 <input
                                                     type="password"
                                                     value={newUserForm.password}
@@ -738,7 +738,7 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">姓名 *</label>
+                                               <label className="block text-sm md:text-base font-medium mb-1">姓名 *</label>
                                                 <input
                                                     type="text"
                                                     value={newUserForm.name}
@@ -749,7 +749,7 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">地區</label>
+                                                <label className="block text-sm md:text-base font-medium mb-1">地區</label>
                                                 <select
                                                     value={newUserForm.region}
                                                     onChange={(e) => setNewUserForm({...newUserForm, region: e.target.value})}
@@ -762,7 +762,7 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">部門</label>
+                                                <label className="block text-sm md:text-base font-medium mb-1">部門</label>
                                                 <select
                                                     value={newUserForm.department}
                                                     onChange={(e) => setNewUserForm({...newUserForm, department: e.target.value})}
@@ -779,7 +779,7 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">職稱</label>
+                                                <label className="block text-sm md:text-base font-medium mb-1">職稱</label>
                                                 <input
                                                     type="text"
                                                     value={newUserForm.position}
@@ -789,7 +789,7 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">Email</label>
+                                                <label className="block text-sm md:text-base font-medium mb-1">Email</label>
                                                 <input
                                                     type="email"
                                                     value={newUserForm.email}
@@ -799,7 +799,7 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">電話</label>
+                                                <label className="block text-sm md:text-base font-medium mb-1">電話</label>
                                                 <input
                                                     type="tel"
                                                     value={newUserForm.phone}
@@ -810,19 +810,19 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">生日 (月/日)</label>
+                                                <label className="block text-sm md:text-base font-medium mb-1">生日 (月/日)</label>
                                                 <input
                                                     type="text"
                                                     value={newUserForm.birthday}
                                                     onChange={(e) => setNewUserForm({...newUserForm, birthday: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
-                                                    placeholder="例如: 05/15 或 5/15"
+                                                    placeholder="例如: 05/15 "
                                                 />
                                                 <p className="text-xs text-gray-500 mt-1">格式: 月/日 (不需要輸入年份)</p>
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">班別</label>
+                                                <label className="block text-sm md:text-base font-medium mb-1">班別</label>
                                                 <div className="flex space-x-4 mt-2">
                                                     <label className="flex items-center space-x-2">
                                                         <input
@@ -846,7 +846,7 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">年度特休天數</label>
+                                                <label className="block text-sm md:text-base font-medium mb-1">年度特休天數</label>
                                                 <input
                                                     type="number"
                                                     value={newUserForm.annualLeave}
@@ -865,7 +865,7 @@
                                                         onChange={(e) => setNewUserForm({...newUserForm, isAdmin: e.target.checked})}
                                                         className="w-4 h-4"
                                                     />
-                                                    <span className="text-sm font-medium">設為管理員</span>
+                                                     <span className="text-sm md:text-base font-medium">設為管理員</span>
                                                     <span className="text-xs text-gray-500">(管理員可以管理所有員工和審核請假)</span>
                                                 </label>
                                             </div>
@@ -970,7 +970,7 @@
                                     <h3 className="text-lg font-bold mb-4">操作紀錄</h3>
                                     <div className="space-y-2 max-h-64 overflow-y-auto">
                                         {data.auditLogs.slice(-10).reverse().map((log, idx) => (
-                                            <div key={idx} className="text-sm p-2 bg-gray-50 rounded">
+                                            <div key={idx} className="text-sm md:text-base p-2 bg-gray-50 rounded">
                                                 <span className="text-gray-500">{new Date(log.timestamp).toLocaleString('zh-TW')}</span>
                                                 {' - '}
                                                 <span className="font-medium">{log.user}</span>
@@ -1048,10 +1048,10 @@
                                 <div className="bg-white rounded-lg shadow p-4">
                                              {currentUser.isAdmin && (
                                         <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
-                                            <p className="text-sm font-medium text-indigo-700 mb-2">班表開放日期設定 (管理員)</p>
+                                            <p className="text-sm md:text-base font-medium text-indigo-700 mb-2">班表開放日期設定 (管理員)</p>
                                             <div className="flex flex-wrap gap-3 items-center">
                                                 <div className="flex items-center space-x-2">
-                                                    <label className="text-sm text-gray-700">開始</label>
+                                                   <label className="text-sm md:text-base text-gray-700">開始</label>
                                                     <input
                                                         type="date"
                                                         value={data.vacationSettings.openStart}
@@ -1060,7 +1060,7 @@
                                                     />
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <label className="text-sm text-gray-700">結束</label>
+                                                     <label className="text-sm md:text-base text-gray-700">結束</label>
                                                     <input
                                                         type="date"
                                                         value={data.vacationSettings.openEnd}
@@ -1074,7 +1074,7 @@
                                             </div>
                                         </div>
                                     )}
-                                    <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                                    <div className="mb-4 flex flex-wrap items-center gap-3 text-sm md:text-base text-gray-600">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <span className="font-medium text-gray-700">休假符號:</span>
                                            {vacationMarkerOptions.map(option => (
@@ -1262,7 +1262,7 @@
                                     </div>
  
                                     <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                                        <h4 className="font-bold mb-2 text-sm">圖例說明:</h4>
+                                         <h4 className="font-bold mb-2 text-sm md:text-base">圖例說明:</h4>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                                             <div className="flex items-center space-x-2">
                                                 <div className="w-4 h-4 bg-red-200 border-2 border-red-400"></div>
@@ -1341,7 +1341,7 @@
                                                             {leave.status}
                                                         </span>
                                                     </div>
-                                                    <p className="text-sm">{leave.startDate} ~ {leave.endDate}</p>
+                                                     <p className="text-sm md:text-base">{leave.startDate} ~ {leave.endDate}</p>
                                                 </div>
                                             ))}
                                         </div>
@@ -1356,7 +1356,7 @@
                                                 <div className="flex justify-between">
                                                     <div>
                                                         <p className="font-medium">{leave.userName} - {leave.type}</p>
-                                                        <p className="text-sm">{leave.startDate} ~ {leave.endDate}</p>
+                                                        <p className="text-sm md:text-base">{leave.startDate} ~ {leave.endDate}</p>
                                                     </div>
                                                     <div className="flex space-x-2">
                                                         <button onClick={() => handleApproveLeave(leave.id, '已核准')} className="px-3 py-1 bg-green-600 text-white rounded">核准</button>
@@ -1518,10 +1518,10 @@
                                                             
                                                             return (
                                                                 <tr key={user.id}>
-                                                                    <td className="px-4 py-3 text-sm">{user.name}</td>
-                                                                    <td className="px-4 py-3 text-sm">{user.department}</td>
-                                                                    <td className="px-4 py-3 text-sm">{totalHours} 小時</td>
-                                                                    <td className="px-4 py-3 text-sm">{compDays.length} 天</td>
+                                                                   <td className="px-4 py-3 text-sm md:text-base">{user.name}</td>
+                                                                    <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
+                                                                    <td className="px-4 py-3 text-sm md:text-base">{totalHours} 小時</td>
+                                                                    <td className="px-4 py-3 text-sm md:text-base">{compDays.length} 天</td>
                                                                 </tr>
                                                             );
                                                         })}
@@ -1567,10 +1567,10 @@
                                                             
                                                             return (
                                                                 <tr key={user.id}>
-                                                                    <td className="px-4 py-3 text-sm">{user.name}</td>
-                                                                    <td className="px-4 py-3 text-sm">{user.department}</td>
-                                                                    <td className="px-4 py-3 text-sm">{totalHours} 小時</td>
-                                                                    <td className="px-4 py-3 text-sm">{compDays.length} 天</td>
+                                                                     <td className="px-4 py-3 text-sm md:text-base">{user.name}</td>
+                                                                    <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
+                                                                    <td className="px-4 py-3 text-sm md:text-base">{totalHours} 小時</td>
+                                                                    <td className="px-4 py-3 text-sm md:text-base">{compDays.length} 天</td>
                                                                 </tr>
                                                             );
                                                         })}
@@ -1601,12 +1601,12 @@
                                                     .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
                                                     .map(leave => (
                                                         <tr key={leave.id}>
-                                                            <td className="px-4 py-3 text-sm">{leave.startDate}</td>
-                                                            <td className="px-4 py-3 text-sm">{leave.userName}</td>
-                                                            <td className="px-4 py-3 text-sm">{leave.department}</td>
-                                                            <td className="px-4 py-3 text-sm">{leave.type}</td>
-                                                            <td className="px-4 py-3 text-sm">{leave.hours}</td>
-                                                            <td className="px-4 py-3 text-sm">
+                                                           <td className="px-4 py-3 text-sm md:text-base">{leave.startDate}</td>
+                                                            <td className="px-4 py-3 text-sm md:text-base">{leave.userName}</td>
+                                                            <td className="px-4 py-3 text-sm md:text-base">{leave.department}</td>
+                                                            <td className="px-4 py-3 text-sm md:text-base">{leave.type}</td>
+                                                            <td className="px-4 py-3 text-sm md:text-base">{leave.hours}</td>
+                                                            <td className="px-4 py-3 text-sm md:text-base">
                                                                 <span className={`px-2 py-1 text-xs rounded ${
                                                                     leave.status === '已核准' ? 'bg-green-100 text-green-800' :
                                                                     leave.status === '已拒絕' ? 'bg-red-100 text-red-800' :
@@ -1704,7 +1704,7 @@
                                                         }
                                                     }}
                                                 >
-                                                    <div className="font-bold text-sm mb-1">
+                                                   <div className="font-bold text-sm md:text-base mb-1">
                                                         {day.getDate()}
                                                         {holiday && <span className="ml-1 text-xs text-red-600">{holiday.name}</span>}
                                                     </div>
@@ -1723,7 +1723,7 @@
                                 </div>
 
                                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                    <p className="text-sm text-blue-800">
+                                    <p className="text-sm md:text-base text-blue-800">
                                         💡 點擊日期可以新增排程。排程資料會自動儲存。
                                     </p>
                                 </div>

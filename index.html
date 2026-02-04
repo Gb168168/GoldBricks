@@ -80,6 +80,12 @@
             </svg>
         );
 
+        const Edit2 = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            </svg>
+        );
+
         const Bell = ({ size = 24 }) => (
             <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -162,6 +168,7 @@
             });
 
             const [showAddUser, setShowAddUser] = useState(false);
+            const [editingUser, setEditingUser] = useState(null);
             const [newUserForm, setNewUserForm] = useState({
                 id: '',
                 username: '',
@@ -174,7 +181,8 @@
                 phone: '',
                 birthday: '',
                 shift: [],
-                annualLeave: 10
+                annualLeave: 10,
+                isAdmin: false
             });
 
             useEffect(() => {
@@ -213,37 +221,77 @@
                 }
             };
 
+            const handleEditUser = (user) => {
+                setEditingUser(user);
+                setNewUserForm({
+                    id: user.id,
+                    username: user.username,
+                    password: user.password,
+                    name: user.name,
+                    region: user.region,
+                    department: user.department,
+                    position: user.position,
+                    email: user.email,
+                    phone: user.phone,
+                    birthday: user.birthday,
+                    shift: user.shift,
+                    annualLeave: user.annualLeave,
+                    isAdmin: user.isAdmin || false
+                });
+                setShowAddUser(true);
+            };
+
             const handleAddUser = (e) => {
                 e.preventDefault();
                 
-                // 檢查員工代號是否已存在
-                if (data.users.find(u => u.id === newUserForm.id)) {
-                    alert('員工代號已存在,請使用其他代號!');
-                    return;
+                if (editingUser) {
+                    // 編輯模式
+                    setData(prev => ({
+                        ...prev,
+                        users: prev.users.map(u => 
+                            u.id === editingUser.id 
+                                ? { ...newUserForm, usedAnnualLeave: u.usedAnnualLeave }
+                                : u
+                        ),
+                        auditLogs: [...prev.auditLogs, {
+                            timestamp: new Date().toISOString(),
+                            user: currentUser.name,
+                            action: '編輯員工',
+                            details: `${newUserForm.id} - ${newUserForm.name}`
+                        }]
+                    }));
+                    alert('員工資料更新成功!');
+                } else {
+                    // 新增模式
+                    // 檢查員工代號是否已存在
+                    if (data.users.find(u => u.id === newUserForm.id)) {
+                        alert('員工代號已存在,請使用其他代號!');
+                        return;
+                    }
+                    
+                    // 檢查帳號是否已存在
+                    if (data.users.find(u => u.username === newUserForm.username)) {
+                        alert('帳號已存在,請使用其他帳號!');
+                        return;
+                    }
+                    
+                    const newUser = {
+                        ...newUserForm,
+                        usedAnnualLeave: 0
+                    };
+                    
+                    setData(prev => ({
+                        ...prev,
+                        users: [...prev.users, newUser],
+                        auditLogs: [...prev.auditLogs, {
+                            timestamp: new Date().toISOString(),
+                            user: currentUser.name,
+                            action: '新增員工',
+                            details: `${newUser.id} - ${newUser.name}`
+                        }]
+                    }));
+                    alert('員工新增成功!');
                 }
-                
-                // 檢查帳號是否已存在
-                if (data.users.find(u => u.username === newUserForm.username)) {
-                    alert('帳號已存在,請使用其他帳號!');
-                    return;
-                }
-                
-                const newUser = {
-                    ...newUserForm,
-                    isAdmin: false,
-                    usedAnnualLeave: 0
-                };
-                
-                setData(prev => ({
-                    ...prev,
-                    users: [...prev.users, newUser],
-                    auditLogs: [...prev.auditLogs, {
-                        timestamp: new Date().toISOString(),
-                        user: currentUser.name,
-                        action: '新增員工',
-                        details: `${newUser.id} - ${newUser.name}`
-                    }]
-                }));
                 
                 setNewUserForm({
                     id: '',
@@ -257,11 +305,12 @@
                     phone: '',
                     birthday: '',
                     shift: [],
-                    annualLeave: 10
+                    annualLeave: 10,
+                    isAdmin: false
                 });
                 
                 setShowAddUser(false);
-                alert('員工新增成功!');
+                setEditingUser(null);
             };
 
             const toggleShift = (shiftType) => {
@@ -565,7 +614,7 @@
 
                                 {showAddUser && (
                                     <div className="bg-white rounded-lg shadow p-6">
-                                        <h3 className="text-lg font-bold mb-4">新增員工</h3>
+                                        <h3 className="text-lg font-bold mb-4">{editingUser ? '編輯員工' : '新增員工'}</h3>
                                         <form onSubmit={handleAddUser} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium mb-1">員工代號 *</label>
@@ -575,6 +624,7 @@
                                                     onChange={(e) => setNewUserForm({...newUserForm, id: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
                                                     placeholder="例如: E003"
+                                                    disabled={editingUser}
                                                     required
                                                 />
                                                 <p className="text-xs text-gray-500 mt-1">請輸入唯一的員工代號</p>
@@ -615,7 +665,7 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">地區 *</label>
+                                                <label className="block text-sm font-medium mb-1">地區</label>
                                                 <select
                                                     value={newUserForm.region}
                                                     onChange={(e) => setNewUserForm({...newUserForm, region: e.target.value})}
@@ -628,7 +678,7 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">部門 *</label>
+                                                <label className="block text-sm font-medium mb-1">部門</label>
                                                 <select
                                                     value={newUserForm.department}
                                                     onChange={(e) => setNewUserForm({...newUserForm, department: e.target.value})}
@@ -645,52 +695,50 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">職稱 *</label>
+                                                <label className="block text-sm font-medium mb-1">職稱</label>
                                                 <input
                                                     type="text"
                                                     value={newUserForm.position}
                                                     onChange={(e) => setNewUserForm({...newUserForm, position: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
-                                                    required
                                                 />
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">Email *</label>
+                                                <label className="block text-sm font-medium mb-1">Email</label>
                                                 <input
                                                     type="email"
                                                     value={newUserForm.email}
                                                     onChange={(e) => setNewUserForm({...newUserForm, email: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
-                                                    required
                                                 />
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">電話 *</label>
+                                                <label className="block text-sm font-medium mb-1">電話</label>
                                                 <input
                                                     type="tel"
                                                     value={newUserForm.phone}
                                                     onChange={(e) => setNewUserForm({...newUserForm, phone: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
                                                     placeholder="0912-345-678"
-                                                    required
                                                 />
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">生日 *</label>
+                                                <label className="block text-sm font-medium mb-1">生日 (月/日)</label>
                                                 <input
-                                                    type="date"
+                                                    type="text"
                                                     value={newUserForm.birthday}
                                                     onChange={(e) => setNewUserForm({...newUserForm, birthday: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
-                                                    required
+                                                    placeholder="例如: 05/15 或 5/15"
                                                 />
+                                                <p className="text-xs text-gray-500 mt-1">格式: 月/日 (不需要輸入年份)</p>
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">班別 *</label>
+                                                <label className="block text-sm font-medium mb-1">班別</label>
                                                 <div className="flex space-x-4 mt-2">
                                                     <label className="flex items-center space-x-2">
                                                         <input
@@ -714,24 +762,61 @@
                                             </div>
                                             
                                             <div>
-                                                <label className="block text-sm font-medium mb-1">年度特休天數 *</label>
+                                                <label className="block text-sm font-medium mb-1">年度特休天數</label>
                                                 <input
                                                     type="number"
                                                     value={newUserForm.annualLeave}
-                                                    onChange={(e) => setNewUserForm({...newUserForm, annualLeave: parseInt(e.target.value)})}
+                                                    onChange={(e) => setNewUserForm({...newUserForm, annualLeave: parseInt(e.target.value) || 0})}
                                                     className="w-full px-3 py-2 border rounded-lg"
                                                     min="0"
                                                     max="30"
-                                                    required
                                                 />
                                             </div>
                                             
                                             <div className="md:col-span-2">
+                                                <label className="flex items-center space-x-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={newUserForm.isAdmin}
+                                                        onChange={(e) => setNewUserForm({...newUserForm, isAdmin: e.target.checked})}
+                                                        className="w-4 h-4"
+                                                    />
+                                                    <span className="text-sm font-medium">設為管理員</span>
+                                                    <span className="text-xs text-gray-500">(管理員可以管理所有員工和審核請假)</span>
+                                                </label>
+                                            </div>
+                                            
+                                            <div className="md:col-span-2 flex space-x-2">
                                                 <button 
                                                     type="submit" 
-                                                    className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700"
+                                                    className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700"
                                                 >
-                                                    確認新增
+                                                    {editingUser ? '更新員工' : '確認新增'}
+                                                </button>
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setShowAddUser(false);
+                                                        setEditingUser(null);
+                                                        setNewUserForm({
+                                                            id: '',
+                                                            username: '',
+                                                            password: '',
+                                                            name: '',
+                                                            region: '新竹區',
+                                                            department: '管理部',
+                                                            position: '專員',
+                                                            email: '',
+                                                            phone: '',
+                                                            birthday: '',
+                                                            shift: [],
+                                                            annualLeave: 10,
+                                                            isAdmin: false
+                                                        });
+                                                    }}
+                                                    className="px-6 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
+                                                >
+                                                    取消
                                                 </button>
                                             </div>
                                         </form>
@@ -774,9 +859,22 @@
                                                         </div>
                                                     </td>
                                                     <td className="px-4 py-3">
-                                                        <button onClick={() => handleDeleteUser(user.id)} className="text-red-600">
-                                                            <Trash2 size={16} />
-                                                        </button>
+                                                        <div className="flex space-x-2">
+                                                            <button 
+                                                                onClick={() => handleEditUser(user)} 
+                                                                className="text-blue-600 hover:text-blue-800"
+                                                                title="編輯"
+                                                            >
+                                                                <Edit2 size={16} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteUser(user.id)}
+                                                                className="text-red-600 hover:text-red-800"
+                                                                title="刪除"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}

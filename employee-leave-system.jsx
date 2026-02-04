@@ -724,7 +724,7 @@ const EmployeeLeaveSystem = () => {
                         return (
                           <th
                             key={day.toISOString()}
-                             className={`border p-1 ${
+                            className={`border p-2 min-w-[4.5rem] ${
                               holiday ? 'bg-red-100 text-red-800' :
                               weekend ? 'bg-blue-50 text-blue-800' :
                               'bg-gray-50'
@@ -776,10 +776,10 @@ const EmployeeLeaveSystem = () => {
                               return (
                                 <td
                                   key={day.toISOString()}
-                                    onClick={() => handleToggleVacation(user.id, dateStr)}
-                                  className={`border p-1 text-center ${
+                                  onClick={() => handleToggleVacation(user.id, dateStr)}
+                                  className={`border p-2 min-w-[4.5rem] text-center ${
                                     leave ? 'bg-orange-100 text-orange-800 font-medium' : ''
-                                 } ${isEditable ? 'cursor-pointer hover:bg-indigo-50' : ''}`}
+                                    } ${isEditable ? 'cursor-pointer hover:bg-indigo-50' : ''}`}
                                 >
                                     {leave ? (
                                     <span className="text-purple-700 font-semibold">請</span>

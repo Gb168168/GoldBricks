@@ -281,6 +281,13 @@
                 return data.users.length - onLeave;
             };
 
+            const handleResetData = () => {
+                if (window.confirm('確定要重置所有資料嗎?這將清除所有員工和請假紀錄!')) {
+                    localStorage.removeItem('leaveSystemData');
+                    window.location.reload();
+                }
+            };
+
             if (!currentUser) {
                 return (
                     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -325,6 +332,18 @@
                                 <p className="font-medium">測試帳號:</p>
                                 <p>管理員 - admin / admin123</p>
                                 <p>員工 - user001 / pass123</p>
+                            </div>
+                            
+                            <div className="mt-4">
+                                <button 
+                                    onClick={handleResetData}
+                                    className="w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm"
+                                >
+                                    🔄 重置系統資料
+                                </button>
+                                <p className="text-xs text-gray-500 text-center mt-2">
+                                    如果無法登入,請點擊此按鈕重置
+                                </p>
                             </div>
                         </div>
                     </div>

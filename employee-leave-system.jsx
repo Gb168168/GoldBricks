@@ -352,8 +352,8 @@ const EmployeeLeaveSystem = () => {
   // 登入頁面
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 text-base md:text-lg">
+        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg">
           <div className="text-center mb-8">
             <div className="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <Users className="text-white" size={32} />
@@ -364,7 +364,7 @@ const EmployeeLeaveSystem = () => {
           
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">帳號</label>
+             <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">帳號</label>
               <input
                 type="text"
                 value={loginForm.username}
@@ -376,7 +376,7 @@ const EmployeeLeaveSystem = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">密碼</label>
+             <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">密碼</label>
               <input
                 type="password"
                 value={loginForm.password}
@@ -395,7 +395,7 @@ const EmployeeLeaveSystem = () => {
             </button>
           </form>
           
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm text-gray-600">
+           <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm md:text-base text-gray-600">
             <p className="font-medium mb-1">測試帳號:</p>
             <p>管理員 - 帳號: admin / 密碼: admin123</p>
             <p>一般員工 - 帳號: user001 / 密碼: pass123</p>
@@ -407,10 +407,10 @@ const EmployeeLeaveSystem = () => {
 
   // 主系統介面
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 text-base md:text-lg">
       {/* 頂部導航 */}
       <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+       <div className="max-w-screen-2xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <div className="bg-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
@@ -418,13 +418,13 @@ const EmployeeLeaveSystem = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-800">員工假勤系統</h1>
-                <p className="text-sm text-gray-500">歡迎, {currentUser.name} {currentUser.isAdmin && '(管理員)'}</p>
+                <p className="text-sm md:text-base text-gray-500">歡迎, {currentUser.name} {currentUser.isAdmin && '(管理員)'}</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-sm text-gray-600">可休特休</p>
+                <p className="text-sm md:text-base text-gray-600">可休特休</p>
                 <p className="text-lg font-bold text-indigo-600">
                   {currentUser.annualLeave - currentUser.usedAnnualLeave} 天
                 </p>
@@ -443,7 +443,7 @@ const EmployeeLeaveSystem = () => {
 
       {/* 功能選單 */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-screen-2xl mx-auto px-4">
           <div className="flex space-x-1 overflow-x-auto">
             {[
               { id: 'management', label: '人員管理', icon: Users, admin: true },
@@ -475,7 +475,7 @@ const EmployeeLeaveSystem = () => {
       </div>
 
       {/* 主要內容區 */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+       <div className="max-w-screen-2xl mx-auto px-4 py-6">
         
         {/* 人員管理 */}
         {activeTab === 'management' && currentUser.isAdmin && (
@@ -520,15 +520,15 @@ const EmployeeLeaveSystem = () => {
                   <tbody className="divide-y divide-gray-200">
                     {data.users.map(user => (
                       <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm">{user.id}</td>
-                        <td className="px-4 py-3 text-sm font-medium">{user.name}</td>
-                        <td className="px-4 py-3 text-sm">{user.region}</td>
-                        <td className="px-4 py-3 text-sm">{user.department}</td>
-                        <td className="px-4 py-3 text-sm">{user.position}</td>
-                        <td className="px-4 py-3 text-sm">{user.email}</td>
-                        <td className="px-4 py-3 text-sm">{user.phone}</td>
-                        <td className="px-4 py-3 text-sm">{user.birthday}</td>
-                        <td className="px-4 py-3 text-sm">
+                         <td className="px-4 py-3 text-sm md:text-base">{user.id}</td>
+                        <td className="px-4 py-3 text-sm md:text-base font-medium">{user.name}</td>
+                        <td className="px-4 py-3 text-sm md:text-base">{user.region}</td>
+                        <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
+                        <td className="px-4 py-3 text-sm md:text-base">{user.position}</td>
+                        <td className="px-4 py-3 text-sm md:text-base">{user.email}</td>
+                        <td className="px-4 py-3 text-sm md:text-base">{user.phone}</td>
+                        <td className="px-4 py-3 text-sm md:text-base">{user.birthday}</td>
+                        <td className="px-4 py-3 text-sm md:text-base">
                           <div className="flex space-x-1">
                             {user.shift.includes('早') && (
                               <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>
@@ -538,7 +538,7 @@ const EmployeeLeaveSystem = () => {
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm">
+                        <td className="px-4 py-3 text-sm md:text-base">
                           <div className="flex space-x-2">
                             <button
                               onClick={() => {
@@ -569,7 +569,7 @@ const EmployeeLeaveSystem = () => {
               <h3 className="text-lg font-bold mb-4">操作紀錄</h3>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {data.auditLogs.slice(-10).reverse().map((log, idx) => (
-                  <div key={idx} className="text-sm p-2 bg-gray-50 rounded">
+                   <div key={idx} className="text-sm md:text-base p-2 bg-gray-50 rounded">
                     <span className="text-gray-500">{new Date(log.timestamp).toLocaleString('zh-TW')}</span>
                     {' - '}
                     <span className="font-medium">{log.user}</span>
@@ -632,10 +632,10 @@ const EmployeeLeaveSystem = () => {
             <div className="bg-white rounded-lg shadow p-4">
                      {currentUser.isAdmin && (
                 <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
-                  <p className="text-sm font-medium text-indigo-700 mb-2">班表開放日期設定 (管理員)</p>
+                   <p className="text-sm md:text-base font-medium text-indigo-700 mb-2">班表開放日期設定 (管理員)</p>
                   <div className="flex flex-wrap gap-3 items-center">
                     <div className="flex items-center space-x-2">
-                      <label className="text-sm text-gray-700">開始</label>
+                      <label className="text-sm md:text-base text-gray-700">開始</label>
                       <input
                         type="date"
                         value={data.vacationSettings.openStart}
@@ -644,7 +644,7 @@ const EmployeeLeaveSystem = () => {
                       />
                     </div>
                     <div className="flex items-center space-x-2">
-                      <label className="text-sm text-gray-700">結束</label>
+                      <label className="text-sm md:text-base text-gray-700">結束</label>
                       <input
                         type="date"
                         value={data.vacationSettings.openEnd}
@@ -658,7 +658,7 @@ const EmployeeLeaveSystem = () => {
                   </div>
                 </div>
               )}
-              <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-gray-600">
+              <div className="mb-4 flex flex-wrap items-center gap-3 text-sm md:text-base text-gray-600">
                 <div className="flex items-center space-x-2">
                   <span className="font-medium text-gray-700">休假符號:</span>
                   <button
@@ -814,7 +814,7 @@ const EmployeeLeaveSystem = () => {
                 <h3 className="text-lg font-bold mb-4">新增請假</h3>
                 <form onSubmit={handleSubmitLeave} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">申請人</label>
+                    <label className="block text-sm md:text-base font-medium mb-1">申請人</label>
                     <input
                       type="text"
                       value={currentUser.name}
@@ -824,7 +824,7 @@ const EmployeeLeaveSystem = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1">假別</label>
+                    <label className="block text-sm md:text-base font-medium mb-1">假別</label>
                     <select
                       value={newLeaveForm.type}
                       onChange={(e) => setNewLeaveForm(prev => ({ ...prev, type: e.target.value }))}
@@ -844,7 +844,7 @@ const EmployeeLeaveSystem = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1">開始日期</label>
+                    <label className="block text-sm md:text-base font-medium mb-1">開始日期</label>
                     <input
                       type="date"
                       value={newLeaveForm.startDate}
@@ -855,7 +855,7 @@ const EmployeeLeaveSystem = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1">結束日期</label>
+                    <label className="block text-sm md:text-base font-medium mb-1">結束日期</label>
                     <input
                       type="date"
                       value={newLeaveForm.endDate}
@@ -866,7 +866,7 @@ const EmployeeLeaveSystem = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1">時數</label>
+                     <label className="block text-sm md:text-base font-medium mb-1">時數</label>
                     <input
                       type="number"
                       value={newLeaveForm.hours}
@@ -879,7 +879,7 @@ const EmployeeLeaveSystem = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1">請假事由</label>
+                    <label className="block text-sm md:text-base font-medium mb-1">請假事由</label>
                     <textarea
                       value={newLeaveForm.reason}
                       onChange={(e) => setNewLeaveForm(prev => ({ ...prev, reason: e.target.value }))}
@@ -910,7 +910,7 @@ const EmployeeLeaveSystem = () => {
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <span className="font-medium">{leave.type}</span>
-                            <span className="text-sm text-gray-500 ml-2">
+                            <span className="text-sm md:text-base text-gray-500 ml-2">
                               {leave.startDate} ~ {leave.endDate}
                             </span>
                           </div>
@@ -922,7 +922,7 @@ const EmployeeLeaveSystem = () => {
                             {leave.status}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600">{leave.reason}</p>
+                        <p className="text-sm md:text-base text-gray-600">{leave.reason}</p>
                         <p className="text-xs text-gray-400 mt-1">
                           申請時間: {new Date(leave.submittedAt).toLocaleString('zh-TW')}
                         </p>
@@ -947,22 +947,22 @@ const EmployeeLeaveSystem = () => {
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="font-medium">{leave.userName} - {leave.type}</p>
-                            <p className="text-sm text-gray-600">{leave.department} / {leave.region}</p>
-                            <p className="text-sm text-gray-600 mt-1">
+                            <p className="text-sm md:text-base text-gray-600">{leave.department} / {leave.region}</p>
+                            <p className="text-sm md:text-base text-gray-600 mt-1">
                               {leave.startDate} ~ {leave.endDate} ({leave.hours}小時)
                             </p>
-                            <p className="text-sm text-gray-500 mt-1">{leave.reason}</p>
+                             <p className="text-sm md:text-base text-gray-500 mt-1">{leave.reason}</p>
                           </div>
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleApproveLeave(leave.id, '已核准')}
-                              className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                              className="px-3 py-1 bg-green-600 text-white text-sm md:text-base rounded hover:bg-green-700"
                             >
                               核准
                             </button>
                             <button
                               onClick={() => handleApproveLeave(leave.id, '已拒絕')}
-                              className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                              className="px-3 py-1 bg-red-600 text-white text-sm md:text-base rounded hover:bg-red-700"
                             >
                               拒絕
                             </button>
@@ -1036,17 +1036,17 @@ const EmployeeLeaveSystem = () => {
                       
                       return (
                         <tr key={user.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm font-medium">{user.name}</td>
-                          <td className="px-4 py-3 text-sm">{user.department}</td>
-                          <td className="px-4 py-3 text-sm">{user.region}</td>
-                          <td className="px-4 py-3 text-sm">{user.annualLeave} 天</td>
-                          <td className="px-4 py-3 text-sm text-orange-600">{annualLeaves.length} 天</td>
-                          <td className="px-4 py-3 text-sm">
+                          <td className="px-4 py-3 text-sm md:text-base font-medium">{user.name}</td>
+                          <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
+                          <td className="px-4 py-3 text-sm md:text-base">{user.region}</td>
+                          <td className="px-4 py-3 text-sm md:text-base">{user.annualLeave} 天</td>
+                          <td className="px-4 py-3 text-sm md:text-base text-orange-600">{annualLeaves.length} 天</td>
+                          <td className="px-4 py-3 text-sm md:text-base">
                             <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">
                               {user.annualLeave - annualLeaves.length} 天
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm">
+                           <td className="px-4 py-3 text-sm md:text-base">
                             <div className="space-y-1">
                               {annualLeaves.map(leave => (
                                 <div key={leave.id} className="text-xs text-gray-600">

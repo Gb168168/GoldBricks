@@ -278,14 +278,21 @@ const EmployeeLeaveSystem = () => {
     return days;
   };
 
+  const formatLocalDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // 檢查是否為假日
   const isHoliday = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatLocalDate(date);
     return holidays2026.find(h => h.date === dateStr);
   };
 
   const isWithinOpenRange = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatLocalDate(date);
     const { openStart, openEnd } = data.vacationSettings;
     if (!openStart || !openEnd) return false;
     return dateStr >= openStart && dateStr <= openEnd;
@@ -341,7 +348,7 @@ const EmployeeLeaveSystem = () => {
 
   // 計算當天上班人數
   const getWorkingCount = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatLocalDate(date);
     const leavesOnDate = data.leaves.filter(l => 
       l.status === '已核准' && 
       dateStr >= l.startDate && 
@@ -765,7 +772,7 @@ const EmployeeLeaveSystem = () => {
                               <div className="text-xs md:text-sm text-gray-500">{user.department}</div>
                             </td>
                             {getMonthDays(selectedMonth).map(day => {
-                              const dateStr = day.toISOString().split('T')[0];
+                              const dateStr = formatLocalDate(day);
                               const leave = userLeaves.find(l => 
                                 dateStr >= l.startDate && dateStr <= l.endDate
                               );

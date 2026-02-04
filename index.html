@@ -12,8 +12,593 @@
 <body>
     <div id="root"></div>
     
-    <script type="text/babel" src="employee-leave-system.jsx"></script>
     <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Lucide Icons 組件
+        const Users = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        );
+
+        const Calendar = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+        );
+
+        const FileText = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+        );
+
+        const Clock = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+        );
+
+        const Clipboard = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+        );
+
+        const LogOut = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+        );
+
+        const Download = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+        );
+
+        const Trash2 = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+        );
+
+        const Bell = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+        );
+
+        // 初始化資料
+        const initialData = {
+            users: [
+                {
+                    id: 'E001',
+                    username: 'admin',
+                    password: 'admin123',
+                    name: '管理員',
+                    region: '台北',
+                    department: '管理部',
+                    position: '經理',
+                    email: 'admin@company.com',
+                    phone: '0912-345-678',
+                    birthday: '1980-01-01',
+                    shift: ['早'],
+                    isAdmin: true,
+                    annualLeave: 14,
+                    usedAnnualLeave: 0
+                },
+                {
+                    id: 'E002',
+                    username: 'user001',
+                    password: 'pass123',
+                    name: '王小明',
+                    region: '台北',
+                    department: '業務部',
+                    position: '專員',
+                    email: 'wang@company.com',
+                    phone: '0923-456-789',
+                    birthday: '1990-05-15',
+                    shift: ['早', '晚'],
+                    isAdmin: false,
+                    annualLeave: 10,
+                    usedAnnualLeave: 2
+                }
+            ],
+            leaves: [],
+            auditLogs: []
+        };
+
+        // 國定假日資料
+        const holidays2026 = [
+            { date: '2026-01-01', name: '元旦' },
+            { date: '2026-02-16', name: '除夕' },
+            { date: '2026-02-17', name: '春節' },
+            { date: '2026-02-18', name: '春節' },
+            { date: '2026-02-19', name: '春節' },
+            { date: '2026-02-28', name: '和平紀念日' },
+            { date: '2026-04-04', name: '清明節' },
+            { date: '2026-06-25', name: '端午節' },
+            { date: '2026-10-01', name: '中秋節' },
+            { date: '2026-10-10', name: '國慶日' }
+        ];
+
+        const EmployeeLeaveSystem = () => {
+            const [currentUser, setCurrentUser] = useState(null);
+            const [activeTab, setActiveTab] = useState('vacation');
+            const [data, setData] = useState(() => {
+                const saved = localStorage.getItem('leaveSystemData');
+                return saved ? JSON.parse(saved) : initialData;
+            });
+
+            const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+            const [selectedMonth, setSelectedMonth] = useState(new Date());
+            const [filterRegion, setFilterRegion] = useState('全部');
+            const [filterDepartment, setFilterDepartment] = useState('全部');
+            const [newLeaveForm, setNewLeaveForm] = useState({
+                type: '特休',
+                startDate: '',
+                endDate: '',
+                reason: '',
+                hours: 8
+            });
+
+            useEffect(() => {
+                localStorage.setItem('leaveSystemData', JSON.stringify(data));
+            }, [data]);
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                const user = data.users.find(
+                    u => u.username === loginForm.username && u.password === loginForm.password
+                );
+                if (user) {
+                    setCurrentUser(user);
+                } else {
+                    alert('帳號或密碼錯誤');
+                }
+            };
+
+            const handleLogout = () => {
+                setCurrentUser(null);
+            };
+
+            const handleDeleteUser = (userId) => {
+                if (window.confirm('確定要刪除此員工嗎?')) {
+                    const user = data.users.find(u => u.id === userId);
+                    setData(prev => ({
+                        ...prev,
+                        users: prev.users.filter(u => u.id !== userId),
+                        auditLogs: [...prev.auditLogs, {
+                            timestamp: new Date().toISOString(),
+                            user: currentUser.name,
+                            action: '刪除員工',
+                            details: user.name
+                        }]
+                    }));
+                }
+            };
+
+            const handleSubmitLeave = (e) => {
+                e.preventDefault();
+                const newLeave = {
+                    id: Date.now().toString(),
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    department: currentUser.department,
+                    region: currentUser.region,
+                    ...newLeaveForm,
+                    status: '待審核',
+                    submittedAt: new Date().toISOString()
+                };
+                
+                setData(prev => ({
+                    ...prev,
+                    leaves: [...prev.leaves, newLeave]
+                }));
+                
+                setNewLeaveForm({
+                    type: '特休',
+                    startDate: '',
+                    endDate: '',
+                    reason: '',
+                    hours: 8
+                });
+                
+                alert('請假申請已送出');
+            };
+
+            const handleApproveLeave = (leaveId, status) => {
+                setData(prev => ({
+                    ...prev,
+                    leaves: prev.leaves.map(l => 
+                        l.id === leaveId ? { ...l, status } : l
+                    )
+                }));
+            };
+
+            const exportToCSV = (type) => {
+                let csv = '';
+                if (type === 'users') {
+                    csv = '員工代號,姓名,地區,部門\n';
+                    data.users.forEach(u => {
+                        csv += `${u.id},${u.name},${u.region},${u.department}\n`;
+                    });
+                }
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = '員工資料.csv';
+                link.click();
+            };
+
+            const getMonthDays = (date) => {
+                const days = [];
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const lastDay = new Date(year, month + 1, 0).getDate();
+                
+                for (let d = 1; d <= lastDay; d++) {
+                    days.push(new Date(year, month, d));
+                }
+                return days;
+            };
+
+            const isHoliday = (date) => {
+                const dateStr = date.toISOString().split('T')[0];
+                return holidays2026.find(h => h.date === dateStr);
+            };
+
+            const isWeekend = (date) => {
+                return date.getDay() === 0 || date.getDay() === 6;
+            };
+
+            const getWorkingCount = (date) => {
+                const dateStr = date.toISOString().split('T')[0];
+                const onLeave = data.leaves.filter(l => 
+                    l.status === '已核准' && 
+                    dateStr >= l.startDate && 
+                    dateStr <= l.endDate
+                ).length;
+                return data.users.length - onLeave;
+            };
+
+            if (!currentUser) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+                            <div className="text-center mb-8">
+                                <div className="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Users size={32} className="text-white" />
+                                </div>
+                                <h1 className="text-3xl font-bold text-gray-800">員工假勤系統</h1>
+                                <p className="text-gray-500 mt-2">請使用帳號密碼登入</p>
+                            </div>
+                            
+                            <form onSubmit={handleLogin} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">帳號</label>
+                                    <input
+                                        type="text"
+                                        value={loginForm.username}
+                                        onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                                        required
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">密碼</label>
+                                    <input
+                                        type="password"
+                                        value={loginForm.password}
+                                        onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                                        required
+                                    />
+                                </div>
+                                
+                                <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700">
+                                    登入
+                                </button>
+                            </form>
+                            
+                            <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm">
+                                <p className="font-medium">測試帳號:</p>
+                                <p>管理員 - admin / admin123</p>
+                                <p>員工 - user001 / pass123</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <nav className="bg-white shadow-sm border-b">
+                        <div className="max-w-7xl mx-auto px-4 py-4">
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center space-x-3">
+                                    <div className="bg-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
+                                        <Users size={24} className="text-white" />
+                                    </div>
+                                    <div>
+                                        <h1 className="text-xl font-bold">員工假勤系統</h1>
+                                        <p className="text-sm text-gray-500">歡迎, {currentUser.name}</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-center space-x-4">
+                                    <div className="text-right">
+                                        <p className="text-sm text-gray-600">可休特休</p>
+                                        <p className="text-lg font-bold text-indigo-600">
+                                            {currentUser.annualLeave} 天
+                                        </p>
+                                    </div>
+                                    <button onClick={handleLogout} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                                        登出
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+
+                    <div className="bg-white border-b">
+                        <div className="max-w-7xl mx-auto px-4">
+                            <div className="flex space-x-1">
+                                {[
+                                    { id: 'management', label: '人員管理', icon: Users, admin: true },
+                                    { id: 'vacation', label: '休假表', icon: Calendar },
+                                    { id: 'leave', label: '請假', icon: FileText },
+                                    { id: 'annual', label: '特休', icon: Calendar }
+                                ].map(tab => {
+                                    if (tab.admin && !currentUser.isAdmin) return null;
+                                    const Icon = tab.icon;
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`flex items-center space-x-2 px-6 py-3 border-b-2 ${
+                                                activeTab === tab.id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-600'
+                                            }`}
+                                        >
+                                            <Icon size={18} />
+                                            <span>{tab.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="max-w-7xl mx-auto px-4 py-6">
+                        {activeTab === 'management' && currentUser.isAdmin && (
+                            <div className="space-y-4">
+                                <div className="flex justify-between">
+                                    <h2 className="text-2xl font-bold">人員管理</h2>
+                                    <button onClick={() => exportToCSV('users')} className="px-4 py-2 bg-green-600 text-white rounded-lg">
+                                        匯出Excel
+                                    </button>
+                                </div>
+
+                                <div className="bg-white rounded-lg shadow overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-4 py-3 text-left text-xs">員工代號</th>
+                                                <th className="px-4 py-3 text-left text-xs">姓名</th>
+                                                <th className="px-4 py-3 text-left text-xs">地區</th>
+                                                <th className="px-4 py-3 text-left text-xs">部門</th>
+                                                <th className="px-4 py-3 text-left text-xs">班別</th>
+                                                <th className="px-4 py-3 text-left text-xs">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.users.map(user => (
+                                                <tr key={user.id}>
+                                                    <td className="px-4 py-3">{user.id}</td>
+                                                    <td className="px-4 py-3">{user.name}</td>
+                                                    <td className="px-4 py-3">{user.region}</td>
+                                                    <td className="px-4 py-3">{user.department}</td>
+                                                    <td className="px-4 py-3">{user.shift.join(',')}</td>
+                                                    <td className="px-4 py-3">
+                                                        <button onClick={() => handleDeleteUser(user.id)} className="text-red-600">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'vacation' && (
+                            <div className="space-y-4">
+                                <h2 className="text-2xl font-bold">休假表</h2>
+                                
+                                <div className="bg-white rounded-lg shadow p-4">
+                                    <div className="flex justify-between mb-4">
+                                        <button onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))} className="px-4 py-2 bg-gray-100 rounded">
+                                            上個月
+                                        </button>
+                                        <h3 className="text-xl font-bold">
+                                            {selectedMonth.getFullYear()}年 {selectedMonth.getMonth() + 1}月
+                                        </h3>
+                                        <button onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))} className="px-4 py-2 bg-gray-100 rounded">
+                                            下個月
+                                        </button>
+                                    </div>
+
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full border-collapse text-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th className="border p-2">員工</th>
+                                                    {getMonthDays(selectedMonth).map(day => {
+                                                        const holiday = isHoliday(day);
+                                                        const weekend = isWeekend(day);
+                                                        return (
+                                                            <th key={day} className={`border p-2 ${holiday ? 'bg-red-100' : weekend ? 'bg-blue-50' : ''}`}>
+                                                                <div>{day.getDate()}</div>
+                                                                <div className="text-xs">{holiday?.name || ['日','一','二','三','四','五','六'][day.getDay()]}</div>
+                                                                <div className="text-xs text-green-600">{getWorkingCount(day)}人</div>
+                                                            </th>
+                                                        );
+                                                    })}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {data.users.map(user => {
+                                                    const userLeaves = data.leaves.filter(l => l.userId === user.id && l.status === '已核准');
+                                                    return (
+                                                        <tr key={user.id}>
+                                                            <td className="border p-2 font-medium">{user.name}</td>
+                                                            {getMonthDays(selectedMonth).map(day => {
+                                                                const dateStr = day.toISOString().split('T')[0];
+                                                                const leave = userLeaves.find(l => dateStr >= l.startDate && dateStr <= l.endDate);
+                                                                return (
+                                                                    <td key={day} className={`border p-1 text-center ${leave ? 'bg-orange-100' : ''}`}>
+                                                                        {leave?.type}
+                                                                    </td>
+                                                                );
+                                                            })}
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'leave' && (
+                            <div className="space-y-4">
+                                <h2 className="text-2xl font-bold">請假申請</h2>
+                                
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="bg-white rounded-lg shadow p-6">
+                                        <h3 className="text-lg font-bold mb-4">新增請假</h3>
+                                        <form onSubmit={handleSubmitLeave} className="space-y-4">
+                                            <input type="text" value={currentUser.name} disabled className="w-full px-3 py-2 border rounded bg-gray-50" />
+                                            
+                                            <select value={newLeaveForm.type} onChange={(e) => setNewLeaveForm({...newLeaveForm, type: e.target.value})} className="w-full px-3 py-2 border rounded">
+                                                <option>特休</option>
+                                                <option>病假</option>
+                                                <option>事假</option>
+                                            </select>
+                                            
+                                            <input type="date" value={newLeaveForm.startDate} onChange={(e) => setNewLeaveForm({...newLeaveForm, startDate: e.target.value})} className="w-full px-3 py-2 border rounded" required />
+                                            
+                                            <input type="date" value={newLeaveForm.endDate} onChange={(e) => setNewLeaveForm({...newLeaveForm, endDate: e.target.value})} className="w-full px-3 py-2 border rounded" required />
+                                            
+                                            <textarea value={newLeaveForm.reason} onChange={(e) => setNewLeaveForm({...newLeaveForm, reason: e.target.value})} className="w-full px-3 py-2 border rounded" rows="3" required />
+                                            
+                                            <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
+                                                送出申請
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <div className="bg-white rounded-lg shadow p-6">
+                                        <h3 className="text-lg font-bold mb-4">我的申請</h3>
+                                        <div className="space-y-3">
+                                            {data.leaves.filter(l => l.userId === currentUser.id).map(leave => (
+                                                <div key={leave.id} className="border rounded p-3">
+                                                    <div className="flex justify-between mb-2">
+                                                        <span className="font-medium">{leave.type}</span>
+                                                        <span className={`px-2 py-1 text-xs rounded ${leave.status === '已核准' ? 'bg-green-100' : 'bg-yellow-100'}`}>
+                                                            {leave.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm">{leave.startDate} ~ {leave.endDate}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {currentUser.isAdmin && (
+                                    <div className="bg-white rounded-lg shadow p-6">
+                                        <h3 className="text-lg font-bold mb-4">待審核 (管理員)</h3>
+                                        {data.leaves.filter(l => l.status === '待審核').map(leave => (
+                                            <div key={leave.id} className="border rounded p-4 mb-3">
+                                                <div className="flex justify-between">
+                                                    <div>
+                                                        <p className="font-medium">{leave.userName} - {leave.type}</p>
+                                                        <p className="text-sm">{leave.startDate} ~ {leave.endDate}</p>
+                                                    </div>
+                                                    <div className="flex space-x-2">
+                                                        <button onClick={() => handleApproveLeave(leave.id, '已核准')} className="px-3 py-1 bg-green-600 text-white rounded">核准</button>
+                                                        <button onClick={() => handleApproveLeave(leave.id, '已拒絕')} className="px-3 py-1 bg-red-600 text-white rounded">拒絕</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeTab === 'annual' && (
+                            <div className="space-y-4">
+                                <h2 className="text-2xl font-bold">特休總覽</h2>
+                                <div className="bg-white rounded-lg shadow overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-4 py-3 text-left">員工</th>
+                                                <th className="px-4 py-3 text-left">部門</th>
+                                                <th className="px-4 py-3 text-left">總特休</th>
+                                                <th className="px-4 py-3 text-left">已使用</th>
+                                                <th className="px-4 py-3 text-left">剩餘</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.users.map(user => {
+                                                const used = data.leaves.filter(l => l.userId === user.id && l.type === '特休' && l.status === '已核准').length;
+                                                return (
+                                                    <tr key={user.id}>
+                                                        <td className="px-4 py-3">{user.name}</td>
+                                                        <td className="px-4 py-3">{user.department}</td>
+                                                        <td className="px-4 py-3">{user.annualLeave} 天</td>
+                                                        <td className="px-4 py-3">{used} 天</td>
+                                                        <td className="px-4 py-3">
+                                                            <span className="px-2 py-1 bg-green-100 rounded">{user.annualLeave - used} 天</span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<EmployeeLeaveSystem />);
     </script>

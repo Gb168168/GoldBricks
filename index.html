@@ -95,7 +95,7 @@
                     username: 'admin',
                     password: 'admin123',
                     name: '管理員',
-                    region: '台北',
+                    region: '新竹區',
                     department: '管理部',
                     position: '經理',
                     email: 'admin@company.com',
@@ -111,8 +111,8 @@
                     username: 'user001',
                     password: 'pass123',
                     name: '王小明',
-                    region: '台北',
-                    department: '業務部',
+                    region: '台中區',
+                    department: 'TSE',
                     position: '專員',
                     email: 'wang@company.com',
                     phone: '0923-456-789',
@@ -167,8 +167,8 @@
                 username: '',
                 password: '',
                 name: '',
-                region: '台北',
-                department: '業務部',
+                region: '新竹區',
+                department: '管理部',
                 position: '專員',
                 email: '',
                 phone: '',
@@ -250,8 +250,8 @@
                     username: '',
                     password: '',
                     name: '',
-                    region: '台北',
-                    department: '業務部',
+                    region: '新竹區',
+                    department: '管理部',
                     position: '專員',
                     email: '',
                     phone: '',
@@ -560,9 +560,9 @@
                                                     onChange={(e) => setNewUserForm({...newUserForm, region: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
                                                 >
-                                                    <option>台北</option>
-                                                    <option>台中</option>
-                                                    <option>高雄</option>
+                                                    <option>新竹區</option>
+                                                    <option>台中區</option>
+                                                    <option>嘉義區</option>
                                                 </select>
                                             </div>
                                             
@@ -574,10 +574,12 @@
                                                     className="w-full px-3 py-2 border rounded-lg"
                                                 >
                                                     <option>管理部</option>
-                                                    <option>業務部</option>
-                                                    <option>技術部</option>
-                                                    <option>行銷部</option>
-                                                    <option>人資部</option>
+                                                    <option>TSE</option>
+                                                    <option>FAE</option>
+                                                    <option>新場</option>
+                                                    <option>倉管</option>
+                                                    <option>RD</option>
+                                                    <option>線上客服</option>
                                                 </select>
                                             </div>
                                             

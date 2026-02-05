@@ -212,7 +212,10 @@
                 reason: '',
                 hours: 8
             });
-
+            const [showScheduleModal, setShowScheduleModal] = useState(false);
+            const [selectedScheduleDate, setSelectedScheduleDate] = useState('');
+            const [scheduleForm, setScheduleForm] = useState({ title: '', content: '' });
+            
             const [showAddUser, setShowAddUser] = useState(false);
             const [editingUser, setEditingUser] = useState(null);
             const [newUserForm, setNewUserForm] = useState({
@@ -416,24 +419,78 @@
                 });
             };
 
-            const getEffectivePermissions = (permissions, allOptions) =>
-                Array.isArray(permissions) ? permissions : allOptions;
+            const getEffectivePermissions = (permissions) =>
+                Array.isArray(permissions) ? permissions : [];
 
             const canManageUser = (targetUser) => {
                 if (!currentUser?.isAdmin) return false;
-                const regionPermissions = getEffectivePermissions(currentUser.permissionRegions, regionOptions);
-                const departmentPermissions = getEffectivePermissions(currentUser.permissionDepartments, departmentOptions);
+                const regionPermissions = getEffectivePermissions(currentUser.permissionRegions);
+                const departmentPermissions = getEffectivePermissions(currentUser.permissionDepartments);
                 return regionPermissions.includes(targetUser.region) || departmentPermissions.includes(targetUser.department);
             };
 
             const canApproveLeave = (leave) => {
                 if (!currentUser?.isAdmin) return false;
-                const regionPermissions = getEffectivePermissions(currentUser.permissionRegions, regionOptions);
-                const departmentPermissions = getEffectivePermissions(currentUser.permissionDepartments, departmentOptions);
+                const regionPermissions = getEffectivePermissions(currentUser.permissionRegions);
+                const departmentPermissions = getEffectivePermissions(currentUser.permissionDepartments);
                 return regionPermissions.includes(leave.region) || departmentPermissions.includes(leave.department);
             };
 
             const pendingLeaves = data.leaves.filter(l => l.status === '待審核');
+            const approvablePendingLeaves = pendingLeaves.filter(leave => canApproveLeave(leave));
+
+            const getCompStats = (userId, monthDate) => {
+                const targetMonth = monthDate.getMonth();
+                const targetYear = monthDate.getFullYear();
+                const compHours = data.leaves.filter(l =>
+                    l.userId === userId &&
+                    l.type === '補休(時)' &&
+                    l.status === '已核准' &&
+                    new Date(l.startDate).getMonth() === targetMonth &&
+                    new Date(l.startDate).getFullYear() === targetYear
+                );
+                const compDays = data.leaves.filter(l =>
+                    l.userId === userId &&
+                    l.type === '補休(天)' &&
+                    l.status === '已核准' &&
+                    new Date(l.startDate).getMonth() === targetMonth &&
+                    new Date(l.startDate).getFullYear() === targetYear
+                );
+
+                return {
+                    hours: compHours.reduce((sum, l) => sum + (l.hours || 0), 0),
+                    days: compDays.length
+                };
+            };
+
+            const openScheduleModal = (dateStr) => {
+                setSelectedScheduleDate(dateStr);
+                setScheduleForm({ title: '', content: '' });
+                setShowScheduleModal(true);
+            };
+
+            const handleScheduleSubmit = (e) => {
+                e.preventDefault();
+                if (!scheduleForm.title.trim() || !scheduleForm.content.trim()) {
+                    alert('請填寫排程標題與內容');
+                    return;
+                }
+
+                setData(prev => ({
+                    ...prev,
+                    schedules: [
+                        ...(prev.schedules || []),
+                        {
+                            id: Date.now().toString(),
+                            date: selectedScheduleDate,
+                            title: scheduleForm.title.trim(),
+                            content: scheduleForm.content.trim()
+                        }
+                    ]
+                }));
+
+                setShowScheduleModal(false);
+            };
             
             const handleSubmitLeave = (e) => {
                 e.preventDefault();
@@ -1525,8 +1582,7 @@
                                     <div className="bg-white rounded-lg shadow p-6">
                                         <h3 className="text-lg font-bold mb-4">待審核 (管理員)</h3>
                                           <p className="text-xs text-gray-500 mb-3">僅可審核具權限的地區或部門</p>
-                                        {pendingLeaves.map(leave => {
-                                            const canApprove = canApproveLeave(leave);
+                                       {approvablePendingLeaves.map(leave => {
                                             return (
                                                 <div key={leave.id} className="border rounded p-4 mb-3">
                                                     <div className="flex justify-between">
@@ -1537,16 +1593,14 @@
                                                         </div>
                                                         <div className="flex space-x-2">
                                                             <button
-                                                                onClick={() => canApprove && handleApproveLeave(leave.id, '已核准')}
-                                                                className={`px-3 py-1 rounded text-white ${canApprove ? 'bg-green-600' : 'bg-gray-300 cursor-not-allowed'}`}
-                                                                disabled={!canApprove}
+                                                               onClick={() => handleApproveLeave(leave.id, '已核准')}
+                                                                className="px-3 py-1 rounded text-white bg-green-600"
                                                             >
                                                                 核准
                                                             </button>
                                                             <button
-                                                                onClick={() => canApprove && handleApproveLeave(leave.id, '已拒絕')}
-                                                                className={`px-3 py-1 rounded text-white ${canApprove ? 'bg-red-600' : 'bg-gray-300 cursor-not-allowed'}`}
-                                                                disabled={!canApprove}
+                                                               onClick={() => handleApproveLeave(leave.id, '已拒絕')}
+                                                                className="px-3 py-1 rounded text-white bg-red-600"
                                                             >
                                                                 拒絕
                                                             </button>
@@ -1555,7 +1609,7 @@
                                                 </div>
                                              );
                                         })}
-                                        {pendingLeaves.length === 0 && (
+                                       {approvablePendingLeaves.length === 0 && (
                                             <p className="text-center text-gray-500 py-4">目前沒有待審核申請</p>
                                         )}
                                     </div>
@@ -1740,6 +1794,15 @@
                                             <option>倉管</option>
                                             <option>RD</option>
                                             <option>線上客服</option>
+                                            </select>
+                                        <select
+                                            value={filterShift}
+                                            onChange={(e) => setFilterShift(e.target.value)}
+                                            className="px-4 py-2 border rounded-lg"
+                                        >
+                                            <option>全部</option>
+                                            <option>早</option>
+                                            <option>晚</option>
                                         </select>
                                         <button
                                             onClick={() => exportToCSV('compensatory')}
@@ -1751,103 +1814,44 @@
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    {/* 本月統計 */}
-                                    <div className="bg-white rounded-lg shadow p-6">
-                                        <h3 className="text-lg font-bold mb-4">本月補休統計</h3>
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full">
-                                                <thead className="bg-gray-50">
-                                                    <tr>
-                                                        <th className="px-4 py-3 text-left text-xs">員工</th>
-                                                        <th className="px-4 py-3 text-left text-xs">部門</th>
-                                                        <th className="px-4 py-3 text-left text-xs">補休(時)</th>
-                                                        <th className="px-4 py-3 text-left text-xs">補休(天)</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {data.users
-                                                        .filter(u => 
-                                                            (filterRegion === '全部' || u.region === filterRegion) &&
-                                                            (filterDepartment === '全部' || u.department === filterDepartment)
-                                                        )
-                                                        .map(user => {
-                                                            const thisMonth = new Date().getMonth();
-                                                            const compHours = data.leaves.filter(l => 
-                                                                l.userId === user.id && 
-                                                                l.type === '補休(時)' && 
-                                                                l.status === '已核准' &&
-                                                                new Date(l.startDate).getMonth() === thisMonth
-                                                            );
-                                                            const compDays = data.leaves.filter(l => 
-                                                                l.userId === user.id && 
-                                                                l.type === '補休(天)' && 
-                                                                l.status === '已核准' &&
-                                                                new Date(l.startDate).getMonth() === thisMonth
-                                                            );
-                                                            const totalHours = compHours.reduce((sum, l) => sum + (l.hours || 0), 0);
-                                                            
-                                                            return (
-                                                                <tr key={user.id}>
-                                                                   <td className="px-4 py-3 text-sm md:text-base">{user.name}</td>
-                                                                    <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
-                                                                    <td className="px-4 py-3 text-sm md:text-base">{totalHours} 小時</td>
-                                                                    <td className="px-4 py-3 text-sm md:text-base">{compDays.length} 天</td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
+                               <div className="bg-white rounded-lg shadow p-6">
+                                    <h3 className="text-lg font-bold mb-4">補休月統計（上月 / 本月）</h3>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-left text-xs">員工</th>
+                                                    <th className="px-4 py-3 text-left text-xs">部門</th>
+                                                    <th className="px-4 py-3 text-left text-xs">上月補休(時)</th>
+                                                    <th className="px-4 py-3 text-left text-xs">上月補休(天)</th>
+                                                    <th className="px-4 py-3 text-left text-xs">本月補休(時)</th>
+                                                    <th className="px-4 py-3 text-left text-xs">本月補休(天)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {data.users
+                                                    .filter(u =>
+                                                        (filterRegion === '全部' || u.region === filterRegion) &&
+                                                        (filterDepartment === '全部' || u.department === filterDepartment) &&
+                                                        (filterShift === '全部' || u.shift.includes(filterShift))
+                                                    )
+                                                    .map(user => {
+                                                        const currentMonthStats = getCompStats(user.id, selectedMonth);
+                                                        const previousMonthStats = getCompStats(user.id, new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1, 1));
 
-                                    {/* 上月統計 */}
-                                    <div className="bg-white rounded-lg shadow p-6">
-                                        <h3 className="text-lg font-bold mb-4">上月補休統計</h3>
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full">
-                                                <thead className="bg-gray-50">
-                                                    <tr>
-                                                        <th className="px-4 py-3 text-left text-xs">員工</th>
-                                                        <th className="px-4 py-3 text-left text-xs">部門</th>
-                                                        <th className="px-4 py-3 text-left text-xs">補休(時)</th>
-                                                        <th className="px-4 py-3 text-left text-xs">補休(天)</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {data.users
-                                                        .filter(u => 
-                                                            (filterRegion === '全部' || u.region === filterRegion) &&
-                                                            (filterDepartment === '全部' || u.department === filterDepartment)
-                                                        )
-                                                        .map(user => {
-                                                            const lastMonth = new Date().getMonth() - 1;
-                                                            const compHours = data.leaves.filter(l => 
-                                                                l.userId === user.id && 
-                                                                l.type === '補休(時)' && 
-                                                                l.status === '已核准' &&
-                                                                new Date(l.startDate).getMonth() === lastMonth
-                                                            );
-                                                            const compDays = data.leaves.filter(l => 
-                                                                l.userId === user.id && 
-                                                                l.type === '補休(天)' && 
-                                                                l.status === '已核准' &&
-                                                                new Date(l.startDate).getMonth() === lastMonth
-                                                            );
-                                                            const totalHours = compHours.reduce((sum, l) => sum + (l.hours || 0), 0);
-                                                            
-                                                            return (
-                                                                <tr key={user.id}>
-                                                                     <td className="px-4 py-3 text-sm md:text-base">{user.name}</td>
-                                                                    <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
-                                                                    <td className="px-4 py-3 text-sm md:text-base">{totalHours} 小時</td>
-                                                                    <td className="px-4 py-3 text-sm md:text-base">{compDays.length} 天</td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                 return (
+                                                            <tr key={user.id}>
+                                                                <td className="px-4 py-3 text-sm md:text-base">{user.name}</td>
+                                                                <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
+                                                                <td className="px-4 py-3 text-sm md:text-base">{previousMonthStats.hours} 小時</td>
+                                                                <td className="px-4 py-3 text-sm md:text-base">{previousMonthStats.days} 天</td>
+                                                                <td className="px-4 py-3 text-sm md:text-base">{currentMonthStats.hours} 小時</td>
+                                                                <td className="px-4 py-3 text-sm md:text-base">{currentMonthStats.days} 天</td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
 
@@ -1956,24 +1960,7 @@
                                                         weekend ? 'bg-blue-50' :
                                                         'bg-white'
                                                     } hover:shadow-md cursor-pointer transition-shadow`}
-                                                    onClick={() => {
-                                                        const title = prompt('排程標題:');
-                                                        const content = prompt('排程內容:');
-                                                        if (title && content) {
-                                                            setData(prev => ({
-                                                                ...prev,
-                                                                schedules: [
-                                                                    ...(prev.schedules || []),
-                                                                    {
-                                                                        id: Date.now().toString(),
-                                                                        date: dateStr,
-                                                                        title,
-                                                                        content
-                                                                    }
-                                                                ]
-                                                            }));
-                                                        }
-                                                    }}
+                                                   onClick={() => openScheduleModal(dateStr)}
                                                 >
                                                    <div className="font-bold text-sm md:text-base mb-1">
                                                         {day.getDate()}
@@ -1998,6 +1985,56 @@
                                         💡 點擊日期可以新增排程。排程資料會自動儲存。
                                     </p>
                                 </div>
+                                
+                                {showScheduleModal && (
+                                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+                                        <div className="bg-white rounded-lg shadow-lg w-full max-w-xl p-6">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <h3 className="text-lg font-bold">新增排程（{selectedScheduleDate}）</h3>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowScheduleModal(false)}
+                                                    className="text-gray-500 hover:text-gray-700"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                            <form onSubmit={handleScheduleSubmit} className="space-y-3">
+                                                <input
+                                                    type="text"
+                                                    value={scheduleForm.title}
+                                                    onChange={(e) => setScheduleForm(prev => ({ ...prev, title: e.target.value }))}
+                                                    placeholder="標題"
+                                                    className="w-full px-3 py-2 border rounded"
+                                                    required
+                                                />
+                                                <textarea
+                                                    value={scheduleForm.content}
+                                                    onChange={(e) => setScheduleForm(prev => ({ ...prev, content: e.target.value }))}
+                                                    placeholder="內容"
+                                                    className="w-full px-3 py-2 border rounded"
+                                                    rows="4"
+                                                    required
+                                                />
+                                                <div className="flex justify-end gap-2 pt-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowScheduleModal(false)}
+                                                        className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                                                    >
+                                                        取消
+                                                    </button>
+                                                    <button
+                                                        type="submit"
+                                                        className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                                                    >
+                                                        儲存
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

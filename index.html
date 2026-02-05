@@ -11,7 +11,7 @@
 </head>
 <body>
     <div id="root"></div>
-    
+
     <script type="text/babel">
         const { useState, useEffect } = React;
 
@@ -137,6 +137,7 @@
                 }
             ],
             leaves: [],
+            schedules: [],
             auditLogs: [],
             vacationSettings: {
                 openStart: '',
@@ -192,6 +193,7 @@
                         ...initialData.vacationSettings,
                         ...parsed.vacationSettings
                     },
+                    schedules: parsed.schedules || [],
                     vacationSchedule: parsed.vacationSchedule || {},
                     vacationNotes: parsed.vacationNotes || {}
                 };
@@ -215,7 +217,7 @@
             const [showScheduleModal, setShowScheduleModal] = useState(false);
             const [selectedScheduleDate, setSelectedScheduleDate] = useState('');
             const [scheduleForm, setScheduleForm] = useState({ title: '', content: '' });
-            
+
             const [showAddUser, setShowAddUser] = useState(false);
             const [editingUser, setEditingUser] = useState(null);
             const [newUserForm, setNewUserForm] = useState({
@@ -327,13 +329,13 @@
 
             const handleAddUser = (e) => {
                 e.preventDefault();
-                
+
                 if (editingUser) {
                     // 編輯模式
                     setData(prev => ({
                         ...prev,
-                        users: prev.users.map(u => 
-                            u.id === editingUser.id 
+                       users: prev.users.map(u =>
+                            u.id === editingUser.id
                                 ? { ...newUserForm, usedAnnualLeave: u.usedAnnualLeave }
                                 : u
                         ),
@@ -352,18 +354,18 @@
                         alert('員工代號已存在,請使用其他代號!');
                         return;
                     }
-                    
+
                     // 檢查帳號是否已存在
                     if (data.users.find(u => u.username === newUserForm.username)) {
                         alert('帳號已存在,請使用其他帳號!');
                         return;
                     }
-                    
+
                     const newUser = {
                         ...newUserForm,
                         usedAnnualLeave: 0
                     };
-                    
+
                     setData(prev => ({
                         ...prev,
                         users: [...prev.users, newUser],
@@ -376,7 +378,7 @@
                     }));
                     alert('員工新增成功!');
                 }
-                
+
                 setNewUserForm({
                     id: '',
                     username: '',
@@ -394,7 +396,7 @@
                     permissionRegions: [...regionOptions],
                     permissionDepartments: [...departmentOptions]
                 });
-                
+
                 setShowAddUser(false);
                 setEditingUser(null);
             };
@@ -491,7 +493,16 @@
 
                 setShowScheduleModal(false);
             };
-            
+
+            const handleDeleteSchedule = (scheduleId) => {
+                if (!window.confirm('確定要刪除此行程嗎？')) return;
+
+                setData(prev => ({
+                    ...prev,
+                    schedules: (prev.schedules || []).filter(schedule => schedule.id !== scheduleId)
+                }));
+            };
+
             const handleSubmitLeave = (e) => {
                 e.preventDefault();
                 const newLeave = {
@@ -504,12 +515,12 @@
                     status: '待審核',
                     submittedAt: new Date().toISOString()
                 };
-                
+
                 setData(prev => ({
                     ...prev,
                     leaves: [...prev.leaves, newLeave]
                 }));
-                
+
                 setNewLeaveForm({
                     type: '特休',
                     startDate: '',
@@ -517,7 +528,7 @@
                     reason: '',
                     hours: 8
                 });
-                
+
                 alert('請假申請已送出');
             };
 
@@ -529,7 +540,7 @@
                 }
                 setData(prev => ({
                     ...prev,
-                    leaves: prev.leaves.map(l => 
+                    leaves: prev.leaves.map(l =>
                         l.id === leaveId ? { ...l, status } : l
                     )
                 }));
@@ -538,7 +549,7 @@
             const exportToCSV = (type) => {
                 let csv = '';
                 let filename = '';
-                
+ 
                 if (type === 'users') {
                     csv = '員工代號,姓名,地區,部門,職稱,Email,電話,生日,班別,總特休,已使用特休,剩餘特休\n';
                     data.users.forEach(u => {
@@ -553,7 +564,7 @@
                         csv += `${day.getMonth()+1}/${day.getDate()},`;
                     });
                     csv += '總請假天數\n';
-                    
+
                     data.users.forEach(user => {
                         const userLeaves = data.leaves.filter(l => l.userId === user.id && l.status === '已核准');
                         csv += `${user.id},${user.name},${user.region},${user.department},${user.shift.join('/')},`;
@@ -601,7 +612,7 @@
                     });
                     filename = '特休總覽.csv';
                 }
-                
+
                 const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
@@ -614,7 +625,7 @@
                 const year = date.getFullYear();
                 const month = date.getMonth();
                 const lastDay = new Date(year, month + 1, 0).getDate();
-                
+
                 for (let d = 1; d <= lastDay; d++) {
                     days.push(new Date(year, month, d));
                 }
@@ -684,7 +695,7 @@
                 }
                 return { symbol: marker, className: 'text-gray-900 font-bold' };
             };
-            
+
             const handleToggleVacation = (userId, dateStr) => {
                 if (!data.vacationSettings.openStart || !data.vacationSettings.openEnd) return;
                 const isOpen = dateStr >= data.vacationSettings.openStart && dateStr <= data.vacationSettings.openEnd;
@@ -709,12 +720,36 @@
 
             const getWorkingCount = (date) => {
                 const dateStr = date.toISOString().split('T')[0];
-                const onLeave = data.leaves.filter(l => 
-                    l.status === '已核准' && 
-                    dateStr >= l.startDate && 
+                const onLeave = data.leaves.filter(l =>
+                    l.status === '已核准' &&
+                    dateStr >= l.startDate &&
                     dateStr <= l.endDate
                 ).length;
                 return data.users.length - onLeave;
+            };
+
+             const getCompensatoryCellData = (userId, dateStr) => {
+                const matchedLeaves = data.leaves.filter(l =>
+                    l.userId === userId &&
+                    l.status === '已核准' &&
+                    (l.type === '補休(時)' || l.type === '補休(天)') &&
+                    dateStr >= l.startDate &&
+                    dateStr <= l.endDate
+                );
+
+                if (matchedLeaves.length === 0) return null;
+
+                const hasDayComp = matchedLeaves.some(l => l.type === '補休(天)');
+                const totalHourComp = matchedLeaves
+                    .filter(l => l.type === '補休(時)')
+                    .reduce((sum, leave) => sum + Number(leave.hours || 0), 0);
+
+                if (hasDayComp && totalHourComp > 0) {
+                    return `天/${totalHourComp}h`;
+                }
+
+                if (hasDayComp) return '補休天';
+                return `${totalHourComp}h`;
             };
 
             const handleResetData = () => {
@@ -734,8 +769,8 @@
                                 </div>
                                 <h1 className="text-3xl font-bold text-gray-800">員工假勤系統</h1>
                                 <p className="text-gray-500 mt-2">請使用帳號密碼登入</p>
-                            </div>
-                            
+                             </div>
+
                             <form onSubmit={handleLogin} className="space-y-4">
                                 <div>
                                     <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">帳號</label>
@@ -747,7 +782,7 @@
                                         required
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">密碼</label>
                                     <input
@@ -758,20 +793,20 @@
                                         required
                                     />
                                 </div>
-                                
+
                                 <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700">
                                     登入
                                 </button>
                             </form>
-                            
+
                            <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm md:text-base">
                                 <p className="font-medium">測試帳號:</p>
                                 <p>管理員 - admin / admin123</p>
                                 <p>員工 - user001 / pass123</p>
                             </div>
-                            
+
                             <div className="mt-4">
-                                <button 
+                               <button
                                     onClick={handleResetData}
                                     className="w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm md:text-base"
                                 >
@@ -801,7 +836,7 @@
                                        <p className="text-sm md:text-base text-gray-500">歡迎, {currentUser.name}</p>
                                     </div>
                                 </div>
-                                
+
                                 <div className="flex items-center space-x-4">
                                     <div className="text-right">
                                         <p className="text-sm md:text-base text-gray-600">可休特休</p>
@@ -847,15 +882,15 @@
                         </div>
                     </div>
                    </div>
-                    
+
                     <div className="max-w-screen-2xl mx-auto px-4 py-6 pt-40">
                         {activeTab === 'management' && currentUser.isAdmin && (
                             <div className="space-y-4">
                                 <div className="flex justify-between">
                                     <h2 className="text-2xl font-bold">人員管理</h2>
                                     <div className="flex space-x-2">
-                                        <button 
-                                            onClick={() => setShowAddUser(!showAddUser)} 
+                                       <button
+                                            onClick={() => setShowAddUser(!showAddUser)}
                                             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                                         >
                                             {showAddUser ? '取消新增' : '+ 新增員工'}
@@ -883,7 +918,7 @@
                                                 />
                                                 <p className="text-xs text-gray-500 mt-1">請輸入唯一的員工代號</p>
                                             </div>
-                                            
+
                                             <div>
                                                 <label className="block text-sm md:text-base font-medium mb-1">帳號 *</label>
                                                 <input
@@ -895,7 +930,7 @@
                                                     required
                                                 />
                                             </div>
-                                            
+
                                             <div>
                                                  <label className="block text-sm md:text-base font-medium mb-1">密碼 *</label>
                                                 <input
@@ -906,7 +941,7 @@
                                                     required
                                                 />
                                             </div>
-                                            
+
                                             <div>
                                                <label className="block text-sm md:text-base font-medium mb-1">姓名 *</label>
                                                 <input
@@ -917,7 +952,7 @@
                                                     required
                                                 />
                                             </div>
-                                            
+
                                             <div>
                                                 <label className="block text-sm md:text-base font-medium mb-1">地區</label>
                                                 <select
@@ -930,7 +965,7 @@
                                                     ))}
                                                 </select>
                                             </div>
-                                            
+
                                             <div>
                                                 <label className="block text-sm md:text-base font-medium mb-1">部門</label>
                                                 <select
@@ -943,7 +978,7 @@
                                                     ))}
                                                 </select>
                                             </div>
-                                            
+
                                             <div>
                                                 <label className="block text-sm md:text-base font-medium mb-1">職稱</label>
                                                 <input
@@ -953,7 +988,7 @@
                                                     className="w-full px-3 py-2 border rounded-lg"
                                                 />
                                             </div>
-                                            
+
                                             <div>
                                                 <label className="block text-sm md:text-base font-medium mb-1">Email</label>
                                                 <input
@@ -963,7 +998,7 @@
                                                     className="w-full px-3 py-2 border rounded-lg"
                                                 />
                                             </div>
-                                            
+
                                             <div>
                                                 <label className="block text-sm md:text-base font-medium mb-1">電話</label>
                                                 <input
@@ -974,7 +1009,7 @@
                                                     placeholder="0912-345-678"
                                                 />
                                             </div>
-                                            
+
                                             <div>
                                                 <label className="block text-sm md:text-base font-medium mb-1">生日 (月/日)</label>
                                                 <input
@@ -986,7 +1021,7 @@
                                                 />
                                                 <p className="text-xs text-gray-500 mt-1">格式: 月/日 (不需要輸入年份)</p>
                                             </div>
-                                            
+
                                             <div>
                                                 <label className="block text-sm md:text-base font-medium mb-1">班別</label>
                                                 <div className="flex space-x-4 mt-2">
@@ -1010,7 +1045,7 @@
                                                     </label>
                                                 </div>
                                             </div>
-                                            
+
                                             <div>
                                                 <label className="block text-sm md:text-base font-medium mb-1">年度特休天數</label>
                                                 <input
@@ -1022,7 +1057,7 @@
                                                     max="30"
                                                 />
                                             </div>
-                                            
+
                                             <div className="md:col-span-2">
                                                 <label className="flex items-center space-x-2">
                                                     <input
@@ -1035,7 +1070,7 @@
                                                     <span className="text-xs text-gray-500">(管理員可以管理所有員工和審核請假)</span>
                                                 </label>
                                             </div>
-                                            
+
                                            {newUserForm.isAdmin && (
                                                 <div className="md:col-span-2 rounded-lg border border-indigo-100 bg-indigo-50 p-4">
                                                     <div className="flex items-center justify-between">
@@ -1078,15 +1113,15 @@
                                                     </div>
                                                 </div>
                                            )}
-                                            
+
                                             <div className="md:col-span-2 flex space-x-2">
-                                                <button 
-                                                    type="submit" 
+                                               <button
+                                                    type="submit"
                                                     className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700"
                                                 >
                                                     {editingUser ? '更新員工' : '確認新增'}
                                                 </button>
-                                                <button 
+                                                <button
                                                     type="button"
                                                     onClick={() => {
                                                         setShowAddUser(false);
@@ -1157,8 +1192,8 @@
                                                         </td>
                                                         <td className="px-4 py-3">
                                                             <div className="flex space-x-2">
-                                                                <button 
-                                                                    onClick={() => canManage && handleEditUser(user)} 
+                                                                <button
+                                                                    onClick={() => canManage && handleEditUser(user)}
                                                                     className={`text-blue-600 ${canManage ? 'hover:text-blue-800' : 'opacity-40 cursor-not-allowed'}`}
                                                                     title={canManage ? '編輯' : '無權限編輯此員工'}
                                                                     disabled={!canManage}
@@ -1181,7 +1216,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                
+
                                 <div className="bg-white rounded-lg shadow p-4">
                                     <h3 className="text-lg font-bold mb-4">操作紀錄</h3>
                                     <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -1260,7 +1295,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                
+
                                 <div className="bg-white rounded-lg shadow p-4">
                                              {currentUser.isAdmin && (
                                         <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
@@ -1402,20 +1437,20 @@
                                             </thead>
                                             <tbody>
                                                 {data.users
-                                                    .filter(u => 
+                                                    .filter(u =>
                                                         (filterRegion === '全部' || u.region === filterRegion) &&
                                                         (filterDepartment === '全部' || u.department === filterDepartment) &&
                                                         (filterShift === '全部' || u.shift.includes(filterShift))
                                                     )
                                                     .map(user => {
-                                                        const userLeaves = data.leaves.filter(l => 
-                                                            l.userId === user.id && 
+                                                       const userLeaves = data.leaves.filter(l =>
+                                                            l.userId === user.id &&
                                                             l.status === '已核准' &&
                                                             new Date(l.startDate).getMonth() === selectedMonth.getMonth()
                                                         );
                                                         const isCurrentUser = user.id === currentUser.id;
                                                         const markerCount = (data.vacationSchedule[user.id] && Object.values(data.vacationSchedule[user.id]).filter(Boolean).length) || 0;
-                                                        
+
                                                         return (
                                                             <tr key={user.id} className={isCurrentUser ? 'bg-indigo-50' : ''}>
                                                                 <td className="border-2 border-gray-400 p-2 font-medium bg-white sticky left-0 z-10">
@@ -1435,7 +1470,7 @@
                                                                 </td>
                                                                 {getMonthDays(selectedMonth).map(day => {
                                                                     const dateStr = day.toISOString().split('T')[0];
-                                                                    const leave = userLeaves.find(l => 
+                                                                    const leave = userLeaves.find(l =>
                                                                         dateStr >= l.startDate && dateStr <= l.endDate
                                                                     );
                                                                     const holiday = isHoliday(day);
@@ -1444,12 +1479,12 @@
                                                                     const isOpen = isWithinOpenRange(day);
                                                                     const isEditable = isOpen && isCurrentUser;
                                                                     const markerDisplay = getMarkerDisplay(customMarker);
-                                                                    
+
                                                                     return (
                                                                         <td
                                                                             key={day.toISOString()}
                                                                              className={`border p-1 text-center ${
-                                                                                leave ? 'bg-orange-100 text-orange-900 font-bold border-orange-300' : 
+                                                                                leave ? 'bg-orange-100 text-orange-900 font-bold border-orange-300' :
                                                                                 holiday ? 'bg-red-50 border-red-200' :
                                                                                 weekend ? 'bg-blue-50 border-blue-200' :
                                                                                      'border-gray-200'
@@ -1529,13 +1564,13 @@
                                         <span>匯出Excel</span>
                                     </button>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <div className="bg-white rounded-lg shadow p-6">
                                         <h3 className="text-lg font-bold mb-4">新增請假</h3>
                                         <form onSubmit={handleSubmitLeave} className="space-y-4">
                                             <input type="text" value={currentUser.name} disabled className="w-full px-3 py-2 border rounded bg-gray-50" />
-                                            
+
                                             <select value={newLeaveForm.type} onChange={(e) => setNewLeaveForm({...newLeaveForm, type: e.target.value})} className="w-full px-3 py-2 border rounded">
                                                 <option>特休</option>
                                                 <option>病假</option>
@@ -1547,13 +1582,13 @@
                                                 <option>補休(天)</option>
                                                 <option>年假</option>
                                             </select>
-                                            
+
                                             <input type="date" value={newLeaveForm.startDate} onChange={(e) => setNewLeaveForm({...newLeaveForm, startDate: e.target.value})} className="w-full px-3 py-2 border rounded" required />
-                                            
+
                                             <input type="date" value={newLeaveForm.endDate} onChange={(e) => setNewLeaveForm({...newLeaveForm, endDate: e.target.value})} className="w-full px-3 py-2 border rounded" required />
-                                            
+
                                             <textarea value={newLeaveForm.reason} onChange={(e) => setNewLeaveForm({...newLeaveForm, reason: e.target.value})} className="w-full px-3 py-2 border rounded" rows="3" required />
-                                            
+
                                             <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
                                                 送出申請
                                             </button>
@@ -1709,7 +1744,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                
+
                                 {selectedAnnualUserId && (() => {
                                     const selectedUser = data.users.find(user => user.id === selectedAnnualUserId);
                                     if (!selectedUser) return null;
@@ -1814,18 +1849,46 @@
                                     </div>
                                 </div>
 
-                               <div className="bg-white rounded-lg shadow p-6">
-                                    <h3 className="text-lg font-bold mb-4">補休月統計（上月 / 本月）</h3>
+                              <div className="bg-white rounded-lg shadow p-4">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <button
+                                            onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1, 1))}
+                                            className="px-3 py-1 border rounded hover:bg-gray-50"
+                                        >
+                                            上月
+                                        </button>
+                                        <h3 className="text-lg font-semibold">{selectedMonth.getFullYear()} 年 {selectedMonth.getMonth() + 1} 月補休安排</h3>
+                                        <button
+                                            onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 1))}
+                                            className="px-3 py-1 border rounded hover:bg-gray-50"
+                                        >
+                                            下月
+                                        </button>
+                                    </div>
+
                                     <div className="overflow-x-auto">
-                                        <table className="w-full">
-                                            <thead className="bg-gray-50">
+                                       <table className="w-full text-sm">
+                                            <thead>
                                                 <tr>
-                                                    <th className="px-4 py-3 text-left text-xs">員工</th>
-                                                    <th className="px-4 py-3 text-left text-xs">部門</th>
-                                                    <th className="px-4 py-3 text-left text-xs">上月補休(時)</th>
-                                                    <th className="px-4 py-3 text-left text-xs">上月補休(天)</th>
-                                                    <th className="px-4 py-3 text-left text-xs">本月補休(時)</th>
-                                                    <th className="px-4 py-3 text-left text-xs">本月補休(天)</th>
+                                                    <th className="sticky left-0 bg-gray-50 px-4 py-2 border">員工</th>
+                                                    <th className="px-4 py-2 border">地區</th>
+                                                    <th className="px-4 py-2 border">部門</th>
+                                                    <th className="px-4 py-2 border">班別</th>
+                                                    {getMonthDays(selectedMonth).map(day => {
+                                                        const dateStr = day.toISOString().split('T')[0];
+                                                        const holiday = holidays2026.find(h => h.date === dateStr);
+                                                        const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+                                                        return (
+                                                            <th
+                                                                key={dateStr}
+                                                                className={`min-w-[52px] px-2 py-2 border text-center ${holiday ? 'bg-red-50 text-red-600' : isWeekend ? 'bg-blue-50 text-blue-600' : 'bg-gray-50'}`}
+                                                            >
+                                                                {day.getDate()}
+                                                            </th>
+                                                        );
+                                                    })}
+                                                    <th className="px-4 py-2 border bg-gray-50">本月補休(時)</th>
+                                                    <th className="px-4 py-2 border bg-gray-50">本月補休(天)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1837,68 +1900,31 @@
                                                     )
                                                     .map(user => {
                                                         const currentMonthStats = getCompStats(user.id, selectedMonth);
-                                                        const previousMonthStats = getCompStats(user.id, new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1, 1));
-
-                                 return (
-                                                            <tr key={user.id}>
-                                                                <td className="px-4 py-3 text-sm md:text-base">{user.name}</td>
-                                                                <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
-                                                                <td className="px-4 py-3 text-sm md:text-base">{previousMonthStats.hours} 小時</td>
-                                                                <td className="px-4 py-3 text-sm md:text-base">{previousMonthStats.days} 天</td>
-                                                                <td className="px-4 py-3 text-sm md:text-base">{currentMonthStats.hours} 小時</td>
-                                                                <td className="px-4 py-3 text-sm md:text-base">{currentMonthStats.days} 天</td>
+                                                        return (
+                                                            <tr key={user.id} className="hover:bg-gray-50">
+                                                                <td className="sticky left-0 bg-white px-4 py-2 border font-medium">{user.name}</td>
+                                                                <td className="px-4 py-2 border">{user.region}</td>
+                                                                <td className="px-4 py-2 border">{user.department}</td>
+                                                                <td className="px-4 py-2 border">{user.shift.join('/')}</td>
+                                                                {getMonthDays(selectedMonth).map(day => {
+                                                                    const dateStr = day.toISOString().split('T')[0];
+                                                                    const cell = getCompensatoryCellData(user.id, dateStr);
+                                                                    const holiday = holidays2026.find(h => h.date === dateStr);
+                                                                    const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+                                                                    return (
+                                                                        <td
+                                                                            key={`${user.id}-${dateStr}`}
+                                                                            className={`px-2 py-2 border text-center font-medium ${cell ? 'text-indigo-700 bg-indigo-50' : holiday ? 'bg-red-50' : isWeekend ? 'bg-blue-50' : ''}`}
+                                                                        >
+                                                                            {cell || '-'}
+                                                                        </td>
+                                                                    );
+                                                                })}
+                                                                <td className="px-4 py-2 border text-center">{currentMonthStats.hours} 小時</td>
+                                                                <td className="px-4 py-2 border text-center">{currentMonthStats.days} 天</td>
                                                             </tr>
                                                         );
                                                     })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                {/* 補休明細 */}
-                                <div className="bg-white rounded-lg shadow p-6">
-                                    <h3 className="text-lg font-bold mb-4">補休使用明細</h3>
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full">
-                                            <thead className="bg-gray-50">
-                                                <tr>
-                                                    <th className="px-4 py-3 text-left text-xs">日期</th>
-                                                    <th className="px-4 py-3 text-left text-xs">員工</th>
-                                                    <th className="px-4 py-3 text-left text-xs">部門</th>
-                                                    <th className="px-4 py-3 text-left text-xs">類型</th>
-                                                    <th className="px-4 py-3 text-left text-xs">時數</th>
-                                                    <th className="px-4 py-3 text-left text-xs">狀態</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {data.leaves
-                                                    .filter(l => l.type === '補休(時)' || l.type === '補休(天)')
-                                                    .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
-                                                    .map(leave => (
-                                                        <tr key={leave.id}>
-                                                           <td className="px-4 py-3 text-sm md:text-base">{leave.startDate}</td>
-                                                            <td className="px-4 py-3 text-sm md:text-base">{leave.userName}</td>
-                                                            <td className="px-4 py-3 text-sm md:text-base">{leave.department}</td>
-                                                            <td className="px-4 py-3 text-sm md:text-base">{leave.type}</td>
-                                                            <td className="px-4 py-3 text-sm md:text-base">{leave.hours}</td>
-                                                            <td className="px-4 py-3 text-sm md:text-base">
-                                                                <span className={`px-2 py-1 text-xs rounded ${
-                                                                    leave.status === '已核准' ? 'bg-green-100 text-green-800' :
-                                                                    leave.status === '已拒絕' ? 'bg-red-100 text-red-800' :
-                                                                    'bg-yellow-100 text-yellow-800'
-                                                                }`}>
-                                                                    {leave.status}
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                {data.leaves.filter(l => l.type === '補休(時)' || l.type === '補休(天)').length === 0 && (
-                                                    <tr>
-                                                        <td colSpan="6" className="px-4 py-8 text-center text-gray-500">
-                                                            目前沒有補休紀錄
-                                                        </td>
-                                                    </tr>
-                                                )}
                                             </tbody>
                                         </table>
                                     </div>
@@ -1951,7 +1977,7 @@
                                             const weekend = isWeekend(day);
                                             const dateStr = day.toISOString().split('T')[0];
                                             const schedules = data.schedules?.filter(s => s.date === dateStr) || [];
-                                            
+
                                             return (
                                                 <div
                                                     key={day.toISOString()}
@@ -1969,7 +1995,20 @@
                                                     <div className="space-y-1">
                                                         {schedules.map(schedule => (
                                                             <div key={schedule.id} className="text-xs bg-indigo-100 text-indigo-800 p-1 rounded">
-                                                                <div className="font-medium">{schedule.title}</div>
+                                                                <div className="flex items-start justify-between gap-1">
+                                                                    <div className="font-medium">{schedule.title}</div>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleDeleteSchedule(schedule.id);
+                                                                        }}
+                                                                        className="text-red-600 hover:text-red-800"
+                                                                        title="刪除行程"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </div>
                                                                 <div className="text-xs">{schedule.content}</div>
                                                             </div>
                                                         ))}
@@ -1985,7 +2024,7 @@
                                         💡 點擊日期可以新增排程。排程資料會自動儲存。
                                     </p>
                                 </div>
-                                
+
                                 {showScheduleModal && (
                                     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
                                         <div className="bg-white rounded-lg shadow-lg w-full max-w-xl p-6">

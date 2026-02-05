@@ -101,8 +101,8 @@
             users: [
                 {
                     id: 'E001',
-                    username: 'admin',
-                    password: 'admin123',
+                    username: '001',
+                    password: '001',
                     name: '管理員',
                     region: '新竹區',
                     department: '管理部',
@@ -119,8 +119,8 @@
                 },
                 {
                     id: 'E002',
-                    username: 'user001',
-                    password: 'pass123',
+                    username: '002',
+                    password: '002',
                     name: '王小明',
                     region: '台中區',
                     department: 'TSE',
@@ -444,6 +444,20 @@
             const pendingLeaves = data.leaves.filter(l => l.status === '待審核');
             const approvablePendingLeaves = pendingLeaves.filter(leave => canApproveLeave(leave));
 
+             const formatLocalDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const parseDateString = (dateStr) => {
+                if (!dateStr) return null;
+                const [year, month, day] = dateStr.split('-').map(Number);
+                if (!year || !month || !day) return null;
+                return new Date(year, month - 1, day);
+            };
+            
             const getCompStats = (userId, monthDate) => {
                 const targetMonth = monthDate.getMonth();
                 const targetYear = monthDate.getFullYear();
@@ -451,15 +465,15 @@
                     l.userId === userId &&
                     l.type === '補休(時)' &&
                     l.status === '已核准' &&
-                    new Date(l.startDate).getMonth() === targetMonth &&
-                    new Date(l.startDate).getFullYear() === targetYear
+                    parseDateString(l.startDate)?.getMonth() === targetMonth &&
+                    parseDateString(l.startDate)?.getFullYear() === targetYear
                 );
                 const compDays = data.leaves.filter(l =>
                     l.userId === userId &&
                     l.type === '補休(天)' &&
                     l.status === '已核准' &&
-                    new Date(l.startDate).getMonth() === targetMonth &&
-                    new Date(l.startDate).getFullYear() === targetYear
+                    parseDateString(l.startDate)?.getMonth() === targetMonth &&
+                    parseDateString(l.startDate)?.getFullYear() === targetYear
                 );
 
                 return {
@@ -572,11 +586,11 @@
                         const userLeaves = data.leaves.filter(l => l.userId === user.id && l.status === '已核准');
                         csv += `${user.id},${user.name},${user.region},${user.department},${user.shift.join('/')},`;
                         days.forEach(day => {
-                            const dateStr = day.toISOString().split('T')[0];
+                            const dateStr = formatLocalDate(day);
                             const leave = userLeaves.find(l => dateStr >= l.startDate && dateStr <= l.endDate);
                             csv += `${leave ? leave.type : ''},`;
                         });
-                        csv += `${userLeaves.filter(l => new Date(l.startDate).getMonth() === selectedMonth.getMonth()).length}\n`;
+                        csv += `${userLeaves.filter(l => parseDateString(l.startDate)?.getMonth() === selectedMonth.getMonth()).length}\n`;
                     });
                     filename = `休假表_${selectedMonth.getFullYear()}年${selectedMonth.getMonth()+1}月.csv`;
                 } else if (type === 'compensatory') {
@@ -636,7 +650,7 @@
             };
 
             const isHoliday = (date) => {
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = formatLocalDate(date);
                 return holidays2026.find(h => h.date === dateStr);
             };
 
@@ -645,7 +659,7 @@
             };
 
              const isWithinOpenRange = (date) => {
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = formatLocalDate(date);
                 const { openStart, openEnd } = data.vacationSettings;
                 if (!openStart || !openEnd) return false;
                 return dateStr >= openStart && dateStr <= openEnd;
@@ -660,7 +674,7 @@
                 if (Number.isNaN(cursor.getTime()) || Number.isNaN(last.getTime())) return [];
 
                 while (cursor <= last) {
-                    dates.push(cursor.toISOString().split('T')[0]);
+                    dates.push(formatLocalDate(cursor));
                     cursor.setDate(cursor.getDate() + 1);
                 }
 
@@ -722,7 +736,7 @@
             };
 
             const getWorkingCount = (date) => {
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = formatLocalDate(date);
                 const onLeave = data.leaves.filter(l =>
                     l.status === '已核准' &&
                     dateStr >= l.startDate &&
@@ -1449,7 +1463,7 @@
                                                        const userLeaves = data.leaves.filter(l =>
                                                             l.userId === user.id &&
                                                             l.status === '已核准' &&
-                                                            new Date(l.startDate).getMonth() === selectedMonth.getMonth()
+                                                            parseDateString(l.startDate)?.getMonth() === selectedMonth.getMonth()
                                                         );
                                                         const isCurrentUser = user.id === currentUser.id;
                                                         const markerCount = (data.vacationSchedule[user.id] && Object.values(data.vacationSchedule[user.id]).filter(Boolean).length) || 0;
@@ -1472,7 +1486,7 @@
                                                                     </div>
                                                                 </td>
                                                                 {getMonthDays(selectedMonth).map(day => {
-                                                                    const dateStr = day.toISOString().split('T')[0];
+                                                                    const dateStr = formatLocalDate(day);
                                                                     const leave = userLeaves.find(l =>
                                                                         dateStr >= l.startDate && dateStr <= l.endDate
                                                                     );
@@ -1878,7 +1892,7 @@
                                                     <th className="px-4 py-2 border">部門</th>
                                                     <th className="px-4 py-2 border">班別</th>
                                                     {getMonthDays(selectedMonth).map(day => {
-                                                        const dateStr = day.toISOString().split('T')[0];
+                                                        const dateStr = formatLocalDate(day);
                                                         const holiday = holidays2026.find(h => h.date === dateStr);
                                                         const isWeekend = day.getDay() === 0 || day.getDay() === 6;
                                                         return (
@@ -1910,7 +1924,7 @@
                                                                 <td className="px-4 py-2 border">{user.department}</td>
                                                                 <td className="px-4 py-2 border">{user.shift.join('/')}</td>
                                                                 {getMonthDays(selectedMonth).map(day => {
-                                                                    const dateStr = day.toISOString().split('T')[0];
+                                                                    const dateStr = formatLocalDate(day);
                                                                     const cell = getCompensatoryCellData(user.id, dateStr);
                                                                     const holiday = holidays2026.find(h => h.date === dateStr);
                                                                     const isWeekend = day.getDay() === 0 || day.getDay() === 6;
@@ -1978,7 +1992,7 @@
                                         {getMonthDays(selectedMonth).map(day => {
                                             const holiday = isHoliday(day);
                                             const weekend = isWeekend(day);
-                                            const dateStr = day.toISOString().split('T')[0];
+                                            const dateStr = formatLocalDate(day);
                                             const schedules = data.schedules?.filter(s => s.date === dateStr) || [];
 
                                             return (

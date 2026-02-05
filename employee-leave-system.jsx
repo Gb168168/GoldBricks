@@ -54,17 +54,20 @@ const initialData = {
 const holidays2026 = [
   { date: '2026-01-01', name: '元旦' },
   { date: '2026-02-15', name: '小年夜' },
-  { date: '2026-02-16', name: '除夕' },
-  { date: '2026-02-17', name: '初一' },
-  { date: '2026-02-18', name: '初二' },
-  { date: '2026-02-19', name: '初三' },
-  { date: '2026-02-27', name: '和平紀念日前一日' },
+  { date: '2026-02-16', name: '農曆除夕' },
+  { date: '2026-02-17', name: '春節（初一）' },
+  { date: '2026-02-18', name: '春節（初二）' },
+  { date: '2026-02-19', name: '春節（初三）' },
   { date: '2026-02-28', name: '和平紀念日' },
-  { date: '2026-04-03', name: '兒童節' },
-  { date: '2026-04-04', name: '清明節' },
+  { date: '2026-04-04', name: '兒童節' },
+  { date: '2026-04-05', name: '清明節' },
+  { date: '2026-05-01', name: '勞動節' },
   { date: '2026-06-25', name: '端午節' },
+  { date: '2026-09-28', name: '教師節' },
   { date: '2026-10-01', name: '中秋節' },
-  { date: '2026-10-10', name: '國慶日' }
+  { date: '2026-10-10', name: '國慶日' },
+  { date: '2026-10-25', name: '光復節' },
+  { date: '2026-12-25', name: '行憲紀念日' }
 ];
 
 const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';

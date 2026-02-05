@@ -9,6 +9,10 @@ const initialData = {
       username: 'admin',
       password: 'admin123',
       name: '管理員',
+      region: '台北',
+      department: '管理部',
+      position: '經理',
+      email: 'admin@company.com',
       phone: '0912-345-678',
       birthday: '1980-01-01',
       shift: ['早'],
@@ -21,6 +25,10 @@ const initialData = {
       username: 'user001',
       password: 'pass123',
       name: '王小明',
+      region: '台北',
+      department: '業務部',
+      position: '專員',
+      email: 'wang@company.com',
       phone: '0923-456-789',
       birthday: '1990-05-15',
       shift: ['早', '晚'],
@@ -80,6 +88,8 @@ const EmployeeLeaveSystem = () => {
 
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [filterRegion, setFilterRegion] = useState('全部');
+  const [filterDepartment, setFilterDepartment] = useState('全部');
   const [filterShift, setFilterShift] = useState('全部');
   const [showAddUser, setShowAddUser] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -180,6 +190,8 @@ const EmployeeLeaveSystem = () => {
       id: Date.now().toString(),
       userId: currentUser.id,
       userName: currentUser.name,
+      department: currentUser.department,
+      region: currentUser.region,
       ...newLeaveForm,
       status: '待審核',
       submittedAt: new Date().toISOString()
@@ -232,15 +244,15 @@ const EmployeeLeaveSystem = () => {
     let filename = '';
     
     if (dataType === 'users') {
-      csvContent = '員工代號,姓名,電話,生日,班別\n';
+      csvContent = '員工代號,姓名,地區,部門,職稱,Email,電話,生日,班別\n';
       data.users.forEach(u => {
-        csvContent += `${u.id},${u.name},${u.phone},${u.birthday},${u.shift.join('/')}\n`;
+        csvContent += `${u.id},${u.name},${u.region},${u.department},${u.position},${u.email},${u.phone},${u.birthday},${u.shift.join('/')}\n`;
       });
       filename = '員工資料.csv';
     } else if (dataType === 'leaves') {
-      csvContent = '員工,假別,開始日期,結束日期,時數,狀態\n';
+      csvContent = '員工,部門,假別,開始日期,結束日期,時數,狀態\n';
       data.leaves.forEach(l => {
-        csvContent += `${l.userName},${l.type},${l.startDate},${l.endDate},${l.hours},${l.status}\n`;
+        csvContent += `${l.userName},${l.department},${l.type},${l.startDate},${l.endDate},${l.hours},${l.status}\n`;
       });
       filename = '請假紀錄.csv';
     }
@@ -503,6 +515,10 @@ const EmployeeLeaveSystem = () => {
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">員工代號</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">姓名</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">地區</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">部門</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">職稱</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">電話</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">生日</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">班別</th>
@@ -514,15 +530,16 @@ const EmployeeLeaveSystem = () => {
                       <tr key={user.id} className="hover:bg-gray-50">
                          <td className="px-4 py-3 text-sm md:text-base">{user.id}</td>
                         <td className="px-4 py-3 text-sm md:text-base font-medium">{user.name}</td>
+                        <td className="px-4 py-3 text-sm md:text-base">{user.region}</td>
+                        <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
+                        <td className="px-4 py-3 text-sm md:text-base">{user.position}</td>
+                        <td className="px-4 py-3 text-sm md:text-base">{user.email}</td>
                         <td className="px-4 py-3 text-sm md:text-base">{user.phone}</td>
                         <td className="px-4 py-3 text-sm md:text-base">{user.birthday}</td>
                         <td className="px-4 py-3 text-sm md:text-base">
                           <div className="flex space-x-1">
                             {user.shift.includes('早') && (
                               <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>
-                            )}
-                            {user.shift.includes('中') && (
-                              <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">中</span>
                             )}
                             {user.shift.includes('晚') && (
                               <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">晚</span>
@@ -582,13 +599,32 @@ const EmployeeLeaveSystem = () => {
               <h2 className="text-2xl font-bold text-gray-800">休假表</h2>
               <div className="flex space-x-2">
                 <select
+                  value={filterRegion}
+                  onChange={(e) => setFilterRegion(e.target.value)}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  <option>全部</option>
+                  <option>台北</option>
+                  <option>台中</option>
+                  <option>高雄</option>
+                </select>
+                <select
+                  value={filterDepartment}
+                  onChange={(e) => setFilterDepartment(e.target.value)}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  <option>全部</option>
+                  <option>管理部</option>
+                  <option>業務部</option>
+                  <option>技術部</option>
+                </select>
+                <select
                   value={filterShift}
                   onChange={(e) => setFilterShift(e.target.value)}
                   className="px-4 py-2 border rounded-lg"
                 >
                   <option>全部</option>
                   <option>早</option>
-                  <option>中</option>
                   <option>晚</option>
                 </select>
                 <button
@@ -718,6 +754,8 @@ const EmployeeLeaveSystem = () => {
                   <tbody>
                     {data.users
                       .filter(u => 
+                        (filterRegion === '全部' || u.region === filterRegion) &&
+                        (filterDepartment === '全部' || u.department === filterDepartment) &&
                         (filterShift === '全部' || u.shift.includes(filterShift))
                       )
                       .map(user => {
@@ -731,6 +769,7 @@ const EmployeeLeaveSystem = () => {
                           <tr key={user.id}>
                             <td className="border p-2 font-medium bg-white sticky left-0 z-10 text-sm md:text-base">
                               {user.name}
+                              <div className="text-xs md:text-sm text-gray-500">{user.department}</div>
                             </td>
                             {getMonthDays(selectedMonth).map(day => {
                               const dateStr = formatLocalDate(day);
@@ -930,6 +969,7 @@ const EmployeeLeaveSystem = () => {
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="font-medium">{leave.userName} - {leave.type}</p>
+                            <p className="text-sm md:text-base text-gray-600">{leave.department} / {leave.region}</p>
                             <p className="text-sm md:text-base text-gray-600 mt-1">
                               {leave.startDate} ~ {leave.endDate} ({leave.hours}小時)
                             </p>
@@ -966,6 +1006,28 @@ const EmployeeLeaveSystem = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-800">特休總覽</h2>
+              <div className="flex space-x-2">
+                <select
+                  value={filterRegion}
+                  onChange={(e) => setFilterRegion(e.target.value)}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  <option>全部</option>
+                  <option>台北</option>
+                  <option>台中</option>
+                  <option>高雄</option>
+                </select>
+                <select
+                  value={filterDepartment}
+                  onChange={(e) => setFilterDepartment(e.target.value)}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  <option>全部</option>
+                  <option>管理部</option>
+                  <option>業務部</option>
+                  <option>技術部</option>
+                </select>
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -973,6 +1035,8 @@ const EmployeeLeaveSystem = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">員工</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">部門</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">地區</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">總特休</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">已使用</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">剩餘</th>
@@ -981,6 +1045,10 @@ const EmployeeLeaveSystem = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {data.users
+                    .filter(u => 
+                      (filterRegion === '全部' || u.region === filterRegion) &&
+                      (filterDepartment === '全部' || u.department === filterDepartment)
+                    )
                     .map(user => {
                       const annualLeaves = data.leaves.filter(l => 
                         l.userId === user.id && 
@@ -991,6 +1059,8 @@ const EmployeeLeaveSystem = () => {
                       return (
                         <tr key={user.id} className="hover:bg-gray-50">
                           <td className="px-4 py-3 text-sm md:text-base font-medium">{user.name}</td>
+                          <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
+                          <td className="px-4 py-3 text-sm md:text-base">{user.region}</td>
                           <td className="px-4 py-3 text-sm md:text-base">{user.annualLeave} 天</td>
                           <td className="px-4 py-3 text-sm md:text-base text-orange-600">{annualLeaves.length} 天</td>
                           <td className="px-4 py-3 text-sm md:text-base">

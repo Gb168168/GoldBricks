@@ -67,8 +67,22 @@ const holidays2026 = [
   { date: '2026-10-10', name: '國慶日' }
 ];
 
+const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
+
 const EmployeeLeaveSystem = () => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    const savedData = localStorage.getItem('leaveSystemData');
+    const savedUserId = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
+
+    if (!savedData || !savedUserId) return null;
+
+    try {
+      const parsed = JSON.parse(savedData);
+      return (parsed.users || []).find(user => user.id === savedUserId) || null;
+    } catch (error) {
+      return null;
+    }
+  });
   const [activeTab, setActiveTab] = useState('management');
   const [data, setData] = useState(() => {
     const saved = localStorage.getItem('leaveSystemData');
@@ -107,6 +121,29 @@ const EmployeeLeaveSystem = () => {
     localStorage.setItem('leaveSystemData', JSON.stringify(data));
   }, [data]);
 
+  useEffect(() => {
+    if (currentUser?.id) {
+      localStorage.setItem(CURRENT_USER_STORAGE_KEY, currentUser.id);
+    } else {
+      localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    const latestUser = data.users.find(user => user.id === currentUser.id);
+    if (!latestUser) {
+      setCurrentUser(null);
+      setActiveTab('management');
+      return;
+    }
+
+    if (JSON.stringify(latestUser) !== JSON.stringify(currentUser)) {
+      setCurrentUser(latestUser);
+    }
+  }, [data.users, currentUser]);
+  
   // 登入處理
   const handleLogin = (e) => {
     e.preventDefault();
@@ -416,6 +453,7 @@ const EmployeeLeaveSystem = () => {
   // 主系統介面
   return (
     <div className="min-h-screen bg-gray-50 text-base md:text-lg">
+      <div className="fixed top-0 left-0 right-0 z-30 bg-white">
       {/* 頂部導航 */}
       <nav className="bg-white shadow-sm border-b">
        <div className="max-w-screen-2xl mx-auto px-4 py-4">
@@ -481,9 +519,10 @@ const EmployeeLeaveSystem = () => {
           </div>
         </div>
       </div>
-
+     </div>
+        
       {/* 主要內容區 */}
-       <div className="max-w-screen-2xl mx-auto px-4 py-6">
+        <div className="max-w-screen-2xl mx-auto px-4 py-6 pt-40">
         
         {/* 人員管理 */}
         {activeTab === 'management' && currentUser.isAdmin && (

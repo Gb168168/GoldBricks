@@ -164,8 +164,22 @@
             { date: '2026-10-10', name: '國慶日' }
         ];
 
+        const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
+
         const EmployeeLeaveSystem = () => {
-            const [currentUser, setCurrentUser] = useState(null);
+             const [currentUser, setCurrentUser] = useState(() => {
+                const savedData = localStorage.getItem('leaveSystemData');
+                const savedUserId = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
+
+                if (!savedData || !savedUserId) return null;
+
+                try {
+                    const parsed = JSON.parse(savedData);
+                    return (parsed.users || []).find(user => user.id === savedUserId) || null;
+                } catch (error) {
+                    return null;
+                }
+            });
             const [activeTab, setActiveTab] = useState('vacation');
             const [data, setData] = useState(() => {
                 const saved = localStorage.getItem('leaveSystemData');
@@ -221,6 +235,29 @@
             useEffect(() => {
                 localStorage.setItem('leaveSystemData', JSON.stringify(data));
             }, [data]);
+
+            useEffect(() => {
+                if (currentUser?.id) {
+                    localStorage.setItem(CURRENT_USER_STORAGE_KEY, currentUser.id);
+                } else {
+                    localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+                }
+            }, [currentUser]);
+
+            useEffect(() => {
+                if (!currentUser?.id) return;
+
+                const latestUser = data.users.find(user => user.id === currentUser.id);
+                if (!latestUser) {
+                    setCurrentUser(null);
+                    setActiveTab('vacation');
+                    return;
+                }
+
+                if (JSON.stringify(latestUser) !== JSON.stringify(currentUser)) {
+                    setCurrentUser(latestUser);
+                }
+            }, [data.users, currentUser]);
 
             const handleLogin = (e) => {
                 e.preventDefault();
@@ -677,6 +714,7 @@
 
             return (
                 <div className="min-h-screen bg-gray-50 text-base md:text-lg">
+                    <div className="fixed top-0 left-0 right-0 z-30 bg-white">
                     <nav className="bg-white shadow-sm border-b">
                      <div className="max-w-screen-2xl mx-auto px-4 py-4">
                             <div className="flex justify-between items-center">
@@ -734,8 +772,9 @@
                             </div>
                         </div>
                     </div>
-
-                    <div className="max-w-screen-2xl mx-auto px-4 py-6">
+                   </div>
+                    
+                    <div className="max-w-screen-2xl mx-auto px-4 py-6 pt-40">
                         {activeTab === 'management' && currentUser.isAdmin && (
                             <div className="space-y-4">
                                 <div className="flex justify-between">

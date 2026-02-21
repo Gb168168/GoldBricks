@@ -70,6 +70,7 @@ const holidays2026 = [
 ];
 
 const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
+const UI_SCALE = 0.9;
 const SUPER_USER_PASSWORD = '000';
 const SUPER_USER = {
   id: 'E000',
@@ -554,7 +555,10 @@ const EmployeeLeaveSystem = () => {
 
   // 主系統介面
   return (
-    <div className="h-screen overflow-hidden bg-gray-50 text-sm md:text-base">
+    <div
+      className="h-screen overflow-hidden bg-gray-50 text-sm md:text-base"
+      style={{ zoom: UI_SCALE }}
+    >
       <div className="fixed top-0 left-0 right-0 z-30 bg-white">
       {/* 頂部導航 */}
       <nav className="bg-white shadow-sm border-b">

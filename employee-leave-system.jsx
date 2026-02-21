@@ -167,6 +167,16 @@ const EmployeeLeaveSystem = () => {
   }, [currentUser]);
 
   useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, []);
+  
+  useEffect(() => {
     if (!currentUser?.id) {
       const defaultUser = data.users[0] || null;
       if (defaultUser) {
@@ -544,7 +554,7 @@ const EmployeeLeaveSystem = () => {
 
   // 主系統介面
   return (
-    <div className="min-h-screen bg-gray-50 text-base md:text-lg">
+    <div className="h-screen overflow-hidden bg-gray-50 text-base md:text-lg">
       <div className="fixed top-0 left-0 right-0 z-30 bg-white">
       {/* 頂部導航 */}
       <nav className="bg-white shadow-sm border-b">
@@ -615,7 +625,7 @@ const EmployeeLeaveSystem = () => {
        </aside>
         
       {/* 主要內容區 */}
-      <div className="ml-52 md:ml-56 lg:ml-64 px-4 md:px-5 lg:px-6 py-6 pt-36">
+      <div className="ml-52 md:ml-56 lg:ml-64 h-[calc(100vh-7rem)] overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-36">
          
          {/* 人員管理 */}
         {activeTab === 'todayWorking' && (

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-3</title>
+    <title>員工假管理系統-4</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -337,35 +337,107 @@
             const handleAddUser = async (e) => {
                 e.preventDefault();
 
-                const userPayload = newUserForm;
+                const normalizedId = (newUserForm.id || '').trim();
+                const normalizedUsername = (newUserForm.username || '').trim();
+
+                if (!normalizedId) {
+                    alert('員工代號為必填!');
+                    return;
+                }
+
+                const userPayload = {
+                    ...newUserForm,
+                    id: normalizedId,
+                    username: normalizedUsername
+                };
                 
                 if (editingUser) {
-                    // 編輯模式
-                    setData(prev => ({
-                       ...prev,
-                       users: prev.users.map(u =>
-                            u.id === editingUser.id
+                    const targetId = editingUser.id;
+                    const nextId = userPayload.id;
+
+                    if (nextId !== targetId && data.users.some(u => u.id === nextId)) {
+                        alert('員工代號已存在,請使用其他代號!');
+                        return;
+                    }
+
+                    if (userPayload.username && data.users.some(u => u.id !== targetId && u.username === userPayload.username)) {
+                        alert('帳號已存在,請使用其他帳號!');
+                        return;
+                    }
+
+                    if (data.users.some(u => u.id !== targetId && u.email === userPayload.email)) {
+                        alert('Email 已存在,請使用其他 Email!');
+                        return;
+                    }
+
+                    setData(prev => {
+                        const updatedUsers = prev.users.map(u =>
+                            u.id === targetId
                                 ? { ...userPayload, usedAnnualLeave: u.usedAnnualLeave }
                                 : u
-                        ),
-                        auditLogs: [...prev.auditLogs, {
-                            timestamp: new Date().toISOString(),
-                            user: currentUser.name,
-                            action: '編輯員工',
-                            details: `${newUserForm.id} - ${newUserForm.name}`
-                        }]
-                    }));
+                         );
+
+                        if (targetId === nextId) {
+                            return {
+                                ...prev,
+                                users: updatedUsers,
+                                auditLogs: [...prev.auditLogs, {
+                                    timestamp: new Date().toISOString(),
+                                    user: currentUser.name,
+                                    action: '編輯員工',
+                                    details: `${userPayload.id} - ${userPayload.name}`
+                                }]
+                            };
+                        }
+
+                        const updatedLeaves = prev.leaves.map(leave =>
+                            leave.userId === targetId
+                                ? { ...leave, userId: nextId, userName: userPayload.name, department: userPayload.department, region: userPayload.region }
+                                : leave
+                        );
+
+                        const nextVacationSchedule = { ...prev.vacationSchedule };
+                        if (nextVacationSchedule[targetId]) {
+                            nextVacationSchedule[nextId] = nextVacationSchedule[targetId];
+                            delete nextVacationSchedule[targetId];
+                        }
+
+                        const nextVacationNotes = { ...prev.vacationNotes };
+                        if (nextVacationNotes[targetId]) {
+                            nextVacationNotes[nextId] = nextVacationNotes[targetId];
+                            delete nextVacationNotes[targetId];
+                        }
+
+                        return {
+                            ...prev,
+                            users: updatedUsers,
+                            leaves: updatedLeaves,
+                            vacationSchedule: nextVacationSchedule,
+                            vacationNotes: nextVacationNotes,
+                            auditLogs: [...prev.auditLogs, {
+                                timestamp: new Date().toISOString(),
+                                user: currentUser.name,
+                                action: '編輯員工',
+                                details: `${targetId} → ${nextId} - ${userPayload.name}`
+                            }]
+                        };
+                    });
+
+                    if (currentUser.id === targetId) {
+                        setCurrentUser(prev => prev ? { ...prev, ...userPayload, id: nextId } : prev);
+                    }
+                    
                     alert('員工資料更新成功!');
                 } else {
                     // 新增模式
                     // 檢查員工代號是否已存在
-                    if (data.users.find(u => u.id === newUserForm.id)) {
+                    if (data.users.find(u => u.id === userPayload.id)) {
                         alert('員工代號已存在,請使用其他代號!');
                         return;
                     }
 
                     // 檢查帳號是否已存在
-                    if (data.users.find(u => u.username === newUserForm.username)) {
+                    if (userPayload.username && data.users.find(u => u.username === userPayload.username)) {
                         alert('帳號已存在,請使用其他帳號!');
                         return;
                     }
@@ -879,21 +951,19 @@
                                                     onChange={(e) => setNewUserForm({...newUserForm, id: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
                                                     placeholder="例如: E003"
-                                                    disabled={editingUser}
                                                     required
                                                 />
                                                 <p className="text-xs text-gray-500 mt-1">請輸入唯一的員工代號</p>
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm md:text-base font-medium mb-1">帳號 *</label>
+                                                <label className="block text-sm md:text-base font-medium mb-1">帳號</label>
                                                 <input
                                                     type="text"
                                                     value={newUserForm.username}
                                                     onChange={(e) => setNewUserForm({...newUserForm, username: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
-                                                    placeholder="登入用帳號"
-                                                    required
+                                                    placeholder="登入用帳號（可留空）"
                                                 />
                                             </div>
 

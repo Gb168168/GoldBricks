@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-23</title>
+    <title>員工假管理系統-24</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1778,7 +1778,6 @@
                                                                     </div>
                                                                 </td>
                                                                 <td className="border-2 border-gray-400 p-2 text-xs text-gray-600 bg-white sticky left-80 z-20">{user.department}</td>
-                                                                <td className="border-2 border-gray-300 p-2 text-center text-xs md:text-sm bg-gray-50 text-gray-500 whitespace-nowrap">排假</td>
                                                                 {getMonthDays(selectedMonth).map(day => {
                                                                     const dateStr = formatLocalDate(day);
                                                                     const leave = userLeaves.find(l =>

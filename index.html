@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-22</title>
+    <title>員工假管理系統-23</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1670,7 +1670,6 @@
                                                    <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-24 z-30 w-32 text-sm md:text-base">人員</th>
                                                    <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-56 z-30 w-24 text-sm md:text-base">班別</th>
                                                    <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-80 z-30 w-32 text-sm md:text-base">部門</th>
-                                                   <th className="border-2 border-gray-400 p-2 bg-gray-100 text-sm md:text-base">星期</th>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
@@ -1691,7 +1690,6 @@
                                                   <th className="border-2 border-gray-400 p-2 bg-yellow-100 font-bold sticky right-0 z-20 w-24 whitespace-nowrap text-sm md:text-base">已選天數</th>
                                                 </tr>
                                                 <tr>
-                                                    <th className="border-2 border-gray-400 p-2 bg-gray-100 text-sm md:text-base">日期</th>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
@@ -1711,7 +1709,6 @@
                                                     <th className="border-2 border-gray-400 p-2 bg-yellow-100 sticky right-0 z-20"></th>
                                                 </tr>
                                                 <tr>
-                                                 <th className="border-2 border-gray-400 p-2 bg-gray-100 text-sm md:text-base">備註</th>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);

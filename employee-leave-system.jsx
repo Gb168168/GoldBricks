@@ -46,7 +46,6 @@ const initialData = {
     monthlyVacationDays: ''
   },
   vacationSchedule: {},
-  vacationNotes: {},
   auditLogs: []
 };
 
@@ -132,8 +131,7 @@ const EmployeeLeaveSystem = () => {
         ...initialData.vacationSettings,
         ...parsed.vacationSettings
       },
-      vacationSchedule: parsed.vacationSchedule || {},
-      vacationNotes: parsed.vacationNotes || {}
+      vacationSchedule: parsed.vacationSchedule || {}
     };
   });
 
@@ -477,16 +475,6 @@ const EmployeeLeaveSystem = () => {
         }
       };
     });
-  };
-
-  const handleVacationNoteChange = (userId, value) => {
-    setData(prev => ({
-      ...prev,
-      vacationNotes: {
-        ...prev.vacationNotes,
-        [userId]: value
-      }
-    }));
   };
 
   // 檢查是否為週末
@@ -952,7 +940,6 @@ const EmployeeLeaveSystem = () => {
                         );
                       })}
                         <th className="border p-2 bg-gray-50 w-24 whitespace-nowrap text-sm md:text-base">已選天數</th>
-                      <th className="border p-2 bg-gray-50 w-40 text-sm md:text-base">星期/日期/備註</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1032,24 +1019,12 @@ const EmployeeLeaveSystem = () => {
                            <td className="border p-2 text-center font-medium text-indigo-600 w-24 whitespace-nowrap text-sm md:text-base">
                                      {(data.vacationSchedule[user.id] && Object.values(data.vacationSchedule[user.id]).filter(Boolean).length) || 0}
                             </td>
-                            <td className="border p-2">
-                              <input
-                                type="text"
-                                value={data.vacationNotes[user.id] || ''}
-                                onChange={(e) => handleVacationNoteChange(user.id, e.target.value)}
-                                className={`w-full px-2 py-1 border rounded text-sm md:text-base ${
-                                  currentUser.isAdmin || currentUser.id === user.id ? '' : 'bg-gray-50'
-                                }`}
-                                disabled={!currentUser.isAdmin && currentUser.id !== user.id}
-                                placeholder="可輸入備註"
-                              />
-                            </td>
                           </tr>
                         );
                       })}
                     {visibleVacationUsers.length === 0 && (
                       <tr>
-                        <td colSpan={getMonthDays(selectedMonth).length + 4} className="border p-4 text-center text-gray-500">
+                        <td colSpan={getMonthDays(selectedMonth).length + 3} className="border p-4 text-center text-gray-500">
                           沒有符合條件的人員
                         </td>
                       </tr>

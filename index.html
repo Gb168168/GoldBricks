@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-34</title>
+    <title>員工假管理系統-35</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1977,23 +1977,23 @@
                                                             </tr>
                                                         );
                                                     })}
-                                                <tr className="bg-green-50">
-                                                    <td className="border-2 border-gray-400 p-2 sticky left-0 z-10 bg-green-100"></td>
-                                                    <td className="border-2 border-gray-400 p-2 font-bold text-center sticky left-24 z-10 bg-green-100">上班人數</td>
-                                                    <td className="border-2 border-gray-400 p-2 bg-green-100"></td>
-                                                    <td className="border-2 border-gray-400 p-2 bg-green-100"></td>
-                                                    <td className="border-2 border-gray-400 p-2 bg-green-100"></td>
+                                               <tr className="bg-green-50">  
+                                                    <td className="border-2 border-gray-400 p-2 sticky left-0 bottom-0 z-30 bg-green-100"></td>
+                                                    <td className="border-2 border-gray-400 p-2 font-bold text-center sticky left-24 bottom-0 z-30 bg-green-100">上班人數</td>
+                                                    <td className="border-2 border-gray-400 p-2 sticky bottom-0 z-20 bg-green-100"></td>
+                                                    <td className="border-2 border-gray-400 p-2 sticky bottom-0 z-20 bg-green-100"></td>
+                                                    <td className="border-2 border-gray-400 p-2 sticky bottom-0 z-20 bg-green-100"></td>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         return (
                                                             <td
                                                                 key={`count-${day.toISOString()}`}
-                                                                className="border-2 border-gray-300 p-2 text-center font-bold text-green-700 bg-green-50"
+                                                                className="border-2 border-gray-300 p-2 text-center font-bold text-green-700 bg-green-50 sticky bottom-0 z-20"
                                                             >
                                                                 {getWorkingCount(day)}
                                                                 </td>
                                                 );
                                             })}
-                                                    <td className="border-2 border-gray-400 p-2 sticky right-0 z-10 bg-green-100"></td>
+                                                    <td className="border-2 border-gray-400 p-2 sticky right-0 bottom-0 z-30 bg-green-100"></td>
                                                 </tr>
                                             </tbody>
                                         </table>

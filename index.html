@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統</title>
+    <title>員工假管理系統-1</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
@@ -96,13 +98,27 @@
         const regionOptions = ['新竹區', '台中區', '嘉義區'];
         const departmentOptions = ['管理部', 'TSE', 'FAE', '新場', '倉管', 'RD', '線上客服'];
 
+        const firebaseConfig = {
+            apiKey: '請改成你的 Firebase apiKey',
+            authDomain: '請改成你的 Firebase authDomain',
+            projectId: '請改成你的 Firebase projectId',
+            appId: '請改成你的 Firebase appId'
+        };
+
+        const isFirebaseConfigured = !Object.values(firebaseConfig).some(value => value.includes('請改成你的 Firebase'));
+        // Firebase 連線位置：
+        // 1) SDK 會連到 firebaseConfig.authDomain 對應專案的 Firebase Authentication
+        // 2) 新增員工帳號時會呼叫 Google Identity Toolkit REST API
+        const firebaseApp = isFirebaseConfigured ? firebase.initializeApp(firebaseConfig) : null;
+        const firebaseAuth = firebaseApp ? firebase.auth() : null;
+        const firebaseSignupEndpoint = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`;
+
         // 初始化資料
         const initialData = {
             users: [
                 {
                     id: 'E001',
                     username: '001',
-                    password: '001',
                     name: '管理員',
                     region: '新竹區',
                     department: '管理部',
@@ -120,7 +136,6 @@
                 {
                     id: 'E002',
                     username: '002',
-                    password: '002',
                     name: '王小明',
                     region: '台中區',
                     department: 'TSE',
@@ -203,6 +218,7 @@
             });
 
             const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+            const [authReady, setAuthReady] = useState(false);
             const [selectedMonth, setSelectedMonth] = useState(new Date(2026, 1)); // 2月
             const [filterRegion, setFilterRegion] = useState('全部');
             const [filterDepartment, setFilterDepartment] = useState('全部');
@@ -226,7 +242,7 @@
             const [newUserForm, setNewUserForm] = useState({
                 id: '',
                 username: '',
-                password: '',
+                firebasePassword: '',
                 name: '',
                 region: regionOptions[0],
                 department: departmentOptions[0],
@@ -268,19 +284,73 @@
                 }
             }, [data.users, currentUser]);
 
-            const handleLogin = (e) => {
+            useEffect(() => {
+                if (!firebaseAuth) {
+                    setAuthReady(true);
+                    return;
+                }
+
+                const unsubscribe = firebaseAuth.onAuthStateChanged((authUser) => {
+                    if (!authUser) {
+                        setCurrentUser(null);
+                        setAuthReady(true);
+                        return;
+                    }
+
+                    const matchedUser = data.users.find(user => user.email === authUser.email);
+                    if (matchedUser) {
+                        setCurrentUser(matchedUser);
+                    } else {
+                        alert('Firebase 已登入,但系統內找不到對應員工資料');
+                        firebaseAuth.signOut();
+                    }
+                    setAuthReady(true);
+                });
+
+                return () => unsubscribe();
+            }, [data.users]);
+
+            const createFirebaseAccount = async (email, password) => {
+                const response = await fetch(firebaseSignupEndpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, returnSecureToken: false })
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    const message = result?.error?.message || 'Firebase 建立帳號失敗';
+                    throw new Error(message);
+                }
+
+                return result;
+            };
+
+            const handleLogin = async (e) => {
                 e.preventDefault();
-                const user = data.users.find(
-                    u => u.username === loginForm.username && u.password === loginForm.password
-                );
-                if (user) {
-                    setCurrentUser(user);
-                } else {
-                    alert('帳號或密碼錯誤');
+                 if (!isFirebaseConfigured || !firebaseAuth) {
+                    alert('請先在程式碼內設定 Firebase config');
+                    return;
+                }
+
+                const user = data.users.find(u => u.username === loginForm.username);
+                if (!user?.email) {
+                    alert('找不到此帳號,或該員工未設定 Email');
+                    return;
+                }
+
+                try {
+                    await firebaseAuth.signInWithEmailAndPassword(user.email, loginForm.password);
+                    setLoginForm({ username: '', password: '' });
+                } catch (error) {
+                    alert(`登入失敗: ${error.message}`);
                 }
             };
 
-            const handleLogout = () => {
+            const handleLogout = async () => {
+                if (firebaseAuth) {
+                    await firebaseAuth.signOut();
+                }
                 setCurrentUser(null);
             };
 
@@ -313,7 +383,7 @@
                 setNewUserForm({
                     id: user.id,
                     username: user.username,
-                    password: user.password,
+                    firebasePassword: '',
                     name: user.name,
                     region: user.region,
                     department: user.department,
@@ -330,16 +400,18 @@
                 setShowAddUser(true);
             };
 
-            const handleAddUser = (e) => {
+            const handleAddUser = async (e) => {
                 e.preventDefault();
 
+                const { firebasePassword, ...userPayload } = newUserForm;
+                
                 if (editingUser) {
                     // 編輯模式
                     setData(prev => ({
-                        ...prev,
+                       ...prev,
                        users: prev.users.map(u =>
                             u.id === editingUser.id
-                                ? { ...newUserForm, usedAnnualLeave: u.usedAnnualLeave }
+                                ? { ...userPayload, usedAnnualLeave: u.usedAnnualLeave }
                                 : u
                         ),
                         auditLogs: [...prev.auditLogs, {
@@ -364,14 +436,36 @@
                         return;
                     }
 
+                    if (data.users.find(u => u.email === newUserForm.email)) {
+                        alert('Email 已存在,請使用其他 Email!');
+                        return;
+                    }
+
+                    if (!firebasePassword || firebasePassword.length < 6) {
+                        alert('Firebase 密碼至少要 6 碼!');
+                        return;
+                    }
+
+                    if (!isFirebaseConfigured || !firebaseAuth) {
+                        alert('請先在程式碼內設定 Firebase config');
+                        return;
+                    }
+
+                    try {
+                        await createFirebaseAccount(newUserForm.email, firebasePassword);
+                    } catch (error) {
+                        alert(`Firebase 帳號建立失敗: ${error.message}`);
+                        return;
+                    }
+
                     const newUser = {
-                        ...newUserForm,
+                        ...userPayload,
                         usedAnnualLeave: 0
                     };
 
                     setData(prev => ({
-                        ...prev,
-                        users: [...prev.users, newUser],
+                         ...prev,
+                         users: [...prev.users, newUser],
                         auditLogs: [...prev.auditLogs, {
                             timestamp: new Date().toISOString(),
                             user: currentUser.name,
@@ -385,7 +479,7 @@
                 setNewUserForm({
                     id: '',
                     username: '',
-                    password: '',
+                    firebasePassword: '',
                     name: '',
                     region: regionOptions[0],
                     department: departmentOptions[0],
@@ -777,6 +871,10 @@
             };
 
             if (!currentUser) {
+                  if (!authReady) {
+                    return <div className="min-h-screen flex items-center justify-center">Firebase 驗證初始化中...</div>;
+                }
+
                 return (
                     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 text-base md:text-lg">
                         <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg">
@@ -785,7 +883,7 @@
                                     <Users size={32} className="text-white" />
                                 </div>
                                 <h1 className="text-3xl font-bold text-gray-800">員工假勤系統</h1>
-                                <p className="text-gray-500 mt-2">請使用帳號密碼登入</p>
+                                <p className="text-gray-500 mt-2">請使用員工帳號 + Firebase 密碼登入</p>
                              </div>
 
                             <form onSubmit={handleLogin} className="space-y-4">
@@ -816,10 +914,12 @@
                                 </button>
                             </form>
 
-                           <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm md:text-base">
-                                <p className="font-medium">測試帳號:</p>
-                                <p>管理員 - admin / admin123</p>
-                                <p>員工 - user001 / pass123</p>
+                          <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm md:text-base space-y-1">
+                                <p className="font-medium">登入說明:</p>
+                                <p>1. 輸入員工帳號 (例如 001)</p>
+                                <p>2. 密碼由 Firebase Authentication 管理</p>
+                                <p className="text-xs text-gray-600 pt-2">連線目標: Firebase Authentication（{firebaseConfig.projectId} / {firebaseConfig.authDomain}）</p>
+                                <p className="text-xs text-gray-600 break-all">建立帳號 API: {firebaseSignupEndpoint}</p>
                             </div>
 
                             <div className="mt-4">
@@ -949,13 +1049,14 @@
                                             </div>
 
                                             <div>
-                                                 <label className="block text-sm md:text-base font-medium mb-1">密碼 *</label>
+                                                 <label className="block text-sm md:text-base font-medium mb-1">Firebase 密碼 {!editingUser && '*'}</label>
                                                 <input
                                                     type="password"
-                                                    value={newUserForm.password}
-                                                    onChange={(e) => setNewUserForm({...newUserForm, password: e.target.value})}
+                                                    value={newUserForm.firebasePassword}
+                                                    onChange={(e) => setNewUserForm({...newUserForm, firebasePassword: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
-                                                    required
+                                                    placeholder={editingUser ? '編輯員工時不會變更 Firebase 密碼' : '至少 6 碼'}
+                                                    required={!editingUser}
                                                 />
                                             </div>
 
@@ -1144,9 +1245,9 @@
                                                         setShowAddUser(false);
                                                         setEditingUser(null);
                                                         setNewUserForm({
-                                                            id: '',
-                                                            username: '',
-                                                            password: '',
+                    id: '',
+                    username: '',
+                    firebasePassword: '',
                                                             name: '',
                                                             region: regionOptions[0],
                                                             department: departmentOptions[0],

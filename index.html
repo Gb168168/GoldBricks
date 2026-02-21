@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-25</title>
+    <title>員工假管理系統-26</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -871,19 +871,21 @@
                 const chars = Array.from(holidayName);
                 const length = chars.length;
 
-                if (![3, 4, 6].includes(length)) {
-                    return holidayName;
-                }
+                let topRowLength = 0;
 
-                const topRowLength = Math.ceil(length / 2);
+                if (length === 3) topRowLength = 2;
+                else if (length === 4) topRowLength = 2;
+                else if (length === 6) topRowLength = 3;
+                else return holidayName;
+
                 return (
                     <>
-                        {chars.slice(0, topRowLength).join('')}
-                        <br />
-                        {chars.slice(topRowLength).join('')}
-                    </>
+                       {chars.slice(0, topRowLength).join('')}
+                       <br />
+                       {chars.slice(topRowLength).join('')}
+                   </>
                 );
-            };
+                };
 
             const isWeekend = (date) => {
                 return date.getDay() === 0 || date.getDay() === 6;

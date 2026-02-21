@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-30</title>
+    <title>員工假管理系統-31</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1303,7 +1303,7 @@
                                                     type="text"
                                                     value={newUserForm.id}
                                                     onChange={(e) => setNewUserForm({...newUserForm, id: e.target.value})}
-                                                    className="w-full px-3 py-2 border rounded-lg"
+                                                    className="w-72 max-w-full px-3 py-2 border rounded-lg"
                                                     placeholder="例如: E003"
                                                     required
                                                 />
@@ -1316,7 +1316,7 @@
                                                     type="text"
                                                     value={newUserForm.username}
                                                     onChange={(e) => setNewUserForm({...newUserForm, username: e.target.value})}
-                                                    className="w-full px-3 py-2 border rounded-lg"
+                                                    className="w-72 max-w-full px-3 py-2 border rounded-lg"
                                                     placeholder="登入用帳號（可留空）"
                                                 />
                                             </div>
@@ -1327,7 +1327,7 @@
                                                     type="text"
                                                     value={newUserForm.name}
                                                     onChange={(e) => setNewUserForm({...newUserForm, name: e.target.value})}
-                                                    className="w-full px-3 py-2 border rounded-lg"
+                                                    className="w-72 max-w-full px-3 py-2 border rounded-lg"
                                                     required
                                                 />
                                             </div>
@@ -1337,7 +1337,7 @@
                                                 <select
                                                     value={newUserForm.region}
                                                     onChange={(e) => setNewUserForm({...newUserForm, region: e.target.value})}
-                                                    className="w-full px-3 py-2 border rounded-lg"
+                                                    className="w-72 max-w-full px-3 py-2 border rounded-lg"
                                                 >
                                                     {managementRegionOptions.map(region => (
                                                         <option key={region}>{region}</option>
@@ -1350,7 +1350,7 @@
                                                 <select
                                                     value={newUserForm.department}
                                                     onChange={(e) => setNewUserForm({...newUserForm, department: e.target.value})}
-                                                    className="w-full px-3 py-2 border rounded-lg"
+                                                    className="w-72 max-w-full px-3 py-2 border rounded-lg"
                                                 >
                                                      {departmentOptions.map(department => (
                                                         <option key={department}>{department}</option>
@@ -1364,7 +1364,7 @@
                                                     type="text"
                                                     value={newUserForm.position}
                                                     onChange={(e) => setNewUserForm({...newUserForm, position: e.target.value})}
-                                                    className="w-full px-3 py-2 border rounded-lg"
+                                                    className="w-72 max-w-full px-3 py-2 border rounded-lg"
                                                 />
                                             </div>
 
@@ -1389,7 +1389,7 @@
                                                     type="tel"
                                                     value={newUserForm.phone}
                                                     onChange={(e) => setNewUserForm({...newUserForm, phone: e.target.value})}
-                                                    className="w-full px-3 py-2 border rounded-lg"
+                                                    className="w-72 max-w-full px-3 py-2 border rounded-lg"
                                                     placeholder="0912-345-678"
                                                 />
                                             </div>
@@ -1400,7 +1400,7 @@
                                                     type="text"
                                                     value={newUserForm.birthday}
                                                     onChange={(e) => setNewUserForm({...newUserForm, birthday: e.target.value})}
-                                                    className="w-full px-3 py-2 border rounded-lg"
+                                                    className="w-72 max-w-full px-3 py-2 border rounded-lg"
                                                     placeholder="例如: 05/15 "
                                                 />
                                                 <p className="text-xs text-gray-500 mt-1">格式: 月/日 (不需要輸入年份)</p>
@@ -1436,7 +1436,7 @@
                                                     type="number"
                                                     value={newUserForm.annualLeave}
                                                     onChange={(e) => setNewUserForm({...newUserForm, annualLeave: parseInt(e.target.value) || 0})}
-                                                    className="w-full px-3 py-2 border rounded-lg"
+                                                    className="w-72 max-w-full px-3 py-2 border rounded-lg"
                                                     min="0"
                                                     max="30"
                                                 />
@@ -2051,9 +2051,9 @@
                                     <div className="bg-white rounded-lg shadow p-6">
                                         <h3 className="text-lg font-bold mb-4">新增請假</h3>
                                         <form onSubmit={handleSubmitLeave} className="space-y-4">
-                                            <input type="text" value={currentUser.name} disabled className="w-full px-3 py-2 border rounded bg-gray-50" />
+                                            <input type="text" value={currentUser.name} disabled className="w-72 max-w-full px-3 py-2 border rounded bg-gray-50" />
 
-                                            <select value={newLeaveForm.type} onChange={(e) => setNewLeaveForm({...newLeaveForm, type: e.target.value})} className="w-full px-3 py-2 border rounded">
+                                            <select value={newLeaveForm.type} onChange={(e) => setNewLeaveForm({...newLeaveForm, type: e.target.value})} className="w-72 max-w-full px-3 py-2 border rounded">
                                                 <option>特休</option>
                                                 <option>病假</option>
                                                 <option>事假</option>
@@ -2065,13 +2065,13 @@
                                                 <option>年假</option>
                                             </select>
 
-                                            <input type="date" value={newLeaveForm.startDate} onChange={(e) => setNewLeaveForm({...newLeaveForm, startDate: e.target.value})} className="w-full px-3 py-2 border rounded" required />
+                                            <input type="date" value={newLeaveForm.startDate} onChange={(e) => setNewLeaveForm({...newLeaveForm, startDate: e.target.value})} className="w-72 max-w-full px-3 py-2 border rounded" required />
 
-                                            <input type="date" value={newLeaveForm.endDate} onChange={(e) => setNewLeaveForm({...newLeaveForm, endDate: e.target.value})} className="w-full px-3 py-2 border rounded" required />
+                                            <input type="date" value={newLeaveForm.endDate} onChange={(e) => setNewLeaveForm({...newLeaveForm, endDate: e.target.value})} className="w-72 max-w-full px-3 py-2 border rounded" required />
 
-                                            <textarea value={newLeaveForm.reason} onChange={(e) => setNewLeaveForm({...newLeaveForm, reason: e.target.value})} className="w-full px-3 py-2 border rounded" rows="3" required />
+                                            <textarea value={newLeaveForm.reason} onChange={(e) => setNewLeaveForm({...newLeaveForm, reason: e.target.value})} className="w-72 max-w-full px-3 py-2 border rounded" rows="3" required />
 
-                                            <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
+                                            <button type="submit" className="w-72 max-w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
                                                 送出申請
                                             </button>
                                         </form>
@@ -2527,14 +2527,14 @@
                                                     value={scheduleForm.title}
                                                     onChange={(e) => setScheduleForm(prev => ({ ...prev, title: e.target.value }))}
                                                     placeholder="標題"
-                                                    className="w-full px-3 py-2 border rounded"
+                                                    className="w-72 max-w-full px-3 py-2 border rounded"
                                                     required
                                                 />
                                                 <textarea
                                                     value={scheduleForm.content}
                                                     onChange={(e) => setScheduleForm(prev => ({ ...prev, content: e.target.value }))}
                                                     placeholder="內容"
-                                                    className="w-full px-3 py-2 border rounded"
+                                                    className="w-72 max-w-full px-3 py-2 border rounded"
                                                     rows="4"
                                                     required
                                                 />

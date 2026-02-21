@@ -928,7 +928,11 @@ const EmployeeLeaveSystem = () => {
                         </button>
                       </div>
                      </th>
-                     <th className="border p-2 bg-gray-50 sticky left-28 z-20 w-28">員工</th>
+                     <th className="border p-2 bg-gray-50 sticky left-28 z-20 w-28">
+                       <div>人員</div>
+                       <div>班別</div>
+                       <div>部門</div>
+                     </th>
                       {getMonthDays(selectedMonth).map(day => {
                         const holiday = isHoliday(day);
                         const weekend = isWeekend(day);
@@ -989,7 +993,15 @@ const EmployeeLeaveSystem = () => {
                               </button>
                             </td>
                             <td className="border p-2 font-medium bg-white sticky left-28 z-10 text-sm md:text-base">
-                              {user.name}
+                               <div>{user.name}</div>
+                              <div className="mt-1 flex items-center gap-1">
+                                {user.shift.includes('早') && (
+                                  <span className="px-1 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>
+                                )}
+                                {user.shift.includes('晚') && (
+                                  <span className="px-1 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">晚</span>
+                                )}
+                              </div>
                               <div className="text-xs md:text-sm text-gray-500">{user.department}</div>
                             </td>
                             {getMonthDays(selectedMonth).map(day => {

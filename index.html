@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-10</title>
+    <title>員工假管理系統-11</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -181,6 +181,36 @@
         ];
 
         const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
+         const SUPER_USER_PASSWORD = '000';
+        const SUPER_USER = {
+            id: 'E000',
+            username: 'GoldBricks',
+            password: SUPER_USER_PASSWORD,
+            name: 'GoldBricks',
+            region: '總部',
+            department: '系統管理',
+            position: '最高管理者',
+            email: 'goldbricks@company.com',
+            phone: '0900-000-000',
+            birthday: '1980-01-01',
+            shift: ['早'],
+            annualLeave: 365,
+            isAdmin: true,
+            permissionRegions: [...regionOptions],
+            permissionDepartments: [...departmentOptions]
+        };
+
+        const ensureSuperUserExists = (users = []) => {
+            const hasSuperUser = users.some(user => user.id === SUPER_USER.id || user.username === SUPER_USER.username);
+            if (!hasSuperUser) {
+                return [SUPER_USER, ...users];
+            }
+
+            return users.map(user => (user.id === SUPER_USER.id || user.username === SUPER_USER.username
+                ? { ...user, ...SUPER_USER, isAdmin: true, permissionRegions: [...regionOptions], permissionDepartments: [...departmentOptions] }
+                : user
+            ));
+        };
 
          const normalizeUserPermissions = (users = []) =>
             users.map(user => {
@@ -212,7 +242,8 @@
 
                 try {
                     const parsed = JSON.parse(savedData);
-                    return (parsed.users || []).find(user => user.id === savedUserId) || (parsed.users || [])[0] || initialData.users[0] || null;
+                    const users = ensureSuperUserExists(parsed.users || initialData.users);
+                    return users.find(user => user.id === savedUserId) || users[0] || initialData.users[0] || null;
                 } catch (error) {
                     return initialData.users[0] || null;
                 }
@@ -220,12 +251,15 @@
             const [activeTab, setActiveTab] = useState('vacation');
             const [data, setData] = useState(() => {
                 const saved = localStorage.getItem('leaveSystemData');
-                     if (!saved) return initialData;
+                     if (!saved) return {
+                        ...initialData,
+                        users: normalizeUserPermissions(ensureSuperUserExists(initialData.users))
+                    };
                 const parsed = JSON.parse(saved);
                 return {
                     ...initialData,
                     ...parsed,
-                    users: normalizeUserPermissions(parsed.users || initialData.users),
+                    users: normalizeUserPermissions(ensureSuperUserExists(parsed.users || initialData.users)),
                     vacationSettings: {
                         ...initialData.vacationSettings,
                         ...parsed.vacationSettings
@@ -288,7 +322,7 @@
 
            useEffect(() => {
                 setData(prev => {
-                    const normalizedUsers = normalizeUserPermissions(prev.users || []);
+                    const normalizedUsers = normalizeUserPermissions(ensureSuperUserExists(prev.users || []));
                     const changed = JSON.stringify(normalizedUsers) !== JSON.stringify(prev.users || []);
                     if (!changed) return prev;
                     return {
@@ -318,9 +352,19 @@
                 }
             }, [data.users, currentUser]);
 
-            const handleLogout = async () => {
-               setCurrentUser(data.users[0] || null);
-               setActiveTab('vacation');
+            const handleSuperUserLogin = () => {
+                const password = window.prompt('請輸入最高管理者密碼');
+                if (password === null) return;
+
+                if (password !== SUPER_USER_PASSWORD) {
+                    alert('密碼錯誤，無法切換為 GoldBricks。');
+                    return;
+                }
+
+                const superUser = data.users.find(user => user.id === SUPER_USER.id) || SUPER_USER;
+                setCurrentUser({ ...superUser, isAdmin: true, permissionRegions: [...regionOptions], permissionDepartments: [...departmentOptions] });
+                setActiveTab('management');
+                alert('已切換為最高使用者 GoldBricks，可審核與設置所有人的假。');
             };
 
             const handlePromoteCurrentUser = () => {
@@ -973,8 +1017,8 @@
                                             {currentUser.annualLeave} 天
                                         </p>
                                     </div>
-                                    <button onClick={handleLogout} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-                                        回到預設使用者
+                                    <button onClick={handleSuperUserLogin} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                                        輸入密碼進入 GoldBricks
                                     </button>
                                 </div>
                             </div>

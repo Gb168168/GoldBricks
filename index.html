@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-28</title>
+    <title>員工假管理系統-29</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -95,7 +95,8 @@
             </svg>
         );
 
-        const regionOptions = ['新竹區', '台中區', '嘉義區'];
+        const defaultManagementCategories = ['新竹區', '台中區', '嘉義區'];
+        const regionOptions = [...defaultManagementCategories];
         const departmentOptions = ['管理部', 'TSE', 'FAE', '新場', '倉管', 'RD', '線上客服']
         const COMPANY_EMAIL_DOMAIN = '@goldbricks.com.tw';
 
@@ -113,6 +114,23 @@
             const normalizedLocal = localPart.trim().toLowerCase();
             return normalizedLocal ? `${normalizedLocal}${COMPANY_EMAIL_DOMAIN}` : '';
         };
+        
+        const createNewUserForm = (regionList = regionOptions, defaultRegion = regionList[0] || regionOptions[0]) => ({
+            id: '',
+            username: '',
+            name: '',
+            region: defaultRegion,
+            department: departmentOptions[0],
+            position: '專員',
+            email: '',
+            phone: '',
+            birthday: '',
+            shift: [],
+            annualLeave: 10,
+            isAdmin: false,
+            permissionRegions: [...regionList],
+            permissionDepartments: [...departmentOptions]
+        });
         
         const firebaseConfig = {
             apiKey: 'AIzaSyDlckNcNvIBOOEO23gHlt7A-H13mUelYqM',
@@ -167,6 +185,7 @@
             leaves: [],
             schedules: [],
             auditLogs: [],
+            managementCategories: [...defaultManagementCategories],
             vacationSettings: {
                 openStart: '',
                 openEnd: '',
@@ -277,6 +296,7 @@
                     ...initialData,
                     ...parsed,
                     users: normalizeUserPermissions(ensureSuperUserExists(parsed.users || initialData.users)),
+                    managementCategories: Array.from(new Set([...(parsed.managementCategories || []), ...defaultManagementCategories])),
                     vacationSettings: {
                         ...initialData.vacationSettings,
                         ...parsed.vacationSettings
@@ -318,23 +338,12 @@
 
             const [showAddUser, setShowAddUser] = useState(false);
             const [editingUser, setEditingUser] = useState(null);
-            const [newUserForm, setNewUserForm] = useState({
-                id: '',
-                username: '',
-                name: '',
-                region: regionOptions[0],
-                department: departmentOptions[0],
-                position: '專員',
-                email: '',
-                phone: '',
-                birthday: '',
-                shift: [],
-                annualLeave: 10,
-                isAdmin: false,
-                permissionRegions: [...regionOptions],
-                permissionDepartments: [...departmentOptions]
-            });
-
+            const [selectedManagementCategory, setSelectedManagementCategory] = useState(defaultManagementCategories[0]);
+            const [expandedCategories, setExpandedCategories] = useState({});
+            const [newCategoryName, setNewCategoryName] = useState('');
+            const [managementCategories, setManagementCategories] = useState(defaultManagementCategories);
+            const [newUserForm, setNewUserForm] = useState(() => createNewUserForm(defaultManagementCategories));
+            
             useEffect(() => {
                 localStorage.setItem('leaveSystemData', JSON.stringify(data));
             }, [data]);
@@ -378,6 +387,32 @@
                     setCurrentUser(latestUser);
                 }
             }, [data.users, currentUser]);
+
+             useEffect(() => {
+                const categorySet = new Set([
+                    ...defaultManagementCategories,
+                    ...(data.managementCategories || []),
+                    ...data.users.map(user => user.region).filter(Boolean)
+                ]);
+                setManagementCategories(prev => Array.from(new Set([...(prev || []), ...categorySet])));
+            }, [data.managementCategories, data.users]);
+
+            useEffect(() => {
+                setExpandedCategories(prev => {
+                    const next = { ...prev };
+                    managementCategories.forEach(category => {
+                        if (typeof next[category] === 'undefined') {
+                            next[category] = true;
+                        }
+                    });
+                    return next;
+                });
+            }, [managementCategories]);
+
+            const managementRegionOptions = Array.from(new Set([
+                ...managementCategories,
+                ...data.users.map(user => user.region).filter(Boolean)
+            ]));
 
             const handleSuperUserLogin = () => {
                 const password = window.prompt('請輸入最高管理者密碼');
@@ -439,12 +474,50 @@
                 }
             };
 
+            const handleToggleCategory = (category) => {
+                setExpandedCategories(prev => ({
+                    ...prev,
+                    [category]: !prev[category]
+                }));
+            };
+
+            const handleAddManagementCategory = () => {
+                const category = (newCategoryName || '').trim();
+                if (!category) return;
+                if (managementRegionOptions.includes(category)) {
+                    alert('此收合類別已存在');
+                    return;
+                }
+
+                setManagementCategories(prev => [...prev, category]);
+                setExpandedCategories(prev => ({ ...prev, [category]: true }));
+                setData(prev => ({
+                    ...prev,
+                    managementCategories: [...(prev.managementCategories || []), category],
+                    auditLogs: [...prev.auditLogs, {
+                        timestamp: new Date().toISOString(),
+                        user: currentUser.name,
+                        action: '新增收合類別',
+                        details: category
+                    }]
+                }));
+                setNewCategoryName('');
+            };
+
+            const openAddUserByCategory = (category) => {
+                setEditingUser(null);
+                setSelectedManagementCategory(category);
+                setNewUserForm(createNewUserForm(managementRegionOptions, category));
+                setShowAddUser(true);
+            };
+
             const handleEditUser = (user) => {
                 if (!canManageUser(user)) {
                     alert('無權限編輯此員工資料');
                     return;
                 }
                 setEditingUser(user);
+                setSelectedManagementCategory(user.region);
                 setNewUserForm({
                     id: user.id,
                     username: user.username,
@@ -458,7 +531,7 @@
                     shift: user.shift,
                     annualLeave: user.annualLeave,
                     isAdmin: user.isAdmin || false,
-                    permissionRegions: Array.isArray(user.permissionRegions) ? user.permissionRegions : [...regionOptions],
+                    permissionRegions: Array.isArray(user.permissionRegions) ? user.permissionRegions : [...managementRegionOptions],
                     permissionDepartments: Array.isArray(user.permissionDepartments) ? user.permissionDepartments : [...departmentOptions]
                 });
                 setShowAddUser(true);
@@ -600,7 +673,7 @@
                     id: '',
                     username: '',
                     name: '',
-                    region: regionOptions[0],
+                    region: selectedManagementCategory || managementRegionOptions[0],
                     department: departmentOptions[0],
                     position: '專員',
                     email: '',
@@ -609,7 +682,7 @@
                     shift: [],
                     annualLeave: 10,
                     isAdmin: false,
-                    permissionRegions: [...regionOptions],
+                    permissionRegions: [...managementRegionOptions],
                     permissionDepartments: [...departmentOptions]
                 });
 
@@ -1200,7 +1273,7 @@
                                     <h2 className="text-2xl font-bold">人員管理</h2>
                                     <div className="flex space-x-2">
                                        <button
-                                            onClick={() => setShowAddUser(!showAddUser)}
+                                            onClick={() => showAddUser ? setShowAddUser(false) : openAddUserByCategory(selectedManagementCategory || managementRegionOptions[0])}
                                             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                                         >
                                             {showAddUser ? '取消新增' : '+ 新增員工'}
@@ -1257,7 +1330,7 @@
                                                     onChange={(e) => setNewUserForm({...newUserForm, region: e.target.value})}
                                                     className="w-full px-3 py-2 border rounded-lg"
                                                 >
-                                                    {regionOptions.map(region => (
+                                                    {managementRegionOptions.map(region => (
                                                         <option key={region}>{region}</option>
                                                     ))}
                                                 </select>
@@ -1383,7 +1456,7 @@
                                                         <div>
                                                             <p className="text-sm md:text-base font-medium text-gray-700 mb-2">地區</p>
                                                             <div className="space-y-2">
-                                                                {regionOptions.map(region => (
+                                                                {managementRegionOptions.map(region => (
                                                                     <label key={region} className="flex items-center space-x-2 text-sm md:text-base">
                                                                         <input
                                                                             type="checkbox"
@@ -1432,7 +1505,7 @@
                     id: '',
                     username: '',
                                                             name: '',
-                                                            region: regionOptions[0],
+                                                            region: selectedManagementCategory || managementRegionOptions[0],
                                                             department: departmentOptions[0],
                                                             position: '專員',
                                                             email: '',
@@ -1441,7 +1514,7 @@
                                                             shift: [],
                                                             annualLeave: 10,
                                                             isAdmin: false,
-                                                            permissionRegions: [...regionOptions],
+                                                            permissionRegions: [...managementRegionOptions],
                                                             permissionDepartments: [...departmentOptions]
                                                         });
                                                     }}
@@ -1454,68 +1527,107 @@
                                     </div>
                                 )}
 
-                                <div className="bg-white rounded-lg shadow overflow-x-auto">
-                                    <table className="w-full">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-4 py-3 text-left text-xs">員工代號</th>
-                                                <th className="px-4 py-3 text-left text-xs">姓名</th>
-                                                <th className="px-4 py-3 text-left text-xs">地區</th>
-                                                <th className="px-4 py-3 text-left text-xs">部門</th>
-                                                <th className="px-4 py-3 text-left text-xs">職稱</th>
-                                                <th className="px-4 py-3 text-left text-xs">Email</th>
-                                                <th className="px-4 py-3 text-left text-xs">電話</th>
-                                                <th className="px-4 py-3 text-left text-xs">班別</th>
-                                                <th className="px-4 py-3 text-left text-xs">操作</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {data.users.map(user => {
-                                                const canManage = canManageUser(user);
-                                                return (
-                                                    <tr key={user.id}>
-                                                        <td className="px-4 py-3">{user.id}</td>
-                                                        <td className="px-4 py-3">{user.name}</td>
-                                                        <td className="px-4 py-3">{user.region}</td>
-                                                        <td className="px-4 py-3">{user.department}</td>
-                                                        <td className="px-4 py-3">{user.position}</td>
-                                                        <td className="px-4 py-3">{user.email}</td>
-                                                        <td className="px-4 py-3">{user.phone}</td>
-                                                        <td className="px-4 py-3">
-                                                            <div className="flex space-x-1">
-                                                                {user.shift.includes('早') && (
-                                                                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>
-                                                                )}
-                                                                {user.shift.includes('晚') && (
-                                                                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">晚</span>
-                                                                )}
+                                 <div className="bg-white rounded-lg shadow p-4 space-y-4">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <input
+                                            type="text"
+                                            value={newCategoryName}
+                                            onChange={(e) => setNewCategoryName(e.target.value)}
+                                            placeholder="新增收合類別（例如：台南區）"
+                                            className="px-3 py-2 border rounded-lg"
+                                        />
+                                        <button
+                                            onClick={handleAddManagementCategory}
+                                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                                        >
+                                            新增收合類別
+                                        </button>
+                                    </div>
+
+                                    {managementRegionOptions.map(category => {
+                                        const categoryUsers = data.users.filter(user => user.region === category);
+                                        const isExpanded = expandedCategories[category] ?? true;
+
+                                        return (
+                                            <div key={category} className="border border-gray-200 rounded-lg overflow-hidden">
+                                                <button
+                                                    onClick={() => handleToggleCategory(category)}
+                                                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50"
+                                                >
+                                                    <div className="text-left">
+                                                        <p className="font-semibold">{category}</p>
+                                                        <p className="text-xs text-gray-500">共 {categoryUsers.length} 人</p>
+                                                    </div>
+                                                    <span className="text-sm text-gray-500">{isExpanded ? '收合 ▲' : '展開 ▼'}</span>
+                                                </button>
+
+                                                {isExpanded && (
+                                                    <div className="border-t border-gray-200 p-3 space-y-3">
+                                                        <div className="flex justify-end">
+                                                            <button
+                                                                onClick={() => openAddUserByCategory(category)}
+                                                                className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                                                            >
+                                                                在 {category} 新增人員
+                                                            </button>
+                                                        </div>
+
+                                                        {categoryUsers.length === 0 ? (
+                                                            <p className="text-gray-500">目前沒有人員，請點擊上方按鈕新增。</p>
+                                                        ) : (
+                                                            <div className="overflow-x-auto">
+                                                                <table className="w-full">
+                                                                    <thead className="bg-gray-50">
+                                                                        <tr>
+                                                                            <th className="px-4 py-3 text-left text-xs">員工代號</th>
+                                                                            <th className="px-4 py-3 text-left text-xs">姓名</th>
+                                                                            <th className="px-4 py-3 text-left text-xs">部門</th>
+                                                                            <th className="px-4 py-3 text-left text-xs">職稱</th>
+                                                                            <th className="px-4 py-3 text-left text-xs">Email</th>
+                                                                            <th className="px-4 py-3 text-left text-xs">電話</th>
+                                                                            <th className="px-4 py-3 text-left text-xs">班別</th>
+                                                                            <th className="px-4 py-3 text-left text-xs">操作</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {categoryUsers.map(user => {
+                                                                            const canManage = canManageUser(user);
+                                                                            return (
+                                                                                <tr key={user.id}>
+                                                                                    <td className="px-4 py-3">{user.id}</td>
+                                                                                    <td className="px-4 py-3">{user.name}</td>
+                                                                                    <td className="px-4 py-3">{user.department}</td>
+                                                                                    <td className="px-4 py-3">{user.position}</td>
+                                                                                    <td className="px-4 py-3">{user.email}</td>
+                                                                                    <td className="px-4 py-3">{user.phone}</td>
+                                                                                    <td className="px-4 py-3">
+                                                                                        <div className="flex space-x-1">
+                                                                                            {user.shift.includes('早') && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>}
+                                                                                            {user.shift.includes('晚') && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">晚</span>}
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className="px-4 py-3">
+                                                                                        <div className="flex space-x-2">
+                                                                                            <button onClick={() => canManage && handleEditUser(user)} className={`text-blue-600 ${canManage ? 'hover:text-blue-800' : 'opacity-40 cursor-not-allowed'}`} disabled={!canManage}>
+                                                                                                <Edit2 size={16} />
+                                                                                            </button>
+                                                                                            <button onClick={() => canManage && handleDeleteUser(user.id)} className={`text-red-600 ${canManage ? 'hover:text-red-800' : 'opacity-40 cursor-not-allowed'}`} disabled={!canManage}>
+                                                                                                <Trash2 size={16} />
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            );
+                                                                        })}
+                                                                    </tbody>
+                                                                </table>
                                                             </div>
-                                                        </td>
-                                                        <td className="px-4 py-3">
-                                                            <div className="flex space-x-2">
-                                                                <button
-                                                                    onClick={() => canManage && handleEditUser(user)}
-                                                                    className={`text-blue-600 ${canManage ? 'hover:text-blue-800' : 'opacity-40 cursor-not-allowed'}`}
-                                                                    title={canManage ? '編輯' : '無權限編輯此員工'}
-                                                                    disabled={!canManage}
-                                                                >
-                                                                    <Edit2 size={16} />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => canManage && handleDeleteUser(user.id)}
-                                                                    className={`text-red-600 ${canManage ? 'hover:text-red-800' : 'opacity-40 cursor-not-allowed'}`}
-                                                                    title={canManage ? '刪除' : '無權限刪除此員工'}
-                                                                    disabled={!canManage}
-                                                                >
-                                                                    <Trash2 size={16} />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
+                                                          )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
 
                                 <div className="bg-white rounded-lg shadow p-4">

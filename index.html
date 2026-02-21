@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-20</title>
+    <title>員工假管理系統-21</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1073,12 +1073,6 @@
                                             設為最高權限
                                         </button>
                                     )}
-                                    <div className="text-right">
-                                        <p className="text-sm md:text-base text-gray-600">可休特休</p>
-                                        <p className="text-lg font-bold text-indigo-600">
-                                            {currentUser.annualLeave} 天
-                                        </p>
-                                    </div>
                                     <button onClick={handleSuperUserLogin} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
                                         輸入密碼進入 GoldBricks
                                     </button>
@@ -1512,15 +1506,6 @@
 
                         {activeTab === 'vacation' && (
                             <div className="space-y-4">
-                                {/* 可休天數顯示 */}
-                                  <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-4 text-white">
-                                    <div>
-                                        <h3 className="text-base opacity-90">我的可休天數</h3>
-                                        <p className="text-3xl font-bold mt-1">{currentUser.annualLeave - (data.leaves.filter(l => l.userId === currentUser.id && l.type === '特休' && l.status === '已核准').length)} 天</p>
-                                        <p className="text-xs opacity-80 mt-1">已使用: {data.leaves.filter(l => l.userId === currentUser.id && l.type === '特休' && l.status === '已核准').length} 天</p>
-                                    </div>
-                                </div>
-
                                 <div className="flex justify-between items-center">
                                     <h2 className="text-2xl font-bold">休假表</h2>
                                     <div className="flex space-x-2">

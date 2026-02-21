@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, FileText, Clock, Clipboard, LogOut, Download, Plus, Edit2, Trash2, Check, Bell } from 'lucide-react';
+import { Calendar, Users, FileText, Clock, Clipboard, Download, Plus, Edit2, Trash2, Check, Bell } from 'lucide-react';
 
 // 初始化資料
 const initialData = {
@@ -77,13 +77,13 @@ const EmployeeLeaveSystem = () => {
     const savedData = localStorage.getItem('leaveSystemData');
     const savedUserId = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
 
-    if (!savedData || !savedUserId) return null;
+    if (!savedData || !savedUserId) return initialData.users[0] || null;
 
     try {
       const parsed = JSON.parse(savedData);
-      return (parsed.users || []).find(user => user.id === savedUserId) || null;
+      return (parsed.users || []).find(user => user.id === savedUserId) || (parsed.users || [])[0] || initialData.users[0] || null;
     } catch (error) {
-      return null;
+      return initialData.users[0] || null;
     }
   });
   const [activeTab, setActiveTab] = useState('management');
@@ -103,7 +103,6 @@ const EmployeeLeaveSystem = () => {
     };
   });
 
-  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [filterRegion, setFilterRegion] = useState('全部');
   const [filterDepartment, setFilterDepartment] = useState('全部');
@@ -133,11 +132,17 @@ const EmployeeLeaveSystem = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    if (!currentUser?.id) return;
+    if (!currentUser?.id) {
+      const defaultUser = data.users[0] || null;
+      if (defaultUser) {
+        setCurrentUser(defaultUser);
+      }
+      return;
+    }
 
     const latestUser = data.users.find(user => user.id === currentUser.id);
     if (!latestUser) {
-      setCurrentUser(null);
+      setCurrentUser(data.users[0] || null);
       setActiveTab('management');
       return;
     }
@@ -147,23 +152,9 @@ const EmployeeLeaveSystem = () => {
     }
   }, [data.users, currentUser]);
   
-  // 登入處理
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const user = data.users.find(
-      u => u.username === loginForm.username && u.password === loginForm.password
-    );
-    if (user) {
-      setCurrentUser(user);
-      setLoginForm({ username: '', password: '' });
-    } else {
-      alert('帳號或密碼錯誤');
-    }
-  };
-
-  // 登出
+  // 回到預設帳號
   const handleLogout = () => {
-    setCurrentUser(null);
+    setCurrentUser(data.users[0] || null);
     setActiveTab('management');
   };
 
@@ -397,62 +388,6 @@ const EmployeeLeaveSystem = () => {
     return data.users.length - leavesOnDate.length;
   };
 
-  // 登入頁面
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 text-base md:text-lg">
-        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg">
-          <div className="text-center mb-8">
-            <div className="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="text-white" size={32} />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-800">員工假勤系統</h1>
-            <p className="text-gray-500 mt-2">請使用帳號密碼登入</p>
-          </div>
-          
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-             <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">帳號</label>
-              <input
-                type="text"
-                value={loginForm.username}
-                onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="請輸入帳號"
-                required
-              />
-            </div>
-            
-            <div>
-             <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">密碼</label>
-              <input
-                type="password"
-                value={loginForm.password}
-                onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="請輸入密碼"
-                required
-              />
-            </div>
-            
-            <button
-              type="submit"
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
-            >
-              登入
-            </button>
-          </form>
-          
-           <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm md:text-base text-gray-600">
-            <p className="font-medium mb-1">測試帳號:</p>
-            <p>管理員 - 帳號: admin / 密碼: admin123</p>
-            <p>一般員工 - 帳號: user001 / 密碼: pass123</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // 主系統介面
   return (
     <div className="min-h-screen bg-gray-50 text-base md:text-lg">
@@ -483,7 +418,7 @@ const EmployeeLeaveSystem = () => {
                 className="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 <LogOut size={18} />
-                <span>登出</span>
+                <span>回到預設使用者</span>
               </button>
             </div>
           </div>

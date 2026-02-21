@@ -580,45 +580,43 @@ const EmployeeLeaveSystem = () => {
           </div>
         </div>
       </nav>
-
-      {/* 功能選單 */}
-      <div className="bg-white border-b">
-        <div className="max-w-screen-2xl mx-auto px-4">
-          <div className="flex space-x-1 overflow-x-auto">
-            {[
-              { id: 'management', label: '人員管理', icon: Users, admin: true },
-              { id: 'todayWorking', label: '當日上班人員', icon: Bell },
-              { id: 'vacation', label: '休假表', icon: Calendar },
-              { id: 'compensatory', label: '補休表', icon: Clock },
-              { id: 'schedule', label: '排程表', icon: Clipboard },
-              { id: 'leave', label: '請假', icon: FileText },
-              { id: 'annual', label: '特休', icon: Calendar }
-            ].map(tab => {
-              if (tab.admin && !currentUser.isAdmin) return null;
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-6 py-3 border-b-2 transition-colors whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'border-indigo-600 text-indigo-600 bg-indigo-50'
-                      : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon size={18} />
-                  <span className="font-medium">{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
      </div>
+      
+      {/* 左側功能選單 */}
+      <aside className="fixed top-24 left-0 bottom-0 z-20 w-64 bg-white border-r shadow-sm overflow-y-auto">
+        <div className="p-3 space-y-1">
+          {[
+            { id: 'management', label: '人員管理', icon: Users, admin: true },
+            { id: 'todayWorking', label: '當日上班人員', icon: Bell },
+            { id: 'vacation', label: '休假表', icon: Calendar },
+            { id: 'compensatory', label: '補休表', icon: Clock },
+            { id: 'schedule', label: '排程表', icon: Clipboard },
+            { id: 'leave', label: '請假', icon: FileText },
+            { id: 'annual', label: '特休', icon: Calendar }
+          ].map(tab => {
+            if (tab.admin && !currentUser.isAdmin) return null;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors text-left ${
+                  activeTab === tab.id
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                }`}
+              >
+                <Icon size={18} />
+                <span className="font-medium">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+       </aside>
         
       {/* 主要內容區 */}
-        <div className="max-w-screen-2xl mx-auto px-4 py-6 pt-40">
-
+       <div className="ml-64 px-6 py-6 pt-32">
+         
          {/* 人員管理 */}
         {activeTab === 'todayWorking' && (
           <div className="space-y-4">

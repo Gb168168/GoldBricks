@@ -71,6 +71,8 @@ const holidays2026 = [
 
 const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
 const UI_SCALE = 0.9;
+const VACATION_TAB_SCALE = 0.84;
+const VACATION_TAB_OFFSET_Y = '-10px';
 const SUPER_USER_PASSWORD = '000';
 const SUPER_USER = {
   id: 'E000',
@@ -557,7 +559,7 @@ const EmployeeLeaveSystem = () => {
   return (
     <div
       className="h-screen overflow-hidden bg-gray-50 text-sm md:text-base"
-      style={{ zoom: UI_SCALE }}
+      style={{ zoom: activeTab === 'vacation' ? VACATION_TAB_SCALE : UI_SCALE }}
     >
       <div className="fixed top-0 left-0 right-0 z-30 bg-white">
       {/* 頂部導航 */}
@@ -629,7 +631,10 @@ const EmployeeLeaveSystem = () => {
        </aside>
         
       {/* 主要內容區 */}
-      <div className="ml-52 md:ml-56 lg:ml-64 h-[calc(100vh-7rem)] overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-36">
+      <div
+        className="ml-52 md:ml-56 lg:ml-64 h-[calc(100vh-7rem)] overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-36"
+        style={{ transform: activeTab === 'vacation' ? `translateY(${VACATION_TAB_OFFSET_Y})` : 'none' }}
+      >
          
          {/* 人員管理 */}
         {activeTab === 'todayWorking' && (

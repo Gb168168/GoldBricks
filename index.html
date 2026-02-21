@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-29</title>
+    <title>員工假管理系統-30</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -340,6 +340,7 @@
             const [editingUser, setEditingUser] = useState(null);
             const [selectedManagementCategory, setSelectedManagementCategory] = useState(defaultManagementCategories[0]);
             const [expandedCategories, setExpandedCategories] = useState({});
+            const [expandedDepartments, setExpandedDepartments] = useState({});
             const [newCategoryName, setNewCategoryName] = useState('');
             const [managementCategories, setManagementCategories] = useState(defaultManagementCategories);
             const [newUserForm, setNewUserForm] = useState(() => createNewUserForm(defaultManagementCategories));
@@ -402,7 +403,7 @@
                     const next = { ...prev };
                     managementCategories.forEach(category => {
                         if (typeof next[category] === 'undefined') {
-                            next[category] = true;
+                            next[category] = false;
                         }
                     });
                     return next;
@@ -481,6 +482,14 @@
                 }));
             };
 
+             const handleToggleDepartment = (category, department) => {
+                const key = `${category}__${department}`;
+                setExpandedDepartments(prev => ({
+                    ...prev,
+                    [key]: !prev[key]
+                }));
+            };
+
             const handleAddManagementCategory = () => {
                 const category = (newCategoryName || '').trim();
                 if (!category) return;
@@ -490,7 +499,7 @@
                 }
 
                 setManagementCategories(prev => [...prev, category]);
-                setExpandedCategories(prev => ({ ...prev, [category]: true }));
+                setExpandedCategories(prev => ({ ...prev, [category]: false }));
                 setData(prev => ({
                     ...prev,
                     managementCategories: [...(prev.managementCategories || []), category],
@@ -1546,7 +1555,7 @@
 
                                     {managementRegionOptions.map(category => {
                                         const categoryUsers = data.users.filter(user => user.region === category);
-                                        const isExpanded = expandedCategories[category] ?? true;
+                                        const isExpanded = expandedCategories[category] ?? false;
 
                                         return (
                                             <div key={category} className="border border-gray-200 rounded-lg overflow-hidden">
@@ -1575,52 +1584,78 @@
                                                         {categoryUsers.length === 0 ? (
                                                             <p className="text-gray-500">目前沒有人員，請點擊上方按鈕新增。</p>
                                                         ) : (
-                                                            <div className="overflow-x-auto">
-                                                                <table className="w-full">
-                                                                    <thead className="bg-gray-50">
-                                                                        <tr>
-                                                                            <th className="px-4 py-3 text-left text-xs">員工代號</th>
-                                                                            <th className="px-4 py-3 text-left text-xs">姓名</th>
-                                                                            <th className="px-4 py-3 text-left text-xs">部門</th>
-                                                                            <th className="px-4 py-3 text-left text-xs">職稱</th>
-                                                                            <th className="px-4 py-3 text-left text-xs">Email</th>
-                                                                            <th className="px-4 py-3 text-left text-xs">電話</th>
-                                                                            <th className="px-4 py-3 text-left text-xs">班別</th>
-                                                                            <th className="px-4 py-3 text-left text-xs">操作</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {categoryUsers.map(user => {
-                                                                            const canManage = canManageUser(user);
-                                                                            return (
-                                                                                <tr key={user.id}>
-                                                                                    <td className="px-4 py-3">{user.id}</td>
-                                                                                    <td className="px-4 py-3">{user.name}</td>
-                                                                                    <td className="px-4 py-3">{user.department}</td>
-                                                                                    <td className="px-4 py-3">{user.position}</td>
-                                                                                    <td className="px-4 py-3">{user.email}</td>
-                                                                                    <td className="px-4 py-3">{user.phone}</td>
-                                                                                    <td className="px-4 py-3">
-                                                                                        <div className="flex space-x-1">
-                                                                                            {user.shift.includes('早') && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>}
-                                                                                            {user.shift.includes('晚') && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">晚</span>}
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td className="px-4 py-3">
-                                                                                        <div className="flex space-x-2">
-                                                                                            <button onClick={() => canManage && handleEditUser(user)} className={`text-blue-600 ${canManage ? 'hover:text-blue-800' : 'opacity-40 cursor-not-allowed'}`} disabled={!canManage}>
-                                                                                                <Edit2 size={16} />
-                                                                                            </button>
-                                                                                            <button onClick={() => canManage && handleDeleteUser(user.id)} className={`text-red-600 ${canManage ? 'hover:text-red-800' : 'opacity-40 cursor-not-allowed'}`} disabled={!canManage}>
-                                                                                                <Trash2 size={16} />
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            );
-                                                                        })}
-                                                                    </tbody>
-                                                                </table>
+                                                             <div className="space-y-2">
+                                                                {Object.entries(categoryUsers.reduce((acc, user) => {
+                                                                    if (!acc[user.department]) acc[user.department] = [];
+                                                                    acc[user.department].push(user);
+                                                                    return acc;
+                                                                }, {})).map(([department, departmentUsers]) => {
+                                                                    const departmentKey = `${category}__${department}`;
+                                                                    const isDepartmentExpanded = expandedDepartments[departmentKey] ?? false;
+
+                                                                    return (
+                                                                        <div key={department} className="border border-gray-200 rounded-lg overflow-hidden">
+                                                                            <button
+                                                                                onClick={() => handleToggleDepartment(category, department)}
+                                                                                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50"
+                                                                            >
+                                                                                <div className="text-left">
+                                                                                    <p className="font-medium text-gray-800">{department}</p>
+                                                                                    <p className="text-xs text-gray-500">共 {departmentUsers.length} 人</p>
+                                                                                </div>
+                                                                                <span className="text-sm text-gray-500">{isDepartmentExpanded ? '收合 ▲' : '展開 ▼'}</span>
+                                                                            </button>
+
+                                                                            {isDepartmentExpanded && (
+                                                                                <div className="overflow-x-auto border-t border-gray-200">
+                                                                                    <table className="w-full">
+                                                                                        <thead className="bg-gray-50">
+                                                                                            <tr>
+                                                                                                <th className="px-4 py-3 text-left text-xs">員工代號</th>
+                                                                                                <th className="px-4 py-3 text-left text-xs">姓名</th>
+                                                                                                <th className="px-4 py-3 text-left text-xs">職稱</th>
+                                                                                                <th className="px-4 py-3 text-left text-xs">Email</th>
+                                                                                                <th className="px-4 py-3 text-left text-xs">電話</th>
+                                                                                                <th className="px-4 py-3 text-left text-xs">班別</th>
+                                                                                                <th className="px-4 py-3 text-left text-xs">操作</th>
+                                                                                            </tr>
+                                                                                        </thead>
+                                                                                        <tbody>
+                                                                                            {departmentUsers.map(user => {
+                                                                                                const canManage = canManageUser(user);
+                                                                                                return (
+                                                                                                    <tr key={user.id}>
+                                                                                                        <td className="px-4 py-3">{user.id}</td>
+                                                                                                        <td className="px-4 py-3">{user.name}</td>
+                                                                                                        <td className="px-4 py-3">{user.position}</td>
+                                                                                                        <td className="px-4 py-3">{user.email}</td>
+                                                                                                        <td className="px-4 py-3">{user.phone}</td>
+                                                                                                        <td className="px-4 py-3">
+                                                                                                            <div className="flex space-x-1">
+                                                                                                                {user.shift.includes('早') && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>}
+                                                                                                                {user.shift.includes('晚') && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">晚</span>}
+                                                                                                            </div>
+                                                                                                        </td>
+                                                                                                        <td className="px-4 py-3">
+                                                                                                            <div className="flex space-x-2">
+                                                                                                                <button onClick={() => canManage && handleEditUser(user)} className={`text-blue-600 ${canManage ? 'hover:text-blue-800' : 'opacity-40 cursor-not-allowed'}`} disabled={!canManage}>
+                                                                                                                    <Edit2 size={16} />
+                                                                                                                </button>
+                                                                                                                <button onClick={() => canManage && handleDeleteUser(user.id)} className={`text-red-600 ${canManage ? 'hover:text-red-800' : 'opacity-40 cursor-not-allowed'}`} disabled={!canManage}>
+                                                                                                                    <Trash2 size={16} />
+                                                                                                                </button>
+                                                                                                            </div>
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                );
+                                                                                            })}
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })}
                                                             </div>
                                                           )}
                                                     </div>

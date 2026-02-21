@@ -884,30 +884,32 @@ const EmployeeLeaveSystem = () => {
                   本月可休: {data.vacationSettings.monthlyVacationDays || '未設定'} 天
                 </div>
               </div>
-              <div className="flex justify-between items-center mb-4">
-                <button
-                  onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))}
-                  className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-                >
-                  上個月
-                </button>
-                <h3 className="text-xl font-bold">
-                  {selectedMonth.getFullYear()}年 {selectedMonth.getMonth() + 1}月
-                </h3>
-                <button
-                  onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))}
-                  className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-                >
-                  下個月
-                </button>
+               <div className="sticky top-0 z-20 bg-white pb-3">
+                <div className="flex justify-between items-center mb-4">
+                  <button
+                    onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))}
+                    className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  >
+                    上個月
+                  </button>
+                  <h3 className="text-xl font-bold">
+                    {selectedMonth.getFullYear()}年 {selectedMonth.getMonth() + 1}月
+                  </h3>
+                  <button
+                    onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))}
+                    className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  >
+                    下個月
+                  </button>
+                </div>
+                {appliedVacationUserFilter.length > 0 && (
+                  <p className="mb-2 text-xs md:text-sm text-indigo-600">
+                    已套用人員篩選，共 {visibleVacationUsers.length} 人
+                  </p>
+                )}
               </div>
-              {appliedVacationUserFilter.length > 0 && (
-                <p className="mb-2 text-xs md:text-sm text-indigo-600">
-                  已套用人員篩選，共 {visibleVacationUsers.length} 人
-                </p>
-              )}
               
-                <div>
+             <div className="max-h-[65vh] overflow-auto rounded-lg border border-gray-200">
                 <table className="w-full border-collapse table-fixed text-sm md:text-base">
                   <thead>
                     <tr>

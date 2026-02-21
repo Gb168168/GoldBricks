@@ -817,41 +817,6 @@ const EmployeeLeaveSystem = () => {
               </div>
             </div>
 
-             <div className="bg-white rounded-lg shadow p-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm md:text-base font-medium text-gray-700">人員勾選篩選：</span>
-                <div className="flex flex-wrap gap-2">
-                  {baseVacationUsers.map(user => (
-                    <label key={user.id} className="inline-flex items-center gap-1.5 px-2 py-1 border rounded text-sm md:text-base">
-                      <input
-                        type="checkbox"
-                        checked={pendingVacationUserFilter.includes(user.id)}
-                        onChange={() => handleTogglePendingVacationUser(user.id)}
-                      />
-                      <span>{user.name}</span>
-                    </label>
-                  ))}
-                </div>
-                <button
-                  onClick={handleApplyVacationUserFilter}
-                  className="px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm md:text-base"
-                >
-                  完成
-                </button>
-                <button
-                  onClick={handleClearVacationUserFilter}
-                  className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm md:text-base"
-                >
-                  清除篩選
-                </button>
-              </div>
-              {appliedVacationUserFilter.length > 0 && (
-                <p className="mt-2 text-xs md:text-sm text-indigo-600">
-                  已套用人員篩選，共 {visibleVacationUsers.length} 人
-                </p>
-              )}
-            </div>
-
             <div className="bg-white rounded-lg shadow p-4">
                      {currentUser.isAdmin && (
                 <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
@@ -936,12 +901,34 @@ const EmployeeLeaveSystem = () => {
                   下個月
                 </button>
               </div>
-
+              {appliedVacationUserFilter.length > 0 && (
+                <p className="mb-2 text-xs md:text-sm text-indigo-600">
+                  已套用人員篩選，共 {visibleVacationUsers.length} 人
+                </p>
+              )}
+              
                 <div>
                 <table className="w-full border-collapse table-fixed text-sm md:text-base">
                   <thead>
                     <tr>
-                     <th className="border p-2 bg-gray-50 sticky left-0 z-10 w-28">員工</th>
+                      <th className="border p-2 bg-gray-50 sticky left-0 z-20 w-28">
+                      <div className="font-medium">人員篩選</div>
+                      <div className="mt-2 flex flex-col gap-1.5">
+                        <button
+                          onClick={handleApplyVacationUserFilter}
+                          className="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs md:text-sm"
+                        >
+                          完成
+                        </button>
+                        <button
+                          onClick={handleClearVacationUserFilter}
+                          className="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs md:text-sm"
+                        >
+                          清除
+                        </button>
+                      </div>
+                     </th>
+                     <th className="border p-2 bg-gray-50 sticky left-28 z-20 w-28">員工</th>
                       {getMonthDays(selectedMonth).map(day => {
                         const holiday = isHoliday(day);
                         const weekend = isWeekend(day);
@@ -979,7 +966,15 @@ const EmployeeLeaveSystem = () => {
                         
                         return (
                           <tr key={user.id}>
-                            <td className="border p-2 font-medium bg-white sticky left-0 z-10 text-sm md:text-base">
+                              <td className="border p-2 bg-white sticky left-0 z-10 text-center">
+                              <input
+                                type="checkbox"
+                                checked={pendingVacationUserFilter.includes(user.id)}
+                                onChange={() => handleTogglePendingVacationUser(user.id)}
+                                aria-label={`篩選${user.name}`}
+                              />
+                            </td>
+                            <td className="border p-2 font-medium bg-white sticky left-28 z-10 text-sm md:text-base">
                               {user.name}
                               <div className="text-xs md:text-sm text-gray-500">{user.department}</div>
                             </td>
@@ -1032,7 +1027,7 @@ const EmployeeLeaveSystem = () => {
                       })}
                     {visibleVacationUsers.length === 0 && (
                       <tr>
-                        <td colSpan={getMonthDays(selectedMonth).length + 3} className="border p-4 text-center text-gray-500">
+                        <td colSpan={getMonthDays(selectedMonth).length + 4} className="border p-4 text-center text-gray-500">
                           沒有符合條件的人員
                         </td>
                       </tr>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-21</title>
+    <title>員工假管理系統-22</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -172,6 +172,7 @@
                 openEnd: '',
                 monthlyVacationDays: ''
             },
+            bulletinContent: '• 本月休假表開放後請於期限內完成填寫。',
             vacationSchedule: {},
             vacationNotes: {}
         };
@@ -282,7 +283,8 @@
                     },
                     schedules: parsed.schedules || [],
                     vacationSchedule: parsed.vacationSchedule || {},
-                    vacationNotes: parsed.vacationNotes || {}
+                    vacationNotes: parsed.vacationNotes || {},
+                    bulletinContent: parsed.bulletinContent || initialData.bulletinContent
                 };
             });
 
@@ -306,6 +308,13 @@
             const [showScheduleModal, setShowScheduleModal] = useState(false);
             const [selectedScheduleDate, setSelectedScheduleDate] = useState('');
             const [scheduleForm, setScheduleForm] = useState({ title: '', content: '' });
+
+            const handleBulletinChange = (value) => {
+                setData(prev => ({
+                    ...prev,
+                    bulletinContent: value
+                }));
+            };
 
             const [showAddUser, setShowAddUser] = useState(false);
             const [editingUser, setEditingUser] = useState(null);
@@ -1063,7 +1072,13 @@
                                     </div>
                                     <div className="hidden xl:block rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                                         <p className="font-semibold">公告欄</p>
-                                        <p>• 本月休假表開放後請於期限內完成填寫。</p>
+                                         <textarea
+                                            value={data.bulletinContent}
+                                            onChange={(e) => handleBulletinChange(e.target.value)}
+                                            className="mt-1 w-80 resize-y rounded border border-amber-300 bg-white/70 p-2 text-sm text-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                            rows={3}
+                                            placeholder="請輸入公告內容"
+                                        />
                                     </div>
                                 </div>
 
@@ -1766,6 +1781,7 @@
                                                                     </div>
                                                                 </td>
                                                                 <td className="border-2 border-gray-400 p-2 text-xs text-gray-600 bg-white sticky left-80 z-20">{user.department}</td>
+                                                                <td className="border-2 border-gray-300 p-2 text-center text-xs md:text-sm bg-gray-50 text-gray-500 whitespace-nowrap">排假</td>
                                                                 {getMonthDays(selectedMonth).map(day => {
                                                                     const dateStr = formatLocalDate(day);
                                                                     const leave = userLeaves.find(l =>
@@ -1809,6 +1825,9 @@
                                                 <tr className="bg-green-50">
                                                     <td className="border-2 border-gray-400 p-2 sticky left-0 z-10 bg-green-100"></td>
                                                     <td className="border-2 border-gray-400 p-2 font-bold text-center sticky left-24 z-10 bg-green-100">上班人數</td>
+                                                    <td className="border-2 border-gray-400 p-2 bg-green-100"></td>
+                                                    <td className="border-2 border-gray-400 p-2 bg-green-100"></td>
+                                                    <td className="border-2 border-gray-400 p-2 bg-green-100"></td>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         return (
                                                             <td

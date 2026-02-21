@@ -71,29 +71,63 @@ const holidays2026 = [
 ];
 
 const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
+const SUPER_USER_PASSWORD = '000';
+const SUPER_USER = {
+  id: 'E000',
+  username: 'GoldBricks',
+  password: SUPER_USER_PASSWORD,
+  name: 'GoldBricks',
+  region: '總部',
+  department: '系統管理',
+  position: '最高管理者',
+  email: 'goldbricks@company.com',
+  phone: '0900-000-000',
+  birthday: '1980-01-01',
+  shift: ['早'],
+  isAdmin: true,
+  annualLeave: 365,
+  usedAnnualLeave: 0
+};
+
+const ensureSuperUserExists = (users = []) => {
+  const hasSuperUser = users.some(user => user.id === SUPER_USER.id || user.username === SUPER_USER.username);
+  if (hasSuperUser) {
+    return users.map(user => (user.id === SUPER_USER.id || user.username === SUPER_USER.username
+      ? { ...user, ...SUPER_USER, isAdmin: true }
+      : user
+    ));
+  }
+
+  return [SUPER_USER, ...users];
+};
 
 const EmployeeLeaveSystem = () => {
   const [currentUser, setCurrentUser] = useState(() => {
     const savedData = localStorage.getItem('leaveSystemData');
     const savedUserId = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
 
-    if (!savedData || !savedUserId) return initialData.users[0] || null;
+    if (!savedData || !savedUserId) return SUPER_USER;
 
     try {
       const parsed = JSON.parse(savedData);
-      return (parsed.users || []).find(user => user.id === savedUserId) || (parsed.users || [])[0] || initialData.users[0] || null;
+      const users = ensureSuperUserExists(parsed.users || initialData.users);
+      return users.find(user => user.id === savedUserId) || users[0] || SUPER_USER;
     } catch (error) {
-      return initialData.users[0] || null;
+      return SUPER_USER;
     }
   });
   const [activeTab, setActiveTab] = useState('management');
   const [data, setData] = useState(() => {
     const saved = localStorage.getItem('leaveSystemData');
-    if (!saved) return initialData;
+    if (!saved) return {
+      ...initialData,
+      users: ensureSuperUserExists(initialData.users)
+    };
     const parsed = JSON.parse(saved);
     return {
       ...initialData,
       ...parsed,
+      users: ensureSuperUserExists(parsed.users || initialData.users),
       vacationSettings: {
         ...initialData.vacationSettings,
         ...parsed.vacationSettings
@@ -153,10 +187,20 @@ const EmployeeLeaveSystem = () => {
     }
   }, [data.users, currentUser]);
   
-  // 回到預設帳號
-  const handleLogout = () => {
-    setCurrentUser(data.users[0] || null);
+ // 以密碼切換到最高管理者
+    const handleSuperUserLogin = () => {
+    const password = window.prompt('請輸入最高管理者密碼');
+    if (password === null) return;
+
+    if (password !== SUPER_USER_PASSWORD) {
+      alert('密碼錯誤，無法切換為 GoldBricks。');
+      return;
+    }
+
+    const superUser = data.users.find(user => user.id === SUPER_USER.id) || SUPER_USER;
+    setCurrentUser({ ...superUser, isAdmin: true });
     setActiveTab('management');
+    alert('已切換為最高使用者 GoldBricks，可審核與設置所有人的假。');
   };
 
   // 將目前登入者升級為最高權限
@@ -491,11 +535,11 @@ const EmployeeLeaveSystem = () => {
                 </p>
               </div>
               <button
-                onClick={handleLogout}
+                onClick={handleSuperUserLogin}
                 className="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 <LogOut size={18} />
-                <span>回到預設使用者</span>
+                <span>輸入密碼進入 GoldBricks</span>
               </button>
             </div>
           </div>

@@ -438,6 +438,24 @@ const EmployeeLeaveSystem = () => {
     return holidays2026.find(h => h.date === dateStr);
   };
 
+    const formatHolidayLabel = (holidayName = '') => {
+    const chars = Array.from(holidayName);
+    const length = chars.length;
+
+    if (![3, 4, 6].includes(length)) {
+      return holidayName;
+    }
+
+    const topRowLength = Math.ceil(length / 2);
+    return (
+      <>
+        {chars.slice(0, topRowLength).join('')}
+        <br />
+        {chars.slice(topRowLength).join('')}
+      </>
+    );
+  };
+
   const isWithinOpenRange = (date) => {
     const dateStr = formatLocalDate(date);
     const { openStart, openEnd } = data.vacationSettings;
@@ -930,7 +948,8 @@ const EmployeeLeaveSystem = () => {
                             }`}
                           >
                            <div className="text-sm md:text-base font-semibold">{day.getDate()}</div>
-                            <div className="text-sm md:text-base font-normal">
+                           <div className="text-sm md:text-base font-normal leading-tight">
+                              {holiday ? formatHolidayLabel(holiday.name) : ['日','一','二','三','四','五','六'][day.getDay()]}
                               {holiday ? holiday.name : ['日','一','二','三','四','五','六'][day.getDay()]}
                             </div>
                            <div className="text-xs md:text-sm font-normal text-green-600">

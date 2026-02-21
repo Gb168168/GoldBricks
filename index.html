@@ -350,6 +350,17 @@
                 }
             };
 
+             const handleQuickAdminEntry = () => {
+                const adminUser = data.users.find(user => user.isAdmin) || data.users[0];
+                if (!adminUser) {
+                    alert('目前沒有可登入的員工資料');
+                    return;
+                }
+
+                setCurrentUser(adminUser);
+                setLoginForm({ username: '', password: '' });
+            };
+            
             const handleLogout = async () => {
                 if (firebaseAuth) {
                     await firebaseAuth.signOut();
@@ -914,6 +925,14 @@
 
                                 <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700">
                                     登入
+                                </button>
+                                
+                                <button
+                                    type="button"
+                                    onClick={handleQuickAdminEntry}
+                                    className="w-full bg-emerald-100 text-emerald-700 py-3 rounded-lg hover:bg-emerald-200"
+                                >
+                                    快速進入系統（管理員）
                                 </button>
                             </form>
 

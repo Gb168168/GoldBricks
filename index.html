@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-7</title>
+    <title>員工假管理系統-8</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -182,6 +182,27 @@
 
         const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
 
+         const normalizeUserPermissions = (users = []) =>
+            users.map(user => {
+                if (!user?.isAdmin) {
+                    return {
+                        ...user,
+                        permissionRegions: Array.isArray(user?.permissionRegions) ? user.permissionRegions : [],
+                        permissionDepartments: Array.isArray(user?.permissionDepartments) ? user.permissionDepartments : []
+                    };
+                }
+
+                const savedRegions = Array.isArray(user.permissionRegions) ? user.permissionRegions : [];
+                const savedDepartments = Array.isArray(user.permissionDepartments) ? user.permissionDepartments : [];
+                const hasExplicitPermissions = savedRegions.length > 0 || savedDepartments.length > 0;
+
+                return {
+                    ...user,
+                    permissionRegions: hasExplicitPermissions ? savedRegions : [...regionOptions],
+                    permissionDepartments: hasExplicitPermissions ? savedDepartments : [...departmentOptions]
+                };
+            });
+
         const EmployeeLeaveSystem = () => {
              const [currentUser, setCurrentUser] = useState(() => {
                 const savedData = localStorage.getItem('leaveSystemData');
@@ -204,7 +225,7 @@
                 return {
                     ...initialData,
                     ...parsed,
-                    vacationSettings: {
+                    users: normalizeUserPermissions(parsed.users || initialData.users),
                         ...initialData.vacationSettings,
                         ...parsed.vacationSettings
                     },
@@ -264,6 +285,17 @@
                 }
             }, [currentUser]);
 
+           useEffect(() => {
+                setData(prev => {
+                    const normalizedUsers = normalizeUserPermissions(prev.users || []);
+                    const changed = JSON.stringify(normalizedUsers) !== JSON.stringify(prev.users || []);
+                    if (!changed) return prev;
+                    return {
+                        ...prev,
+                        users: normalizedUsers
+                    };
+                });
+            }, []);
             useEffect(() => {
                   if (!currentUser?.id) {
                     const defaultUser = data.users[0] || null;

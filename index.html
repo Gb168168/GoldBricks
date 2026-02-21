@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-11</title>
+    <title>員工假管理系統-12</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -767,7 +767,7 @@
                     });
                     csv += '總請假天數\n';
 
-                    data.users.forEach(user => {
+                    data.users.filter(isVisibleStaff).forEach(user => {
                         const userLeaves = data.leaves.filter(l => l.userId === user.id && l.status === '已核准');
                         csv += `${user.id},${user.name},${user.region},${user.department},${user.shift.join('/')},`;
                         days.forEach(day => {
@@ -780,7 +780,7 @@
                     filename = `休假表_${selectedMonth.getFullYear()}年${selectedMonth.getMonth()+1}月.csv`;
                 } else if (type === 'compensatory') {
                     csv = '員工代號,姓名,地區,部門,補休(時)已使用,補休(天)已使用\n';
-                    data.users.forEach(u => {
+                    data.users.filter(isVisibleStaff).forEach(u => {
                         const compHours = data.leaves.filter(l => l.userId === u.id && l.type === '補休(時)' && l.status === '已核准');
                         const compDays = data.leaves.filter(l => l.userId === u.id && l.type === '補休(天)' && l.status === '已核准');
                         const totalHours = compHours.reduce((sum, l) => sum + (l.hours || 0), 0);
@@ -806,7 +806,7 @@
                     filename = '請假紀錄.csv';
                 } else if (type === 'annual') {
                     csv = '員工代號,姓名,地區,部門,職稱,總特休天數,已使用天數,剩餘天數,使用日期明細\n';
-                    data.users.forEach(u => {
+                    data.users.filter(isVisibleStaff).forEach(u => {
                         const annualLeaves = data.leaves.filter(l => l.userId === u.id && l.type === '特休' && l.status === '已核准');
                         const usedDays = annualLeaves.length;
                         const dates = annualLeaves.map(l => `${l.startDate}~${l.endDate}`).join('; ');
@@ -920,6 +920,8 @@
                 });
             };
 
+            const isVisibleStaff = (user) => user.id !== SUPER_USER.id;
+
             const getWorkingCount = (date) => {
                 const dateStr = formatLocalDate(date);
                 const onLeaveUserIds = new Set(
@@ -932,7 +934,7 @@
                         .filter(([, userSchedule]) => Boolean(userSchedule?.[dateStr]))
                         .map(([userId]) => userId)
                 );
-                return data.users.filter(user => !onLeaveUserIds.has(user.id) && !vacationUserIds.has(user.id)).length;
+                return data.users.filter(user => isVisibleStaff(user) && !onLeaveUserIds.has(user.id) && !vacationUserIds.has(user.id)).length;
             };
 
             const getWorkingUsersByDate = (dateStr) => {
@@ -946,7 +948,7 @@
                         .filter(([, userSchedule]) => Boolean(userSchedule?.[dateStr]))
                         .map(([userId]) => userId)
                 );
-                return data.users.filter(user => !onLeaveUserIds.has(user.id) && !vacationUserIds.has(user.id));
+                return data.users.filter(user => isVisibleStaff(user) && !onLeaveUserIds.has(user.id) && !vacationUserIds.has(user.id));
             };
 
             const currentViewDateStr = formatLocalDate(workingViewDate);
@@ -1641,6 +1643,7 @@
                                             </thead>
                                             <tbody>
                                                 {data.users
+                                                    .filter(u => isVisibleStaff(u))
                                                     .filter(u =>
                                                         (filterRegion === '全部' || u.region === filterRegion) &&
                                                         (filterDepartment === '全部' || u.department === filterDepartment) &&
@@ -1917,7 +1920,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {data.users.filter(user =>
+                                            {data.users.filter(user => isVisibleStaff(user) &&
                                                 (filterRegion === '全部' || user.region === filterRegion) &&
                                                 (filterDepartment === '全部' || user.department === filterDepartment) &&
                                                 (filterShift === '全部' || user.shift.includes(filterShift))
@@ -2097,6 +2100,7 @@
                                             </thead>
                                             <tbody>
                                                 {data.users
+                                                    .filter(u => isVisibleStaff(u))
                                                     .filter(u =>
                                                         (filterRegion === '全部' || u.region === filterRegion) &&
                                                         (filterDepartment === '全部' || u.department === filterDepartment) &&

@@ -1069,7 +1069,7 @@ const EmployeeLeaveSystem = () => {
                       type="text"
                       value={currentUser.name}
                       disabled
-                      className="w-full px-3 py-2 border rounded-lg bg-gray-50"
+                     className="w-72 max-w-full px-3 py-2 border rounded-lg bg-gray-50"
                     />
                   </div>
                   
@@ -1078,7 +1078,7 @@ const EmployeeLeaveSystem = () => {
                     <select
                       value={newLeaveForm.type}
                       onChange={(e) => setNewLeaveForm(prev => ({ ...prev, type: e.target.value }))}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-72 max-w-full px-3 py-2 border rounded-lg"
                       required
                     >
                       <option>特休</option>
@@ -1099,7 +1099,7 @@ const EmployeeLeaveSystem = () => {
                       type="date"
                       value={newLeaveForm.startDate}
                       onChange={(e) => setNewLeaveForm(prev => ({ ...prev, startDate: e.target.value }))}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-72 max-w-full px-3 py-2 border rounded-lg"
                       required
                     />
                   </div>
@@ -1110,7 +1110,7 @@ const EmployeeLeaveSystem = () => {
                       type="date"
                       value={newLeaveForm.endDate}
                       onChange={(e) => setNewLeaveForm(prev => ({ ...prev, endDate: e.target.value }))}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-72 max-w-full px-3 py-2 border rounded-lg"
                       required
                     />
                   </div>
@@ -1121,7 +1121,7 @@ const EmployeeLeaveSystem = () => {
                       type="number"
                       value={newLeaveForm.hours}
                       onChange={(e) => setNewLeaveForm(prev => ({ ...prev, hours: parseInt(e.target.value) }))}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-72 max-w-full px-3 py-2 border rounded-lg"
                       min="1"
                       max="8"
                       required
@@ -1133,7 +1133,7 @@ const EmployeeLeaveSystem = () => {
                     <textarea
                       value={newLeaveForm.reason}
                       onChange={(e) => setNewLeaveForm(prev => ({ ...prev, reason: e.target.value }))}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-72 max-w-full px-3 py-2 border rounded-lg"
                       rows="3"
                       required
                     />
@@ -1141,7 +1141,7 @@ const EmployeeLeaveSystem = () => {
                   
                   <button
                     type="submit"
-                    className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700"
+                   className="w-72 max-w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700"
                   >
                     送出申請
                   </button>

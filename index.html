@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-39</title>
+    <title>員工假管理系統-40</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1809,7 +1809,7 @@
                                         <table className="w-full border-collapse text-sm md:text-base table-fixed">
                                            <thead className="sticky top-0 z-30">
                                                 <tr>
-                                                   <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-0 z-30 w-24 text-sm md:text-base align-top">
+                                                   <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 z-30 w-24 text-sm md:text-base align-top">
                                                        <div className="font-medium">人員篩選</div>
                                                        <div className="mt-2 flex flex-col gap-1.5">
                                                            <button
@@ -1826,9 +1826,9 @@
                                                            </button>
                                                        </div>
                                                    </th>
-                                                   <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-25 z-30 w-15 text-sm md:text-base">人員</th>
-                                                   <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-48 z-30 w-15 text-sm md:text-base">班別</th>
-                                                   <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-72 z-30 w-15 text-sm md:text-base">部門</th>
+                                                   <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 z-30 w-15 text-sm md:text-base">人員</th>
+                                                   <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 z-30 w-15 text-sm md:text-base">班別</th>
+                                                   <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 z-30 w-15 text-sm md:text-base">部門</th>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
@@ -1900,7 +1900,7 @@
 
                                                         return (
                                                             <tr key={user.id} className={isCurrentUser ? 'bg-indigo-50' : ''}>
-                                                                <td className="border-2 border-gray-400 p-2 text-center bg-white sticky left-0 z-10">
+                                                                <td className="border-2 border-gray-400 p-2 text-center bg-white z-10">
                                                                     <button
                                                                         type="button"
                                                                         role="switch"
@@ -1922,11 +1922,11 @@
                                                                         />
                                                                     </button>
                                                                 </td>
-                                                                <td className="border-2 border-gray-400 p-2 font-medium bg-white sticky left-24 z-20">
+                                                                <td className="border-2 border-gray-400 p-2 font-medium bg-white z-20">
                                                                     {user.name}
                                                                     {isCurrentUser && <span className="ml-1 text-xs bg-indigo-600 text-white px-2 py-0.5 rounded">我</span>}
                                                                 </td>
-                                                                <td className="border-2 border-gray-400 p-2 bg-white sticky left-56 z-20">
+                                                               <td className="border-2 border-gray-400 p-2 bg-white z-20">
                                                                     <div className="flex flex-wrap gap-1">
                                                                         {user.shift.includes('早') && (
                                                                             <span className="px-1 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>
@@ -1936,7 +1936,7 @@
                                                                         )}
                                                                     </div>
                                                                 </td>
-                                                                <td className="border-2 border-gray-400 p-2 text-xs text-gray-600 bg-white sticky left-80 z-20">{user.department}</td>
+                                                                <td className="border-2 border-gray-400 p-2 text-xs text-gray-600 bg-white z-20">{user.department}</td>
                                                                 {getMonthDays(selectedMonth).map(day => {
                                                                     const dateStr = formatLocalDate(day);
                                                                     const leave = userLeaves.find(l =>
@@ -1978,8 +1978,8 @@
                                                         );
                                                     })}
                                                <tr className="bg-green-50">  
-                                                    <td className="border-2 border-gray-400 p-2 sticky left-0 bottom-0 z-30 bg-green-100"></td>
-                                                    <td className="border-2 border-gray-400 p-2 font-bold text-center sticky left-24 bottom-0 z-30 bg-green-100">上班人數</td>
+                                                    <td className="border-2 border-gray-400 p-2 sticky bottom-0 z-30 bg-green-100"></td>
+                                                    <td className="border-2 border-gray-400 p-2 font-bold text-center sticky bottom-0 z-30 bg-green-100">上班人數</td>
                                                     <td className="border-2 border-gray-400 p-2 sticky bottom-0 z-20 bg-green-100"></td>
                                                     <td className="border-2 border-gray-400 p-2 sticky bottom-0 z-20 bg-green-100"></td>
                                                     <td className="border-2 border-gray-400 p-2 sticky bottom-0 z-20 bg-green-100"></td>

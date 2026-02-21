@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-18</title>
+    <title>員工假管理系統-19</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -96,8 +96,24 @@
         );
 
         const regionOptions = ['新竹區', '台中區', '嘉義區'];
-        const departmentOptions = ['管理部', 'TSE', 'FAE', '新場', '倉管', 'RD', '線上客服'];
+        const departmentOptions = ['管理部', 'TSE', 'FAE', '新場', '倉管', 'RD', '線上客服']
+        const COMPANY_EMAIL_DOMAIN = '@goldbricks.com.tw';
 
+        const toEmailLocalPart = (email = '') => {
+            if (!email) return '';
+            const normalizedEmail = email.trim().toLowerCase();
+            if (normalizedEmail.endsWith(COMPANY_EMAIL_DOMAIN)) {
+                return normalizedEmail.slice(0, -COMPANY_EMAIL_DOMAIN.length);
+            }
+            const [localPart = ''] = normalizedEmail.split('@');
+            return localPart;
+        };
+
+        const buildCompanyEmail = (localPart = '') => {
+            const normalizedLocal = localPart.trim().toLowerCase();
+            return normalizedLocal ? `${normalizedLocal}${COMPANY_EMAIL_DOMAIN}` : '';
+        };
+        
         const firebaseConfig = {
             apiKey: 'AIzaSyDlckNcNvIBOOEO23gHlt7A-H13mUelYqM',
             authDomain: 'goldbricks-38d0a.firebaseapp.com',
@@ -427,7 +443,7 @@
                     region: user.region,
                     department: user.department,
                     position: user.position,
-                    email: user.email,
+                    email: toEmailLocalPart(user.email),
                     phone: user.phone,
                     birthday: user.birthday,
                     shift: user.shift,
@@ -453,7 +469,8 @@
                 const userPayload = {
                     ...newUserForm,
                     id: normalizedId,
-                    username: normalizedUsername
+                    username: normalizedUsername,
+                    email: buildCompanyEmail(newUserForm.email)
                 };
                 
                 if (editingUser) {
@@ -470,7 +487,7 @@
                         return;
                     }
 
-                    if (data.users.some(u => u.id !== targetId && u.email === userPayload.email)) {
+                    if (userPayload.email && data.users.some(u => u.id !== targetId && u.email === userPayload.email)) {
                         alert('Email 已存在,請使用其他 Email!');
                         return;
                     }
@@ -547,7 +564,7 @@
                         return;
                     }
 
-                    if (data.users.find(u => u.email === newUserForm.email)) {
+                    if (userPayload.email && data.users.find(u => u.email === userPayload.email)) {
                         alert('Email 已存在,請使用其他 Email!');
                         return;
                     }
@@ -1033,14 +1050,20 @@
                     <div className="fixed top-0 left-0 right-0 z-30 bg-white">
                     <nav className="bg-white shadow-sm border-b">
                      <div className="max-w-screen-2xl mx-auto px-4 py-4">
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center space-x-3">
-                                    <div className="bg-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
-                                        <Users size={24} className="text-white" />
+                            <div className="flex justify-between items-center gap-4">
+                                <div className="flex items-center gap-4 min-w-0">
+                                    <div className="flex items-center space-x-3 min-w-0">
+                                        <div className="bg-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
+                                            <Users size={24} className="text-white" />
+                                        </div>
+                                        <div>
+                                            <h1 className="text-xl font-bold">員工假勤系統</h1>
+                                           <p className="text-sm md:text-base text-gray-500">歡迎, {currentUser.name} {currentUser.isAdmin && '(管理員)'}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h1 className="text-xl font-bold">員工假勤系統</h1>
-                                       <p className="text-sm md:text-base text-gray-500">歡迎, {currentUser.name} {currentUser.isAdmin && '(管理員)'}</p>
+                                    <div className="hidden xl:block rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                                        <p className="font-semibold">公告欄</p>
+                                        <p>• 本月休假表開放後請於期限內完成填寫。</p>
                                     </div>
                                 </div>
 
@@ -1235,12 +1258,17 @@
 
                                             <div>
                                                 <label className="block text-sm md:text-base font-medium mb-1">Email</label>
-                                                <input
-                                                    type="email"
-                                                    value={newUserForm.email}
-                                                    onChange={(e) => setNewUserForm({...newUserForm, email: e.target.value})}
-                                                    className="w-full px-3 py-2 border rounded-lg"
-                                                />
+                                                <div className="flex items-center rounded-lg border overflow-hidden">
+                                                    <input
+                                                        type="text"
+                                                        value={newUserForm.email}
+                                                        onChange={(e) => setNewUserForm({...newUserForm, email: e.target.value})}
+                                                        className="w-full px-3 py-2 outline-none"
+                                                        placeholder="請輸入帳號前綴"
+                                                    />
+                                                    <span className="px-3 py-2 bg-gray-100 text-gray-600 text-sm whitespace-nowrap">{COMPANY_EMAIL_DOMAIN}</span>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-1">系統會自動補上公司網域</p>
                                             </div>
 
                                             <div>
@@ -1620,7 +1648,7 @@
                                     
                                     <div className="max-h-[65vh] overflow-auto rounded-lg border border-gray-200">
                                         <table className="w-full border-collapse text-sm md:text-base table-fixed">
-                                            <thead>
+                                           <thead className="sticky top-0 z-30">
                                                 <tr>
                                                    <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-0 z-30 w-24 text-sm md:text-base align-top">
                                                        <div className="font-medium">人員篩選</div>
@@ -1639,11 +1667,9 @@
                                                            </button>
                                                        </div>
                                                    </th>
-                                                   <th className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-24 z-20 w-28 text-sm md:text-base">
-                                                       <div>人員</div>
-                                                       <div>班別</div>
-                                                       <div>部門</div>
-                                                   </th>
+                                                    <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-24 z-30 w-32 text-sm md:text-base">人員</th>
+                                                   <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-56 z-30 w-24 text-sm md:text-base">班別</th>
+                                                   <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-80 z-30 w-32 text-sm md:text-base">部門</th>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
@@ -1664,7 +1690,7 @@
                                                   <th className="border-2 border-gray-400 p-2 bg-yellow-100 font-bold sticky right-0 z-20 w-24 whitespace-nowrap text-sm md:text-base">已選天數</th>
                                                 </tr>
                                                 <tr>
-                                                    <th className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-24 z-20 text-sm md:text-base">日期</th>
+                                                    <th className="border-2 border-gray-400 p-2 bg-gray-100 text-sm md:text-base">日期</th>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
@@ -1684,7 +1710,7 @@
                                                     <th className="border-2 border-gray-400 p-2 bg-yellow-100 sticky right-0 z-20"></th>
                                                 </tr>
                                                 <tr>
-                                                 <th className="border-2 border-gray-400 p-2 bg-gray-100 sticky left-24 z-20 text-sm md:text-base">國定假日</th>
+                                                 <th className="border-2 border-gray-400 p-2 bg-gray-100 text-sm md:text-base">國定假日</th>
                                                     {getMonthDays(selectedMonth).map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
@@ -1739,12 +1765,12 @@
                                                                         />
                                                                     </button>
                                                                 </td>
-                                                                <td className="border-2 border-gray-400 p-2 font-medium bg-white sticky left-24 z-10">
-                                                                    <div>
-                                                                        {user.name}
-                                                                        {isCurrentUser && <span className="ml-1 text-xs bg-indigo-600 text-white px-2 py-0.5 rounded">我</span>}
-                                                                    </div>
-                                                                    <div className="flex gap-1 mt-1">
+                                                                <td className="border-2 border-gray-400 p-2 font-medium bg-white sticky left-24 z-20">
+                                                                    {user.name}
+                                                                    {isCurrentUser && <span className="ml-1 text-xs bg-indigo-600 text-white px-2 py-0.5 rounded">我</span>}
+                                                                </td>
+                                                                <td className="border-2 border-gray-400 p-2 bg-white sticky left-56 z-20">
+                                                                    <div className="flex flex-wrap gap-1">
                                                                         {user.shift.includes('早') && (
                                                                             <span className="px-1 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>
                                                                         )}
@@ -1752,8 +1778,8 @@
                                                                             <span className="px-1 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">晚</span>
                                                                         )}
                                                                     </div>
-                                                                    <div className="text-xs text-gray-500 mt-1">{user.department}</div>
                                                                 </td>
+                                                                <td className="border-2 border-gray-400 p-2 text-xs text-gray-600 bg-white sticky left-80 z-20">{user.department}</td>
                                                                 {getMonthDays(selectedMonth).map(day => {
                                                                     const dateStr = formatLocalDate(day);
                                                                     const leave = userLeaves.find(l =>

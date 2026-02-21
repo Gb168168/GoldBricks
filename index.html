@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-42</title>
+    <title>員工假管理系統-43</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -217,7 +217,7 @@
 
         const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
         const VACATION_TAB_SCALE = 0.84;
-        const VACATION_TAB_OFFSET_Y = '-10px';
+        const VACATION_TAB_OFFSET_Y = '-22px';
         const SUPER_USER_PASSWORD = '000';
         const SUPER_USER = {
             id: 'E000',
@@ -1228,7 +1228,7 @@
                     </aside>
 
                       <div
-                        className="ml-52 md:ml-56 lg:ml-64 h-[calc(100vh-7rem)] overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-36"
+                        className={`ml-52 md:ml-56 lg:ml-64 h-[calc(100vh-7rem)] overflow-y-auto px-4 md:px-5 lg:px-6 py-6 ${activeTab === 'vacation' ? 'pt-28' : 'pt-36'}`}
                         style={{ transform: activeTab === 'vacation' ? `translateY(${VACATION_TAB_OFFSET_Y})` : 'none' }}
                     >
                         {activeTab === 'todayWorking' && (
@@ -1687,7 +1687,7 @@
                         )}
 
                         {activeTab === 'vacation' && (
-                            <div className="space-y-4">
+                            <div className="flex min-h-[calc(100vh-12rem)] flex-col gap-4">
                                 <div className="flex justify-between items-center">
                                     <h2 className="text-2xl font-bold">休假表</h2>
                                     <div className="flex space-x-2">
@@ -1734,7 +1734,7 @@
                                     </div>
                                 </div>
 
-                                <div className="bg-white rounded-lg shadow p-4">
+                               <div className="bg-white rounded-lg shadow p-4 flex flex-1 min-h-0 flex-col">
                                              {currentUser.isAdmin && (
                                         <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
                                             <p className="text-sm md:text-base font-medium text-indigo-700 mb-2">班表開放日期設定 (管理員)</p>
@@ -1813,7 +1813,7 @@
                                         )}
                                     </div>
                                     
-                                    <div className="max-h-[65vh] overflow-auto rounded-lg border border-gray-200">
+                                    <div className="flex-1 min-h-0 overflow-auto rounded-lg border border-gray-200">
                                         <table className="w-full border-collapse text-sm md:text-base table-fixed">
                                            <thead className="sticky top-0 z-30">
                                                 <tr>

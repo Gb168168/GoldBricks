@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-40</title>
+    <title>員工假管理系統-41</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -216,7 +216,8 @@
         ];
 
         const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
-         const SUPER_USER_PASSWORD = '000';
+        const VACATION_TAB_SCALE = 0.9;
+        const SUPER_USER_PASSWORD = '000';
         const SUPER_USER = {
             id: 'E000',
             username: 'GoldBricks',
@@ -1158,7 +1159,10 @@
 
             
             return (
-                <div className="h-screen overflow-hidden bg-gray-50 text-sm md:text-base">
+                <div
+                    className="h-screen overflow-hidden bg-gray-50 text-sm md:text-base"
+                    style={{ zoom: activeTab === 'vacation' ? VACATION_TAB_SCALE : 1 }}
+                >
                     <div className="fixed top-0 left-0 right-0 z-30 bg-white">
                     <nav className="bg-white shadow-sm border-b">
                      <div className="px-4 py-4" style={{ width: '60.0%' }}>

@@ -917,16 +917,16 @@ const EmployeeLeaveSystem = () => {
                       <div className="font-medium">人員篩選</div>
                       <div className="mt-2 flex flex-col gap-1.5">
                         <button
-                          onClick={handleApplyVacationUserFilter}
-                          className="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs md:text-sm"
-                        >
-                          完成
-                        </button>
-                        <button
                           onClick={handleClearVacationUserFilter}
                           className="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs md:text-sm"
                         >
                           清除
+                        </button>
+                        <button
+                          onClick={handleApplyVacationUserFilter}
+                          className="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs md:text-sm"
+                        >
+                          完成
                         </button>
                       </div>
                      </th>
@@ -958,7 +958,7 @@ const EmployeeLeaveSystem = () => {
                         );
                       })}
                         <th className="border p-2 bg-gray-50 w-24 whitespace-nowrap text-sm md:text-base">已選天數</th>
-                      <th className="border p-2 bg-gray-50 w-40 text-sm md:text-base">國定假日/星期/日期/備註</th>
+                      <th className="border p-2 bg-gray-50 w-40 text-sm md:text-base">星期/日期/備註</th>
                     </tr>
                   </thead>
                   <tbody>

@@ -966,13 +966,27 @@ const EmployeeLeaveSystem = () => {
                         
                         return (
                           <tr key={user.id}>
-                              <td className="border p-2 bg-white sticky left-0 z-10 text-center">
-                              <input
-                                type="checkbox"
-                                checked={pendingVacationUserFilter.includes(user.id)}
-                                onChange={() => handleTogglePendingVacationUser(user.id)}
+                               <td className="border p-2 bg-white sticky left-0 z-10 text-center">
+                              <button
+                                type="button"
+                                role="switch"
+                                aria-checked={pendingVacationUserFilter.includes(user.id)}
+                                onClick={() => handleTogglePendingVacationUser(user.id)}
                                 aria-label={`篩選${user.name}`}
-                              />
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 ${
+                                  pendingVacationUserFilter.includes(user.id)
+                                    ? 'bg-indigo-600'
+                                    : 'bg-gray-300'
+                                }`}
+                              >
+                                <span
+                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    pendingVacationUserFilter.includes(user.id)
+                                      ? 'translate-x-6'
+                                      : 'translate-x-1'
+                                  }`}
+                                />
+                              </button>
                             </td>
                             <td className="border p-2 font-medium bg-white sticky left-28 z-10 text-sm md:text-base">
                               {user.name}

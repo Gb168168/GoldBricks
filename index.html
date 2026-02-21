@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-1</title>
+    <title>員工假管理系統-2</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -193,13 +193,13 @@
                 const savedData = localStorage.getItem('leaveSystemData');
                 const savedUserId = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
 
-                if (!savedData || !savedUserId) return null;
+                if (!savedData || !savedUserId) return initialData.users[0] || null;
 
                 try {
                     const parsed = JSON.parse(savedData);
-                    return (parsed.users || []).find(user => user.id === savedUserId) || null;
+                    return (parsed.users || []).find(user => user.id === savedUserId) || (parsed.users || [])[0] || initialData.users[0] || null;
                 } catch (error) {
-                    return null;
+                    return initialData.users[0] || null;
                 }
             });
             const [activeTab, setActiveTab] = useState('vacation');
@@ -220,8 +220,6 @@
                 };
             });
 
-            const [loginForm, setLoginForm] = useState({ username: '', password: '' });
-            const [authReady, setAuthReady] = useState(false);
             const [selectedMonth, setSelectedMonth] = useState(new Date(2026, 1)); // 2月
             const [filterRegion, setFilterRegion] = useState('全部');
             const [filterDepartment, setFilterDepartment] = useState('全部');
@@ -273,11 +271,17 @@
             }, [currentUser]);
 
             useEffect(() => {
-                if (!currentUser?.id) return;
+                  if (!currentUser?.id) {
+                    const defaultUser = data.users[0] || null;
+                    if (defaultUser) {
+                        setCurrentUser(defaultUser);
+                    }
+                    return;
+                }
 
                 const latestUser = data.users.find(user => user.id === currentUser.id);
                 if (!latestUser) {
-                    setCurrentUser(null);
+                    setCurrentUser(data.users[0] || null);
                     setActiveTab('vacation');
                     return;
                 }
@@ -286,32 +290,6 @@
                     setCurrentUser(latestUser);
                 }
             }, [data.users, currentUser]);
-
-            useEffect(() => {
-                if (!firebaseAuth) {
-                    setAuthReady(true);
-                    return;
-                }
-
-                const unsubscribe = firebaseAuth.onAuthStateChanged((authUser) => {
-                    if (!authUser) {
-                        setCurrentUser(null);
-                        setAuthReady(true);
-                        return;
-                    }
-
-                    const matchedUser = data.users.find(user => user.email === authUser.email);
-                    if (matchedUser) {
-                        setCurrentUser(matchedUser);
-                    } else {
-                        alert('Firebase 已登入,但系統內找不到對應員工資料');
-                        firebaseAuth.signOut();
-                    }
-                    setAuthReady(true);
-                });
-
-                return () => unsubscribe();
-            }, [data.users]);
 
             const createFirebaseAccount = async (email, password) => {
                 const response = await fetch(firebaseSignupEndpoint, {
@@ -329,43 +307,12 @@
                 return result;
             };
 
-            const handleLogin = async (e) => {
-                e.preventDefault();
-                 if (!isFirebaseConfigured || !firebaseAuth) {
-                    alert('請先在程式碼內設定 Firebase config');
-                    return;
-                }
-
-                const user = data.users.find(u => u.username === loginForm.username);
-                if (!user?.email) {
-                    alert('找不到此帳號,或該員工未設定 Email');
-                    return;
-                }
-
-                try {
-                    await firebaseAuth.signInWithEmailAndPassword(user.email, loginForm.password);
-                    setLoginForm({ username: '', password: '' });
-                } catch (error) {
-                    alert(`登入失敗: ${error.message}`);
-                }
-            };
-
-             const handleQuickAdminEntry = () => {
-                const adminUser = data.users.find(user => user.isAdmin) || data.users[0];
-                if (!adminUser) {
-                    alert('目前沒有可登入的員工資料');
-                    return;
-                }
-
-                setCurrentUser(adminUser);
-                setLoginForm({ username: '', password: '' });
-            };
-            
             const handleLogout = async () => {
                 if (firebaseAuth) {
                     await firebaseAuth.signOut();
                 }
-                setCurrentUser(null);
+               setCurrentUser(data.users[0] || null);
+               setActiveTab('vacation');
             };
 
             const handleDeleteUser = (userId) => {
@@ -884,82 +831,7 @@
                 }
             };
 
-            if (!currentUser) {
-                  if (!authReady) {
-                    return <div className="min-h-screen flex items-center justify-center">Firebase 驗證初始化中...</div>;
-                }
-
-                return (
-                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 text-base md:text-lg">
-                        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg">
-                            <div className="text-center mb-8">
-                                <div className="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Users size={32} className="text-white" />
-                                </div>
-                                <h1 className="text-3xl font-bold text-gray-800">員工假勤系統</h1>
-                                <p className="text-gray-500 mt-2">請使用員工帳號 + Firebase 密碼登入</p>
-                             </div>
-
-                            <form onSubmit={handleLogin} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">帳號</label>
-                                    <input
-                                        type="text"
-                                        value={loginForm.username}
-                                        onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">密碼</label>
-                                    <input
-                                        type="password"
-                                        value={loginForm.password}
-                                        onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-                                        required
-                                    />
-                                </div>
-
-                                <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700">
-                                    登入
-                                </button>
-                                
-                                <button
-                                    type="button"
-                                    onClick={handleQuickAdminEntry}
-                                    className="w-full bg-emerald-100 text-emerald-700 py-3 rounded-lg hover:bg-emerald-200"
-                                >
-                                    快速進入系統（管理員）
-                                </button>
-                            </form>
-
-                          <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm md:text-base space-y-1">
-                                <p className="font-medium">登入說明:</p>
-                                <p>1. 輸入員工帳號 (例如 001)</p>
-                                <p>2. 密碼由 Firebase Authentication 管理</p>
-                                <p className="text-xs text-gray-600 pt-2">連線目標: Firebase Authentication（{firebaseConfig.projectId} / {firebaseConfig.authDomain}）</p>
-                                <p className="text-xs text-gray-600 break-all">建立帳號 API: {firebaseSignupEndpoint}</p>
-                            </div>
-
-                            <div className="mt-4">
-                               <button
-                                    onClick={handleResetData}
-                                    className="w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm md:text-base"
-                                >
-                                    🔄 重置系統資料
-                                </button>
-                                <p className="text-xs text-gray-500 text-center mt-2">
-                                    如果無法登入,請點擊此按鈕重置
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-
+            
             return (
                 <div className="min-h-screen bg-gray-50 text-base md:text-lg">
                     <div className="fixed top-0 left-0 right-0 z-30 bg-white">
@@ -984,7 +856,7 @@
                                         </p>
                                     </div>
                                     <button onClick={handleLogout} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-                                        登出
+                                        回到預設使用者
                                     </button>
                                 </div>
                             </div>

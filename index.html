@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-13</title>
+    <title>員工假管理系統-14</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -275,6 +275,8 @@
             const [filterRegion, setFilterRegion] = useState('全部');
             const [filterDepartment, setFilterDepartment] = useState('全部');
             const [filterShift, setFilterShift] = useState('全部');
+            const [pendingVacationUserFilter, setPendingVacationUserFilter] = useState([]);
+            const [appliedVacationUserFilter, setAppliedVacationUserFilter] = useState([]);
             const [selectedAnnualUserId, setSelectedAnnualUserId] = useState('');
             const [selectedVacationMarker, setSelectedVacationMarker] = useState('▲-black');
             const [showVacationSettings, setShowVacationSettings] = useState(false);
@@ -922,6 +924,41 @@
 
             const isVisibleStaff = (user) => user.id !== SUPER_USER.id;
 
+            const baseVacationUsers = data.users
+                .filter(user => isVisibleStaff(user))
+                .filter(user =>
+                    (filterRegion === '全部' || user.region === filterRegion) &&
+                    (filterDepartment === '全部' || user.department === filterDepartment) &&
+                    (filterShift === '全部' || user.shift.includes(filterShift))
+                );
+
+            const visibleVacationUsers = appliedVacationUserFilter.length
+                ? baseVacationUsers.filter(user => appliedVacationUserFilter.includes(user.id))
+                : baseVacationUsers;
+
+            useEffect(() => {
+                const validUserIds = new Set(baseVacationUsers.map(user => user.id));
+                setPendingVacationUserFilter(prev => prev.filter(id => validUserIds.has(id)));
+                setAppliedVacationUserFilter(prev => prev.filter(id => validUserIds.has(id)));
+            }, [filterRegion, filterDepartment, filterShift, data.users]);
+
+            const handleTogglePendingVacationUser = (userId) => {
+                setPendingVacationUserFilter(prev => (
+                    prev.includes(userId)
+                        ? prev.filter(id => id !== userId)
+                        : [...prev, userId]
+                ));
+            };
+
+            const handleApplyVacationUserFilter = () => {
+                setAppliedVacationUserFilter(pendingVacationUserFilter);
+            };
+
+            const handleClearVacationUserFilter = () => {
+                setPendingVacationUserFilter([]);
+                setAppliedVacationUserFilter([]);
+            };
+
             const getWorkingCount = (date) => {
                 const dateStr = formatLocalDate(date);
                 const onLeaveUserIds = new Set(
@@ -1542,6 +1579,38 @@
                                             </div>
                                         </div>
                                     )}
+                                    <div className="mb-4 rounded-lg border border-gray-200 p-3">
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            <span className="text-sm md:text-base font-medium text-gray-700">人員勾選篩選：</span>
+                                            <div className="flex flex-wrap gap-2">
+                                                {baseVacationUsers.map(user => (
+                                                    <label key={user.id} className="inline-flex items-center gap-1.5 px-2 py-1 border rounded text-sm md:text-base">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={pendingVacationUserFilter.includes(user.id)}
+                                                            onChange={() => handleTogglePendingVacationUser(user.id)}
+                                                        />
+                                                        <span>{user.name}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                            <button
+                                                onClick={handleApplyVacationUserFilter}
+                                                className="px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm md:text-base"
+                                            >
+                                                完成
+                                            </button>
+                                            <button
+                                                onClick={handleClearVacationUserFilter}
+                                                className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm md:text-base"
+                                            >
+                                                清除篩選
+                                            </button>
+                                        </div>
+                                        {appliedVacationUserFilter.length > 0 && (
+                                            <p className="mt-2 text-xs md:text-sm text-indigo-600">已套用人員篩選，共 {visibleVacationUsers.length} 人</p>
+                                        )}
+                                    </div>
                                     <div className="mb-4 flex flex-wrap items-center gap-3 text-sm md:text-base text-gray-600">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <span className="font-medium text-gray-700">休假符號:</span>
@@ -1642,13 +1711,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {data.users
-                                                    .filter(u => isVisibleStaff(u))
-                                                    .filter(u =>
-                                                        (filterRegion === '全部' || u.region === filterRegion) &&
-                                                        (filterDepartment === '全部' || u.department === filterDepartment) &&
-                                                        (filterShift === '全部' || u.shift.includes(filterShift))
-                                                    )
+                                                {visibleVacationUsers
                                                     .map(user => {
                                                        const userLeaves = data.leaves.filter(l =>
                                                             l.userId === user.id &&

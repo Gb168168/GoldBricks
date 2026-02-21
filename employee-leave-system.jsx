@@ -159,6 +159,27 @@ const EmployeeLeaveSystem = () => {
     setActiveTab('management');
   };
 
+  // 將目前登入者升級為最高權限
+  const handlePromoteCurrentUser = () => {
+    if (!currentUser?.id || currentUser.isAdmin) return;
+
+    setData(prev => ({
+      ...prev,
+      users: prev.users.map(user =>
+        user.id === currentUser.id ? { ...user, isAdmin: true } : user
+      ),
+      auditLogs: [...prev.auditLogs, {
+        timestamp: new Date().toISOString(),
+        user: currentUser.name,
+        action: '升級權限',
+        target: currentUser.name,
+        details: '將目前登入者設為最高權限，可進行設定與審核'
+      }]
+    }));
+
+    alert('已將目前登入帳號升級為最高權限，可進行設定與審核。');
+  };
+  
   // 新增/編輯員工
   const handleSaveUser = (userData) => {
     if (editingUser) {
@@ -453,7 +474,15 @@ const EmployeeLeaveSystem = () => {
                 <p className="text-sm md:text-base text-gray-500">歡迎, {currentUser.name} {currentUser.isAdmin && '(管理員)'}</p>
               </div>
             </div>
-            
+
+            {!currentUser.isAdmin && (
+                <button
+                  onClick={handlePromoteCurrentUser}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  設為最高權限
+                </button>
+              )}
             <div className="flex items-center space-x-4">
               <div className="text-right">
                 <p className="text-sm md:text-base text-gray-600">可休特休</p>

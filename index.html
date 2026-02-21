@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-33</title>
+    <title>員工假管理系統-34</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -347,6 +347,16 @@
                     localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
                 }
             }, [currentUser]);
+
+            useEffect(() => {
+                document.body.style.overflow = 'hidden';
+                document.documentElement.style.overflow = 'hidden';
+
+                return () => {
+                    document.body.style.overflow = '';
+                    document.documentElement.style.overflow = '';
+                };
+            }, []);
 
            useEffect(() => {
                 setData(prev => {
@@ -1148,7 +1158,7 @@
 
             
             return (
-                <div className="min-h-screen bg-gray-50 text-base md:text-lg">
+                <div className="h-screen overflow-hidden bg-gray-50 text-base md:text-lg">
                     <div className="fixed top-0 left-0 right-0 z-30 bg-white">
                     <nav className="bg-white shadow-sm border-b">
                      <div className="px-4 py-4" style={{ width: '60.0%' }}>
@@ -1212,7 +1222,7 @@
                         </div>
                     </aside>
 
-                    <div className="ml-52 md:ml-56 lg:ml-64 px-4 md:px-5 lg:px-6 py-6 pt-36">
+                    <div className="ml-52 md:ml-56 lg:ml-64 h-[calc(100vh-7rem)] overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-36">
                         {activeTab === 'todayWorking' && (
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">

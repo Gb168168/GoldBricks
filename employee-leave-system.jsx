@@ -423,9 +423,9 @@ const EmployeeLeaveSystem = () => {
   };
 
   const handleToggleVacation = (userId, dateStr) => {
-    if (!data.vacationSettings.openStart || !data.vacationSettings.openEnd) return;
+    if (!currentUser.isAdmin && (!data.vacationSettings.openStart || !data.vacationSettings.openEnd)) return;
     const isOpen = dateStr >= data.vacationSettings.openStart && dateStr <= data.vacationSettings.openEnd;
-    if (!isOpen) return;
+    if (!currentUser.isAdmin && !isOpen) return;
     if (!currentUser.isAdmin && currentUser.id !== userId) return;
     setData(prev => {
       const userSchedule = prev.vacationSchedule[userId] || {};
@@ -925,7 +925,7 @@ const EmployeeLeaveSystem = () => {
                               );
                              const customMarker = data.vacationSchedule[user.id]?.[dateStr];
                               const isOpen = isWithinOpenRange(day);
-                              const isEditable = isOpen && (currentUser.isAdmin || currentUser.id === user.id);
+                              const isEditable = currentUser.isAdmin || (isOpen && currentUser.id === user.id);
                               
                               return (
                                 <td

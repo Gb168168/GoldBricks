@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-32</title>
+    <title>員工假管理系統-33</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -191,7 +191,6 @@
                 openEnd: '',
                 monthlyVacationDays: ''
             },
-            bulletinContent: '• 本月休假表開放後請於期限內完成填寫。',
             vacationSchedule: {},
             vacationNotes: {}
         };
@@ -303,8 +302,7 @@
                     },
                     schedules: parsed.schedules || [],
                     vacationSchedule: parsed.vacationSchedule || {},
-                    vacationNotes: parsed.vacationNotes || {},
-                    bulletinContent: parsed.bulletinContent || initialData.bulletinContent
+                    vacationNotes: parsed.vacationNotes || {}
                 };
             });
 
@@ -328,13 +326,6 @@
             const [showScheduleModal, setShowScheduleModal] = useState(false);
             const [selectedScheduleDate, setSelectedScheduleDate] = useState('');
             const [scheduleForm, setScheduleForm] = useState({ title: '', content: '' });
-
-            const handleBulletinChange = (value) => {
-                setData(prev => ({
-                    ...prev,
-                    bulletinContent: value
-                }));
-            };
 
             const [showAddUser, setShowAddUser] = useState(false);
             const [editingUser, setEditingUser] = useState(null);
@@ -1171,16 +1162,6 @@
                                             <h1 className="text-xl font-bold">員工假勤系統</h1>
                                            <p className="text-sm md:text-base text-gray-500">歡迎, {currentUser.name} {currentUser.isAdmin && '(管理員)'}</p>
                                         </div>
-                                    </div>
-                                    <div className="hidden xl:block rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                                        <p className="font-semibold">公告欄</p>
-                                         <textarea
-                                            value={data.bulletinContent}
-                                            onChange={(e) => handleBulletinChange(e.target.value)}
-                                            className="mt-1 w-80 resize-y rounded border border-amber-300 bg-white/70 p-2 text-sm text-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                                            rows={3}
-                                            placeholder="請輸入公告內容"
-                                        />
                                     </div>
                                 </div>
 

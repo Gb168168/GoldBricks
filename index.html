@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-41</title>
+    <title>員工假管理系統-42</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -216,7 +216,8 @@
         ];
 
         const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
-        const VACATION_TAB_SCALE = 0.9;
+        const VACATION_TAB_SCALE = 0.84;
+        const VACATION_TAB_OFFSET_Y = '-10px';
         const SUPER_USER_PASSWORD = '000';
         const SUPER_USER = {
             id: 'E000',
@@ -1226,7 +1227,10 @@
                         </div>
                     </aside>
 
-                    <div className="ml-52 md:ml-56 lg:ml-64 h-[calc(100vh-7rem)] overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-36">
+                      <div
+                        className="ml-52 md:ml-56 lg:ml-64 h-[calc(100vh-7rem)] overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-36"
+                        style={{ transform: activeTab === 'vacation' ? `translateY(${VACATION_TAB_OFFSET_Y})` : 'none' }}
+                    >
                         {activeTab === 'todayWorking' && (
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">

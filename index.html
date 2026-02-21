@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-24</title>
+    <title>員工假管理系統-25</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -867,6 +867,24 @@
                 return holidays2026.find(h => h.date === dateStr);
             };
 
+            const formatHolidayLabel = (holidayName = '') => {
+                const chars = Array.from(holidayName);
+                const length = chars.length;
+
+                if (![3, 4, 6].includes(length)) {
+                    return holidayName;
+                }
+
+                const topRowLength = Math.ceil(length / 2);
+                return (
+                    <>
+                        {chars.slice(0, topRowLength).join('')}
+                        <br />
+                        {chars.slice(topRowLength).join('')}
+                    </>
+                );
+            };
+
             const isWeekend = (date) => {
                 return date.getDay() === 0 || date.getDay() === 6;
             };
@@ -1721,7 +1739,7 @@
                                                                     'bg-gray-50 border-gray-300'
                                                                 }`}
                                                             >
-                                                                {holiday ? holiday.name : ''}
+                                                                {holiday ? <span className="leading-tight inline-block">{formatHolidayLabel(holiday.name)}</span> : ''}
                                                             </th>
                                                         );
                                                     })}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, FileText, Clock, Clipboard, Download, Plus, Edit2, Trash2, Check, Bell } from 'lucide-react';
+import { Calendar, Users, FileText, Clock, Clipboard, Download, Plus, Edit2, Trash2, Check, Bell, LogOut } from 'lucide-react';
 
 // 初始化資料
 const initialData = {
@@ -388,6 +388,24 @@ const EmployeeLeaveSystem = () => {
     return data.users.length - leavesOnDate.length;
   };
 
+  const getWorkingUsersByDate = (dateStr) => {
+    const leaveUserIds = new Set(
+      data.leaves
+        .filter(l => l.status === '已核准' && dateStr >= l.startDate && dateStr <= l.endDate)
+        .map(l => l.userId)
+    );
+
+    return data.users.filter(user => !leaveUserIds.has(user.id));
+  };
+
+  const todayStr = formatLocalDate(new Date());
+  const todayWorkingUsers = getWorkingUsersByDate(todayStr);
+  const todayWorkingByDepartment = todayWorkingUsers.reduce((acc, user) => {
+    if (!acc[user.department]) acc[user.department] = [];
+    acc[user.department].push(user);
+    return acc;
+  }, {});
+
   // 主系統介面
   return (
     <div className="min-h-screen bg-gray-50 text-base md:text-lg">
@@ -431,6 +449,7 @@ const EmployeeLeaveSystem = () => {
           <div className="flex space-x-1 overflow-x-auto">
             {[
               { id: 'management', label: '人員管理', icon: Users, admin: true },
+              { id: 'todayWorking', label: '當日上班人員', icon: Bell },
               { id: 'vacation', label: '休假表', icon: Calendar },
               { id: 'compensatory', label: '補休表', icon: Clock },
               { id: 'schedule', label: '排程表', icon: Clipboard },
@@ -461,7 +480,39 @@ const EmployeeLeaveSystem = () => {
         
       {/* 主要內容區 */}
         <div className="max-w-screen-2xl mx-auto px-4 py-6 pt-40">
-        
+
+         {/* 人員管理 */}
+        {activeTab === 'todayWorking' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-800">當日上班人員</h2>
+              <span className="text-base text-gray-500">日期：{todayStr}</span>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-4">
+              <p className="text-lg font-medium text-indigo-700 mb-3">今日上班總人數：{todayWorkingUsers.length} 人</p>
+              {todayWorkingUsers.length === 0 ? (
+                <p className="text-gray-500">今日無上班人員。</p>
+              ) : (
+                <div className="space-y-4">
+                  {Object.entries(todayWorkingByDepartment).map(([department, users]) => (
+                    <div key={department} className="border border-gray-100 rounded-lg p-3">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">{department}</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {users.map(user => (
+                          <span key={user.id} className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-sm md:text-base">
+                            {user.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* 人員管理 */}
         {activeTab === 'management' && currentUser.isAdmin && (
           <div className="space-y-4">

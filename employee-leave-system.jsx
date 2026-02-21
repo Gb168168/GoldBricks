@@ -921,7 +921,7 @@ const EmployeeLeaveSystem = () => {
                 <table className="w-full border-collapse table-fixed text-sm md:text-base">
                   <thead>
                     <tr>
-                      <th className="border p-2 bg-gray-50 sticky left-0 z-20 w-28">
+                      <th className="border p-2 bg-gray-50 sticky top-0 left-0 z-40 w-28">
                       <div className="font-medium">人員篩選</div>
                       <div className="mt-2 flex flex-col gap-1.5">
                         <button
@@ -938,7 +938,7 @@ const EmployeeLeaveSystem = () => {
                         </button>
                       </div>
                      </th>
-                     <th className="border p-2 bg-gray-50 sticky left-28 z-20 w-28">
+                     <th className="border p-2 bg-gray-50 sticky top-0 left-28 z-40 w-28">
                        <div>人員</div>
                        <div>班別</div>
                        <div>部門</div>
@@ -949,7 +949,7 @@ const EmployeeLeaveSystem = () => {
                         return (
                           <th
                             key={day.toISOString()}
-                            className={`border p-2 min-w-[4.5rem] ${
+                            className={`border p-2 min-w-[4.5rem] sticky top-0 z-20 ${
                               holiday ? 'bg-red-100 text-red-800' :
                               weekend ? 'bg-blue-50 text-blue-800' :
                               'bg-gray-50'
@@ -960,13 +960,13 @@ const EmployeeLeaveSystem = () => {
                               {holiday ? formatHolidayLabel(holiday.name) : ['日','一','二','三','四','五','六'][day.getDay()]}
                               {holiday ? holiday.name : ['日','一','二','三','四','五','六'][day.getDay()]}
                             </div>
-                           <div className="text-xs md:text-sm font-normal text-green-600">
-                              {getWorkingCount(day)}人
+                           <div className="text-xs md:text-sm font-normal text-green-600 whitespace-nowrap tabular-nums">
+                              上班{getWorkingCount(day)}人
                             </div>
                           </th>
                         );
                       })}
-                        <th className="border p-2 bg-gray-50 w-24 whitespace-nowrap text-sm md:text-base">已選天數</th>
+                        <th className="border p-2 bg-gray-50 sticky top-0 z-20 w-24 whitespace-nowrap text-sm md:text-base">已選天數</th>
                     </tr>
                   </thead>
                   <tbody>

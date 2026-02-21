@@ -925,7 +925,7 @@ const EmployeeLeaveSystem = () => {
                 <table className="w-full border-collapse table-fixed text-sm md:text-base">
                   <thead>
                     <tr>
-                      <th className="border p-2 bg-gray-50 sticky top-0 left-0 z-40 w-28">
+                       <th className="border p-2 bg-gray-50 sticky top-0 z-30 w-28">
                       <div className="font-medium">人員篩選</div>
                       <div className="mt-2 flex flex-col gap-1.5">
                         <button
@@ -942,7 +942,7 @@ const EmployeeLeaveSystem = () => {
                         </button>
                       </div>
                      </th>
-                     <th className="border p-2 bg-gray-50 sticky top-0 left-28 z-40 w-28">
+                     <th className="border p-2 bg-gray-50 sticky top-0 z-40 w-28">
                        <div>人員</div>
                        <div>班別</div>
                        <div>部門</div>
@@ -984,7 +984,7 @@ const EmployeeLeaveSystem = () => {
                         
                         return (
                           <tr key={user.id}>
-                               <td className="border p-2 bg-white sticky left-0 z-10 text-center">
+                               <td className="border p-2 bg-white text-center">
                               <button
                                 type="button"
                                 role="switch"
@@ -1006,7 +1006,7 @@ const EmployeeLeaveSystem = () => {
                                 />
                               </button>
                             </td>
-                            <td className="border p-2 font-medium bg-white sticky left-28 z-10 text-sm md:text-base">
+                            <td className="border p-2 font-medium bg-white text-sm md:text-base">
                                <div>{user.name}</div>
                               <div className="mt-1 flex items-center gap-1">
                                 {user.shift.includes('早') && (

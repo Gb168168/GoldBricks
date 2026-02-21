@@ -548,7 +548,7 @@ const EmployeeLeaveSystem = () => {
       <div className="fixed top-0 left-0 right-0 z-30 bg-white">
       {/* 頂部導航 */}
       <nav className="bg-white shadow-sm border-b">
-       <div className="w-full px-4 py-4">
+       <div className="px-4 py-4" style={{ width: '60.0%' }}>
           <div className="flex flex-wrap justify-between items-center gap-3">
             <div className="flex items-center space-x-3 min-w-0">
               <div className="bg-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
@@ -583,7 +583,7 @@ const EmployeeLeaveSystem = () => {
      </div>
       
       {/* 左側功能選單 */}
-      <aside className="fixed top-24 left-0 bottom-0 z-20 w-52 md:w-56 lg:w-64 bg-white border-r shadow-sm overflow-y-auto">
+       <aside className="fixed top-28 left-0 bottom-0 z-20 w-52 md:w-56 lg:w-64 bg-white border-r shadow-sm overflow-y-auto">
         <div className="p-3 space-y-1">
           {[
             { id: 'management', label: '人員管理', icon: Users, admin: true },
@@ -615,7 +615,7 @@ const EmployeeLeaveSystem = () => {
        </aside>
         
       {/* 主要內容區 */}
-      <div className="ml-52 md:ml-56 lg:ml-64 px-4 md:px-5 lg:px-6 py-6 pt-32">
+      <div className="ml-52 md:ml-56 lg:ml-64 px-4 md:px-5 lg:px-6 py-6 pt-36">
          
          {/* 人員管理 */}
         {activeTab === 'todayWorking' && (

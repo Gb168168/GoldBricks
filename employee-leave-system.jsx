@@ -142,6 +142,8 @@ const EmployeeLeaveSystem = () => {
   const [filterRegion, setFilterRegion] = useState('全部');
   const [filterDepartment, setFilterDepartment] = useState('全部');
   const [filterShift, setFilterShift] = useState('全部');
+  const [pendingVacationUserFilter, setPendingVacationUserFilter] = useState([]);
+  const [appliedVacationUserFilter, setAppliedVacationUserFilter] = useState([]);
   const [showAddUser, setShowAddUser] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [selectedVacationMarker, setSelectedVacationMarker] = useState('▲');
@@ -186,6 +188,39 @@ const EmployeeLeaveSystem = () => {
       setCurrentUser(latestUser);
     }
   }, [data.users, currentUser]);
+  
+  const baseVacationUsers = data.users.filter(u =>
+    (filterRegion === '全部' || u.region === filterRegion) &&
+    (filterDepartment === '全部' || u.department === filterDepartment) &&
+    (filterShift === '全部' || u.shift.includes(filterShift))
+  );
+
+  const visibleVacationUsers = appliedVacationUserFilter.length
+    ? baseVacationUsers.filter(user => appliedVacationUserFilter.includes(user.id))
+    : baseVacationUsers;
+
+  useEffect(() => {
+    const validUserIds = new Set(baseVacationUsers.map(user => user.id));
+    setPendingVacationUserFilter(prev => prev.filter(id => validUserIds.has(id)));
+    setAppliedVacationUserFilter(prev => prev.filter(id => validUserIds.has(id)));
+  }, [filterRegion, filterDepartment, filterShift, data.users]);
+
+  const handleTogglePendingVacationUser = (userId) => {
+    setPendingVacationUserFilter(prev => (
+      prev.includes(userId)
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    ));
+  };
+
+  const handleApplyVacationUserFilter = () => {
+    setAppliedVacationUserFilter(pendingVacationUserFilter);
+  };
+
+  const handleClearVacationUserFilter = () => {
+    setPendingVacationUserFilter([]);
+    setAppliedVacationUserFilter([]);
+  };
   
  // 以密碼切換到最高管理者
     const handleSuperUserLogin = () => {
@@ -782,6 +817,41 @@ const EmployeeLeaveSystem = () => {
               </div>
             </div>
 
+             <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-sm md:text-base font-medium text-gray-700">人員勾選篩選：</span>
+                <div className="flex flex-wrap gap-2">
+                  {baseVacationUsers.map(user => (
+                    <label key={user.id} className="inline-flex items-center gap-1.5 px-2 py-1 border rounded text-sm md:text-base">
+                      <input
+                        type="checkbox"
+                        checked={pendingVacationUserFilter.includes(user.id)}
+                        onChange={() => handleTogglePendingVacationUser(user.id)}
+                      />
+                      <span>{user.name}</span>
+                    </label>
+                  ))}
+                </div>
+                <button
+                  onClick={handleApplyVacationUserFilter}
+                  className="px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm md:text-base"
+                >
+                  完成
+                </button>
+                <button
+                  onClick={handleClearVacationUserFilter}
+                  className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm md:text-base"
+                >
+                  清除篩選
+                </button>
+              </div>
+              {appliedVacationUserFilter.length > 0 && (
+                <p className="mt-2 text-xs md:text-sm text-indigo-600">
+                  已套用人員篩選，共 {visibleVacationUsers.length} 人
+                </p>
+              )}
+            </div>
+
             <div className="bg-white rounded-lg shadow p-4">
                      {currentUser.isAdmin && (
                 <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
@@ -899,12 +969,7 @@ const EmployeeLeaveSystem = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.users
-                      .filter(u => 
-                        (filterRegion === '全部' || u.region === filterRegion) &&
-                        (filterDepartment === '全部' || u.department === filterDepartment) &&
-                        (filterShift === '全部' || u.shift.includes(filterShift))
-                      )
+                    {visibleVacationUsers
                       .map(user => {
                         const userLeaves = data.leaves.filter(l => 
                           l.userId === user.id && 
@@ -965,6 +1030,13 @@ const EmployeeLeaveSystem = () => {
                           </tr>
                         );
                       })}
+                    {visibleVacationUsers.length === 0 && (
+                      <tr>
+                        <td colSpan={getMonthDays(selectedMonth).length + 3} className="border p-4 text-center text-gray-500">
+                          沒有符合條件的人員
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

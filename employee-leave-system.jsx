@@ -104,6 +104,7 @@ const EmployeeLeaveSystem = () => {
   });
 
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [workingViewDate, setWorkingViewDate] = useState(new Date());
   const [filterRegion, setFilterRegion] = useState('全部');
   const [filterDepartment, setFilterDepartment] = useState('全部');
   const [filterShift, setFilterShift] = useState('全部');
@@ -309,11 +310,28 @@ const EmployeeLeaveSystem = () => {
     return days;
   };
 
-  const formatLocalDate = (date) => {
+    const formatLocalDate = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  };
+
+    const getVacationMarkerStyle = (marker) => {
+    const markerMap = {
+      '▲': 'text-gray-900 font-bold',
+      '▲-red': 'text-red-600 font-bold',
+      '★': 'text-gray-900 font-bold',
+      '★-red': 'text-red-600 font-bold'
+    };
+    return markerMap[marker] || 'text-gray-900 font-bold';
+  };
+
+  const getVacationMarkerText = (marker) => {
+    if (!marker) return '';
+    if (marker.startsWith('▲')) return '▲';
+    if (marker.startsWith('★')) return '★';
+    return marker;
   };
 
   // 檢查是否為假日
@@ -379,13 +397,19 @@ const EmployeeLeaveSystem = () => {
 
   // 計算當天上班人數
   const getWorkingCount = (date) => {
-    const dateStr = formatLocalDate(date);
-    const leavesOnDate = data.leaves.filter(l => 
-      l.status === '已核准' && 
-      dateStr >= l.startDate && 
-      dateStr <= l.endDate
+   const dateStr = formatLocalDate(date);
+   const leaveUserIds = new Set(
+      data.leaves
+        .filter(l => l.status === '已核准' && dateStr >= l.startDate && dateStr <= l.endDate)
+        .map(l => l.userId
     );
-    return data.users.length - leavesOnDate.length;
+    const vacationUserIds = new Set(
+      Object.entries(data.vacationSchedule)
+        .filter(([, userSchedule]) => Boolean(userSchedule?.[dateStr]))
+        .map(([userId]) => userId)
+    );
+
+    return data.users.filter(user => !leaveUserIds.has(user.id) && !vacationUserIds.has(user.id)).length;
   };
 
   const getWorkingUsersByDate = (dateStr) => {
@@ -395,11 +419,17 @@ const EmployeeLeaveSystem = () => {
         .map(l => l.userId)
     );
 
-    return data.users.filter(user => !leaveUserIds.has(user.id));
+     const vacationUserIds = new Set(
+      Object.entries(data.vacationSchedule)
+        .filter(([, userSchedule]) => Boolean(userSchedule?.[dateStr]))
+        .map(([userId]) => userId)
+    );
+
+    return data.users.filter(user => !leaveUserIds.has(user.id) && !vacationUserIds.has(user.id));
   };
 
-  const todayStr = formatLocalDate(new Date());
-  const todayWorkingUsers = getWorkingUsersByDate(todayStr);
+  const currentViewDateStr = formatLocalDate(workingViewDate);
+  const todayWorkingUsers = getWorkingUsersByDate(currentViewDateStr);
   const todayWorkingByDepartment = todayWorkingUsers.reduce((acc, user) => {
     if (!acc[user.department]) acc[user.department] = [];
     acc[user.department].push(user);
@@ -486,7 +516,21 @@ const EmployeeLeaveSystem = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-800">當日上班人員</h2>
-              <span className="text-base text-gray-500">日期：{todayStr}</span>
+             <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setWorkingViewDate(prev => new Date(prev.getFullYear(), prev.getMonth(), prev.getDate() - 1))}
+                  className="px-3 py-1 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+                >
+                  上一頁(昨天)
+                </button>
+                <span className="text-base text-gray-500">日期：{currentViewDateStr}</span>
+                <button
+                  onClick={() => setWorkingViewDate(prev => new Date(prev.getFullYear(), prev.getMonth(), prev.getDate() + 1))}
+                  className="px-3 py-1 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+                >
+                  下一頁(明天)
+                </button>
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow p-4">
@@ -708,18 +752,20 @@ const EmployeeLeaveSystem = () => {
               <div className="mb-4 flex flex-wrap items-center gap-3 text-sm md:text-base text-gray-600">
                 <div className="flex items-center space-x-2">
                   <span className="font-medium text-gray-700">休假符號:</span>
-                  <button
-                    onClick={() => setSelectedVacationMarker('▲')}
-                    className={`px-2 py-1 rounded border ${selectedVacationMarker === '▲' ? 'border-gray-800 bg-gray-100' : 'border-gray-200'}`}
-                  >
-                    <span className="text-gray-900 font-bold">▲</span> 黑色
-                  </button>
-                  <button
-                    onClick={() => setSelectedVacationMarker('★')}
-                    className={`px-2 py-1 rounded border ${selectedVacationMarker === '★' ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
-                  >
-                    <span className="text-red-600 font-bold">★</span> 紅色
-                  </button>
+                {[
+                    { value: '▲', label: '▲ 黑色', className: 'text-gray-900 font-bold' },
+                    { value: '▲-red', label: '▲ 紅色', className: 'text-red-600 font-bold' },
+                    { value: '★', label: '★ 黑色', className: 'text-gray-900 font-bold' },
+                    { value: '★-red', label: '★ 紅色', className: 'text-red-600 font-bold' }
+                  ].map(marker => (
+                    <button
+                      key={marker.value}
+                      onClick={() => setSelectedVacationMarker(marker.value)}
+                      className={`px-2 py-1 rounded border ${selectedVacationMarker === marker.value ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'}`}
+                    >
+                      <span className={marker.className}>{marker.label.split(' ')[0]}</span> {marker.label.split(' ')[1]}
+                    </button>
+                  ))}
                 </div>
                 <div className="text-xs text-gray-500">
                   {data.vacationSettings.openStart && data.vacationSettings.openEnd
@@ -819,8 +865,8 @@ const EmployeeLeaveSystem = () => {
                                     {leave ? (
                                     <span className="text-purple-700 font-semibold">請</span>
                                   ) : customMarker ? (
-                                    <span className={customMarker === '★' ? 'text-red-600 font-bold' : 'text-gray-900 font-bold'}>
-                                      {customMarker}
+                                   <span className={getVacationMarkerStyle(customMarker)}>
+                                      {getVacationMarkerText(customMarker)}
                                     </span>
                                   ) : (
                                     ''

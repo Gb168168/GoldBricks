@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-44</title>
+    <title>員工假管理系統-45</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -133,6 +133,7 @@
         const regionOptions = [...defaultManagementCategories];
         const departmentOptions = ['管理部', 'TSE', 'FAE', '新場', '倉管', 'RD', '線上客服']
         const COMPANY_EMAIL_DOMAIN = '@goldbricks.com.tw';
+        const HEADER_HEIGHT = '7rem';
 
         const toEmailLocalPart = (email = '') => {
             if (!email) return '';
@@ -1226,7 +1227,10 @@
 
                    </div>
 
-                    <aside className="fixed top-28 left-0 bottom-0 z-20 w-52 md:w-56 lg:w-64 bg-white border-r shadow-sm overflow-y-auto">
+                    <aside
+                        className="fixed left-0 bottom-0 z-20 w-52 md:w-56 lg:w-64 bg-white border-r shadow-sm overflow-hidden"
+                        style={{ top: HEADER_HEIGHT }}
+                    >
                         <div className="p-3 space-y-1">
                             {[
                                 { id: 'management', label: '人員管理', icon: Users, admin: true },
@@ -1258,8 +1262,11 @@
                     </aside>
 
                       <div
-                        className={`ml-52 md:ml-56 lg:ml-64 h-[calc(100vh-7rem)] overflow-y-auto px-4 md:px-5 lg:px-6 py-6 ${activeTab === 'vacation' ? 'pt-28' : 'pt-36'}`}
-                        style={{ transform: activeTab === 'vacation' ? `translateY(${VACATION_TAB_OFFSET_Y})` : 'none' }}
+                       className={`fixed right-0 bottom-0 left-52 md:left-56 lg:left-64 overflow-y-auto px-4 md:px-5 lg:px-6 py-6 ${activeTab === 'vacation' ? 'pt-28' : 'pt-36'}`}
+                        style={{
+                            top: HEADER_HEIGHT,
+                            transform: activeTab === 'vacation' ? `translateY(${VACATION_TAB_OFFSET_Y})` : 'none'
+                        }}
                     >
                         {activeTab === 'todayWorking' && (
                             <div className="space-y-4">

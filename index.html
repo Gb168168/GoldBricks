@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-59</title>
+    <title>員工假管理系統-60</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -228,6 +228,7 @@
         ];
 
         const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
+        const UI_MODE_STORAGE_KEY = 'leaveSystemUiMode';
         const VACATION_TAB_OFFSET_Y = '-22px';
         const SUPER_USER_PASSWORD = '000';
         const SUPER_USER = {
@@ -297,6 +298,10 @@
                 }
             });
             const [activeTab, setActiveTab] = useState('vacation');
+            const [uiMode, setUiMode] = useState(() => {
+                const savedMode = localStorage.getItem(UI_MODE_STORAGE_KEY);
+                return savedMode === 'mobile' ? 'mobile' : 'desktop';
+            });
             const [data, setData] = useState(() => {
                 const saved = localStorage.getItem('leaveSystemData');
                      if (!saved) return {
@@ -330,6 +335,8 @@
             const [selectedVacationMarker, setSelectedVacationMarker] = useState('▲-black');
             const [showVacationSettings, setShowVacationSettings] = useState(false);
             const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+            const [selectedLoginUserId, setSelectedLoginUserId] = useState('');
+            const [isSessionStarted, setIsSessionStarted] = useState(false);
             const [newLeaveForm, setNewLeaveForm] = useState({
                 type: '特休',
                 startDate: '',
@@ -361,6 +368,10 @@
                     localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
                 }
             }, [currentUser]);
+
+             useEffect(() => {
+                localStorage.setItem(UI_MODE_STORAGE_KEY, uiMode);
+            }, [uiMode]);
 
             useEffect(() => {
                 document.body.style.overflow = 'hidden';
@@ -424,6 +435,15 @@
                     return next;
                 });
             }, [managementCategories]);
+
+             useEffect(() => {
+                if (!data.users.length) return;
+                setSelectedLoginUserId(prev => {
+                    if (prev && data.users.some(user => user.id === prev)) return prev;
+                    if (currentUser?.id && data.users.some(user => user.id === currentUser.id)) return currentUser.id;
+                    return data.users[0].id;
+                });
+            }, [data.users, currentUser]);
 
             const managementRegionOptions = Array.from(new Set([
                 ...managementCategories,
@@ -1180,10 +1200,76 @@
                 { id: 'annual', label: '特休', icon: Calendar }
             ];
             const monthDays = getMonthDays(selectedMonth);
+            const isDesktopMode = uiMode === 'desktop';
+
+            const handleStartSession = () => {
+                const loginUser = data.users.find(user => user.id === selectedLoginUserId) || data.users[0] || null;
+                if (!loginUser) {
+                    alert('目前沒有可登入的員工資料，請先新增員工。');
+                    return;
+                }
+                setCurrentUser(loginUser);
+                setIsSessionStarted(true);
+            };
+
+            if (!isSessionStarted) {
+                return (
+                    <div className="h-screen w-screen bg-slate-100 flex items-center justify-center p-4">
+                        <div className="w-full max-w-xl bg-white rounded-2xl shadow-lg border border-slate-200 p-6 md:p-8 space-y-6">
+                            <div>
+                                <h1 className="text-2xl md:text-3xl font-bold text-slate-800">員工假勤系統登入</h1>
+                                <p className="mt-2 text-slate-500">請先選擇使用者與顯示版本。桌機版/手機版共用同一份資料。</p>
+                            </div>
+
+                            <label className="block space-y-2">
+                                <span className="text-sm font-medium text-slate-700">登入使用者</span>
+                                <select
+                                    value={selectedLoginUserId}
+                                    onChange={e => setSelectedLoginUserId(e.target.value)}
+                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    {data.users.map(user => (
+                                        <option key={user.id} value={user.id}>
+                                            {user.name}（{user.department}）{user.isAdmin ? ' - 管理員' : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium text-slate-700">畫面版本</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => setUiMode('desktop')}
+                                        className={`rounded-xl border px-4 py-3 text-left transition-colors ${uiMode === 'desktop' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-300 hover:bg-slate-50'}`}
+                                    >
+                                        <p className="font-semibold">桌機版</p>
+                                        <p className="text-xs mt-1 text-slate-500">欄位完整、適合大畫面或需要完整管理功能。</p>
+                                    </button>
+                                    <button
+                                        onClick={() => setUiMode('mobile')}
+                                        className={`rounded-xl border px-4 py-3 text-left transition-colors ${uiMode === 'mobile' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-300 hover:bg-slate-50'}`}
+                                    >
+                                        <p className="font-semibold">手機版</p>
+                                        <p className="text-xs mt-1 text-slate-500">字體與間距較大，操作區塊更集中。</p>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleStartSession}
+                                className="w-full rounded-lg bg-indigo-600 text-white py-2.5 font-medium hover:bg-indigo-700"
+                            >
+                                進入系統
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
 
             
             return (
-               <div className="h-screen w-screen overflow-hidden bg-gray-50 text-sm md:text-base">
+                <div className={`h-screen ${isDesktopMode ? 'min-w-[1200px] w-full text-base' : 'w-screen text-sm md:text-base'} overflow-hidden bg-gray-50`}>
                     <div className="fixed top-0 left-0 right-0 z-30 bg-white">
                     <nav className="bg-white shadow-sm border-b">
                      <div className="w-full px-4 py-4">
@@ -1192,7 +1278,7 @@
                                     <div className="flex items-center space-x-3 min-w-0">
                                         <button
                                         onClick={() => setIsMobileMenuOpen(prev => !prev)}
-                                        className="md:hidden p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
+                                        className={`${isDesktopMode ? 'hidden' : 'md:hidden'} p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50`}
                                         aria-label="切換選單"
                                     >
                                         ☰
@@ -1208,6 +1294,12 @@
                                 </div>
 
                                 <div className="flex items-center space-x-2 md:space-x-4">
+                                    <button
+                                        onClick={() => setUiMode(prev => prev === 'desktop' ? 'mobile' : 'desktop')}
+                                        className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100"
+                                    >
+                                        切換為{isDesktopMode ? '手機版' : '桌機版'}
+                                    </button>
                                      {!currentUser.isAdmin && (
                                         <button onClick={handlePromoteCurrentUser} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
                                             設為最高權限
@@ -1223,7 +1315,7 @@
 
                    </div>
 
-                   {isMobileMenuOpen && (
+                   {!isDesktopMode && isMobileMenuOpen && (
                         <button
                             onClick={() => setIsMobileMenuOpen(false)}
                             className="fixed inset-0 z-30 bg-black/30 md:hidden"
@@ -1232,7 +1324,9 @@
                     )}
 
                     <aside
-                        className={`fixed top-0 left-0 bottom-0 z-40 w-64 max-w-[85vw] bg-white border-r shadow-sm overflow-y-auto pt-24 transform transition-transform duration-200 md:top-20 md:z-20 md:pt-0 md:w-56 lg:w-64 md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                        className={isDesktopMode
+                            ? 'fixed top-20 left-0 bottom-0 z-20 w-64 bg-white border-r shadow-sm overflow-y-auto pt-0 translate-x-0'
+                            : `fixed top-0 left-0 bottom-0 z-40 w-64 max-w-[85vw] bg-white border-r shadow-sm overflow-y-auto pt-24 transform transition-transform duration-200 md:top-20 md:z-20 md:pt-0 md:w-56 lg:w-64 md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
                     >
                         <div className="p-3 space-y-1">
                            {navigationTabs.map(tab => {
@@ -1243,7 +1337,7 @@
                                         key={tab.id}
                                         onClick={() => {
                                             setActiveTab(tab.id);
-                                            setIsMobileMenuOpen(false);
+                                            if (!isDesktopMode) setIsMobileMenuOpen(false);
                                         }}
                                         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors text-left ${
                                             activeTab === tab.id
@@ -1260,7 +1354,7 @@
                     </aside>
 
                       <div
-                        className="fixed right-0 bottom-0 left-0 md:left-56 lg:left-64 overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-4"
+                        className={`fixed right-0 bottom-0 ${isDesktopMode ? 'left-64' : 'left-0 md:left-56 lg:left-64'} overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-4`}
                         style={{
                             top: '7rem',
                             transform: 'translateY(-22px)'

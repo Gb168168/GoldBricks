@@ -632,7 +632,7 @@ const EmployeeLeaveSystem = () => {
         
       {/* 主要內容區 */}
       <div
-        className="ml-52 md:ml-56 lg:ml-64 h-[calc(100vh-7rem)] overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-36"
+        className="ml-52 md:ml-56 lg:ml-64 h-[calc(100vh-7rem)] overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-20"
         style={{ transform: activeTab === 'vacation' ? `translateY(${VACATION_TAB_OFFSET_Y})` : 'none' }}
       >
          

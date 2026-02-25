@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-60</title>
+    <title>員工假管理系統-61</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -2009,7 +2009,7 @@
                                                         return (
                                                             <th
                                                                 key={`week-${day.toISOString()}`}
-                                                                className={`border-2 p-1 text-center text-sm md:text-base font-bold w-10 min-w-[2.5rem] ${
+                                                                className={`border-2 p-1 text-center text-sm md:text-base font-bold ${isDesktopMode ? 'w-[4.5rem] min-w-[4.5rem]' : 'w-10 min-w-[2.5rem]'} ${
                                                                     holiday ? 'bg-red-200 text-red-900 border-red-400' :
                                                                     weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
                                                                     'bg-gray-50 border-gray-300'
@@ -2028,7 +2028,7 @@
                                                         return (
                                                             <th
                                                                 key={`date-${day.toISOString()}`}
-                                                                 className={`border-2 p-1 text-center text-sm md:text-base font-bold w-10 min-w-[2.5rem] ${
+                                                                className={`border-2 p-1 text-center text-sm md:text-base font-bold ${isDesktopMode ? 'w-[4.5rem] min-w-[4.5rem]' : 'w-10 min-w-[2.5rem]'} ${
                                                                     holiday ? 'bg-red-200 text-red-900 border-red-400' :
                                                                     weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
                                                                     'bg-gray-50 border-gray-300'
@@ -2047,7 +2047,7 @@
                                                         return (
                                                             <th
                                                                 key={`note-${day.toISOString()}`}
-                                                               className={`border-2 p-1 text-center text-sm md:text-base w-10 min-w-[2.5rem] ${
+                                                                className={`border-2 p-1 text-center text-sm md:text-base ${isDesktopMode ? 'w-[4.5rem] min-w-[4.5rem]' : 'w-10 min-w-[2.5rem]'} ${
                                                                     holiday ? 'bg-red-200 text-red-900 border-red-400' :
                                                                     weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
                                                                     'bg-gray-50 border-gray-300'
@@ -2127,7 +2127,7 @@
                                                                     return (
                                                                         <td
                                                                             key={day.toISOString()}
-                                                                             className={`border p-1 text-center w-10 min-w-[2.5rem] ${
+                                                                             className={`border p-1 text-center ${isDesktopMode ? 'w-[4.5rem] min-w-[4.5rem]' : 'w-10 min-w-[2.5rem]'} ${
                                                                                 leave ? 'bg-orange-100 text-orange-900 font-bold border-orange-300' :
                                                                                 holiday ? 'bg-red-50 border-red-200' :
                                                                                 weekend ? 'bg-blue-50 border-blue-200' :
@@ -2159,7 +2159,7 @@
                                                         return (
                                                             <td
                                                                 key={`count-${day.toISOString()}`}
-                                                                className="border-2 border-gray-300 p-2 text-center font-bold text-green-700 bg-green-50 sticky bottom-0 z-20 w-10 min-w-[2.5rem]"
+                                                                className={`border-2 border-gray-300 p-2 text-center font-bold text-green-700 bg-green-50 sticky bottom-0 z-20 ${isDesktopMode ? 'w-[4.5rem] min-w-[4.5rem]' : 'w-10 min-w-[2.5rem]'}`}
                                                             >
                                                                 {getWorkingCount(day)}
                                                                 </td>

@@ -901,7 +901,7 @@ const EmployeeLeaveSystem = () => {
                   本月可休: {data.vacationSettings.monthlyVacationDays || '未設定'} 天
                 </div>
               </div>
-               <div className="sticky top-0 z-20 bg-white pb-3">
+                <div className="bg-white pb-3">
                 <div className="flex justify-between items-center mb-4">
                   <button
                     onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))}

@@ -145,7 +145,7 @@ const EmployeeLeaveSystem = () => {
   const [filterShift, setFilterShift] = useState('全部');
   const [pendingVacationUserFilter, setPendingVacationUserFilter] = useState([]);
   const [appliedVacationUserFilter, setAppliedVacationUserFilter] = useState([]);
-  const [showAddUser, setShowAddUser] = useState(false);
+  const [showVacationSettings, setShowVacationSettings] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [selectedVacationMarker, setSelectedVacationMarker] = useState('▲');
   const [newLeaveForm, setNewLeaveForm] = useState({
@@ -835,43 +835,53 @@ const EmployeeLeaveSystem = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow p-4">
-                     {currentUser.isAdmin && (
+               {currentUser.isAdmin && (
                 <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
-                   <p className="text-sm md:text-base font-medium text-indigo-700 mb-2">班表開放日期設定 (管理員)</p>
-                  <div className="flex flex-wrap gap-3 items-center">
-                    <div className="flex items-center space-x-2">
-                      <label className="text-sm md:text-base text-gray-700">開始</label>
-                      <input
-                        type="date"
-                        value={data.vacationSettings.openStart}
-                        onChange={(e) => handleVacationSettingChange('openStart', e.target.value)}
-                        className="px-3 py-2 border rounded-lg"
-                      />
+                     <button
+                    type="button"
+                    onClick={() => setShowVacationSettings((prev) => !prev)}
+                    className="flex w-full items-center justify-between text-left"
+                  >
+                    <span className="text-sm md:text-base font-medium text-indigo-700">班表開放日期設定 (管理員)</span>
+                    <span className="text-xs text-indigo-600">{showVacationSettings ? '收合 ▲' : '展開 ▼'}</span>
+                  </button>
+
+                  {showVacationSettings && (
+                    <div className="mt-3 flex flex-wrap gap-3 items-center">
+                      <div className="flex items-center space-x-2">
+                        <label className="text-sm md:text-base text-gray-700">開始</label>
+                        <input
+                          type="date"
+                          value={data.vacationSettings.openStart}
+                          onChange={(e) => handleVacationSettingChange('openStart', e.target.value)}
+                          className="px-3 py-2 border rounded-lg"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <label className="text-sm md:text-base text-gray-700">結束</label>
+                        <input
+                          type="date"
+                          value={data.vacationSettings.openEnd}
+                          onChange={(e) => handleVacationSettingChange('openEnd', e.target.value)}
+                          className="px-3 py-2 border rounded-lg"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <label className="text-sm md:text-base text-gray-700">本月可休天數</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={data.vacationSettings.monthlyVacationDays}
+                          onChange={(e) => handleVacationSettingChange('monthlyVacationDays', e.target.value)}
+                          className="w-24 px-3 py-2 border rounded-lg"
+                        />
+                        <span className="text-sm md:text-base text-gray-600">天</span>
+                      </div>
+                      <span className="text-xs text-gray-600">
+                        開放期間內員工可自行編輯休假日
+                      </span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <label className="text-sm md:text-base text-gray-700">結束</label>
-                      <input
-                        type="date"
-                        value={data.vacationSettings.openEnd}
-                        onChange={(e) => handleVacationSettingChange('openEnd', e.target.value)}
-                        className="px-3 py-2 border rounded-lg"
-                      />
-                    </div>
-                     <div className="flex items-center space-x-2">
-                      <label className="text-sm md:text-base text-gray-700">本月可休天數</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={data.vacationSettings.monthlyVacationDays}
-                        onChange={(e) => handleVacationSettingChange('monthlyVacationDays', e.target.value)}
-                        className="w-24 px-3 py-2 border rounded-lg"
-                      />
-                      <span className="text-sm md:text-base text-gray-600">天</span>
-                    </div>
-                    <span className="text-xs text-gray-600">
-                      開放期間內員工可自行編輯休假日
-                    </span>
-                  </div>
+                   )}
                 </div>
               )}
               <div className="mb-4 flex flex-wrap items-center gap-3 text-sm md:text-base text-gray-600">

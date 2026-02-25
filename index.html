@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-56</title>
+    <title>員工假管理系統-57</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1878,10 +1878,12 @@
                                                        </div>
                                                    </th>
                                                    <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 z-30 w-36 text-sm md:text-base align-top">
-                                                       <div className="space-y-1">
-                                                           <div>人員</div>
-                                                           <div>班別</div>
-                                                           <div className="pt-2">部門</div>
+                                                       <div className="space-y-2">
+                                                           <div className="flex items-center justify-center gap-2">
+                                                               <span>人員</span>
+                                                               <span className="text-xs md:text-sm text-gray-600">班別</span>
+                                                           </div>
+                                                           <div>部門</div>
                                                        </div>
                                                    </th>
                                                     {getMonthDays(selectedMonth).map(day => {
@@ -1978,18 +1980,21 @@
                                                                     </button>
                                                                 </td>
                                                                 <td className="border-2 border-gray-400 p-2 font-medium bg-white z-20 align-top">
-                                                                    <div>{user.name}
-                                                                        {isCurrentUser && <span className="ml-1 text-xs bg-indigo-600 text-white px-2 py-0.5 rounded">我</span>}
+                                                                    <div className="flex items-center justify-between gap-2">
+                                                                        <div>
+                                                                            {user.name}
+                                                                            {isCurrentUser && <span className="ml-1 text-xs bg-indigo-600 text-white px-2 py-0.5 rounded">我</span>}
+                                                                        </div>
+                                                                        <div className="flex flex-wrap items-center justify-end gap-1">
+                                                                            {user.shift.includes('早') && (
+                                                                                <span className="px-1 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>
+                                                                            )}
+                                                                            {user.shift.includes('晚') && (
+                                                                                <span className="px-1 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">晚</span>
+                                                                            )}
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="mt-1 flex flex-wrap gap-1">
-                                                                        {user.shift.includes('早') && (
-                                                                            <span className="px-1 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>
-                                                                        )}
-                                                                        {user.shift.includes('晚') && (
-                                                                            <span className="px-1 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">晚</span>
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="mt-3 text-xs text-gray-600">{user.department}</div>
+                                                                   <div className="mt-2 text-xs text-gray-600">{user.department}</div>
                                                                 </td>
                                                                 {getMonthDays(selectedMonth).map(day => {
                                                                     const dateStr = formatLocalDate(day);

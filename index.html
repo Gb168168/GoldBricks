@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-58</title>
+    <title>員工假管理系統-59</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1179,6 +1179,7 @@
                 { id: 'leave', label: '請假', icon: FileText },
                 { id: 'annual', label: '特休', icon: Calendar }
             ];
+            const monthDays = getMonthDays(selectedMonth);
 
             
             return (
@@ -1860,24 +1861,25 @@
                                         </div>
                                     </div>
                                     <div className="bg-white pb-3">
-                                        <div className="flex justify-between mb-4">
-                                            <button onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))} className="px-4 py-2 bg-gray-100 rounded">
+                                        <div className="flex items-center justify-between gap-2 mb-4">
+                                            <button onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))} className="px-3 md:px-4 py-2 bg-gray-100 rounded text-base md:text-lg">
                                                 上個月
                                             </button>
-                                            <h3 className="text-xl font-bold">
+                                            <h3 className="text-2xl md:text-xl font-bold whitespace-nowrap">
                                                 {selectedMonth.getFullYear()}年 {selectedMonth.getMonth() + 1}月
                                             </h3>
-                                            <button onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))} className="px-4 py-2 bg-gray-100 rounded">
+                                            <button onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))} className="px-3 md:px-4 py-2 bg-gray-100 rounded text-base md:text-lg">
                                                 下個月
                                             </button>
                                         </div>
+                                        <p className="mb-2 text-xs md:hidden text-gray-500">手機可左右滑動表格查看每天休假與上班人數。</p>
                                         {appliedVacationUserFilter.length > 0 && (
                                             <p className="mb-2 text-xs md:text-sm text-indigo-600">已套用人員篩選，共 {visibleVacationUsers.length} 人</p>
                                         )}
                                     </div>
                                     
-                                    <div className="flex-1 min-h-0 overflow-auto rounded-lg border border-gray-200">
-                                        <table className="w-full border-collapse text-sm md:text-base table-fixed">
+                                    <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto rounded-lg border border-gray-200 touch-pan-x">
+                                        <table className="min-w-max border-collapse text-sm md:text-base table-auto">
                                            <thead className="sticky top-0 z-30">
                                                 <tr>
                                                    <th rowSpan={3} className="border-2 border-gray-400 p-2 bg-gray-100 z-30 w-24 text-sm md:text-base align-top">
@@ -1906,14 +1908,14 @@
                                                            <div>部門</div>
                                                        </div>
                                                    </th>
-                                                    {getMonthDays(selectedMonth).map(day => {
+                                                    {monthDays.map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
                                                         const dayName = ['日','一','二','三','四','五','六'][day.getDay()];
                                                         return (
                                                             <th
                                                                 key={`week-${day.toISOString()}`}
-                                                                className={`border-2 p-1 text-center text-sm md:text-base font-bold ${
+                                                                className={`border-2 p-1 text-center text-sm md:text-base font-bold w-10 min-w-[2.5rem] ${
                                                                     holiday ? 'bg-red-200 text-red-900 border-red-400' :
                                                                     weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
                                                                     'bg-gray-50 border-gray-300'
@@ -1926,13 +1928,13 @@
                                                   <th className="border-2 border-gray-400 p-2 bg-yellow-100 font-bold sticky right-0 z-20 w-24 whitespace-nowrap text-sm md:text-base">已選天數</th>
                                                 </tr>
                                                 <tr>
-                                                    {getMonthDays(selectedMonth).map(day => {
+                                                    {monthDays.map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
                                                         return (
                                                             <th
                                                                 key={`date-${day.toISOString()}`}
-                                                                 className={`border-2 p-1 text-center text-sm md:text-base font-bold ${
+                                                                 className={`border-2 p-1 text-center text-sm md:text-base font-bold w-10 min-w-[2.5rem] ${
                                                                     holiday ? 'bg-red-200 text-red-900 border-red-400' :
                                                                     weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
                                                                     'bg-gray-50 border-gray-300'
@@ -1945,13 +1947,13 @@
                                                     <th className="border-2 border-gray-400 p-2 bg-yellow-100 sticky right-0 z-20"></th>
                                                 </tr>
                                                 <tr>
-                                                    {getMonthDays(selectedMonth).map(day => {
+                                                    {monthDays.map(day => {
                                                         const holiday = isHoliday(day);
                                                         const weekend = isWeekend(day);
                                                         return (
                                                             <th
                                                                 key={`note-${day.toISOString()}`}
-                                                               className={`border-2 p-1 text-center text-sm md:text-base ${
+                                                               className={`border-2 p-1 text-center text-sm md:text-base w-10 min-w-[2.5rem] ${
                                                                     holiday ? 'bg-red-200 text-red-900 border-red-400' :
                                                                     weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
                                                                     'bg-gray-50 border-gray-300'
@@ -2016,7 +2018,7 @@
                                                                     </div>
                                                                    <div className="mt-2 text-xs text-gray-600">{user.department}</div>
                                                                 </td>
-                                                                {getMonthDays(selectedMonth).map(day => {
+                                                                 {monthDays.map(day => {
                                                                     const dateStr = formatLocalDate(day);
                                                                     const leave = userLeaves.find(l =>
                                                                         dateStr >= l.startDate && dateStr <= l.endDate
@@ -2031,7 +2033,7 @@
                                                                     return (
                                                                         <td
                                                                             key={day.toISOString()}
-                                                                             className={`border p-1 text-center ${
+                                                                             className={`border p-1 text-center w-10 min-w-[2.5rem] ${
                                                                                 leave ? 'bg-orange-100 text-orange-900 font-bold border-orange-300' :
                                                                                 holiday ? 'bg-red-50 border-red-200' :
                                                                                 weekend ? 'bg-blue-50 border-blue-200' :
@@ -2059,11 +2061,11 @@
                                                <tr className="bg-green-50">  
                                                     <td className="border-2 border-gray-400 p-2 sticky bottom-0 z-30 bg-green-100"></td>
                                                     <td className="border-2 border-gray-400 p-2 font-bold text-center sticky bottom-0 z-30 bg-green-100">上班人數</td>
-                                                    {getMonthDays(selectedMonth).map(day => {
+                                                    {monthDays.map(day => {
                                                         return (
                                                             <td
                                                                 key={`count-${day.toISOString()}`}
-                                                                className="border-2 border-gray-300 p-2 text-center font-bold text-green-700 bg-green-50 sticky bottom-0 z-20"
+                                                                className="border-2 border-gray-300 p-2 text-center font-bold text-green-700 bg-green-50 sticky bottom-0 z-20 w-10 min-w-[2.5rem]"
                                                             >
                                                                 {getWorkingCount(day)}
                                                                 </td>
@@ -2400,7 +2402,7 @@
                                                     <th className="px-4 py-2 border">地區</th>
                                                     <th className="px-4 py-2 border">部門</th>
                                                     <th className="px-4 py-2 border">班別</th>
-                                                    {getMonthDays(selectedMonth).map(day => {
+                                                    {monthDays.map(day => {
                                                         const dateStr = formatLocalDate(day);
                                                         const holiday = holidays2026.find(h => h.date === dateStr);
                                                         const isWeekend = day.getDay() === 0 || day.getDay() === 6;
@@ -2433,7 +2435,7 @@
                                                                 <td className="px-4 py-2 border">{user.region}</td>
                                                                 <td className="px-4 py-2 border">{user.department}</td>
                                                                 <td className="px-4 py-2 border">{user.shift.join('/')}</td>
-                                                                {getMonthDays(selectedMonth).map(day => {
+                                                                {monthDays.map(day => {
                                                                     const dateStr = formatLocalDate(day);
                                                                     const cell = getCompensatoryCellData(user.id, dateStr);
                                                                     const holiday = holidays2026.find(h => h.date === dateStr);
@@ -2499,7 +2501,7 @@
                                             </div>
                                         ))}
                                         
-                                        {getMonthDays(selectedMonth).map(day => {
+                                        {monthDays.map(day => {
                                             const holiday = isHoliday(day);
                                             const weekend = isWeekend(day);
                                             const dateStr = formatLocalDate(day);

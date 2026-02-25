@@ -958,10 +958,12 @@ const EmployeeLeaveSystem = () => {
                       </div>
                      </th>
                      <th className="border p-2 bg-gray-50 sticky top-0 z-40 w-28 align-top">
-                       <div className="space-y-1">
-                         <div>人員</div>
-                         <div>班別</div>
-                         <div className="pt-2">部門</div>
+                       <div className="space-y-2">
+                         <div className="flex items-center justify-center gap-2">
+                           <span>人員</span>
+                           <span className="text-xs md:text-sm text-gray-600">班別</span>
+                         </div>
+                         <div>部門</div>
                        </div>
                      </th>
                       {getMonthDays(selectedMonth).map(day => {
@@ -1024,16 +1026,18 @@ const EmployeeLeaveSystem = () => {
                               </button>
                             </td>
                             <td className="border p-2 font-medium bg-white text-sm md:text-base align-top">
-                               <div>{user.name}</div>
-                              <div className="mt-1 flex items-center gap-1">
-                                {user.shift.includes('早') && (
-                                  <span className="px-1 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>
-                                )}
-                                {user.shift.includes('晚') && (
-                                  <span className="px-1 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">晚</span>
-                                )}
+                              <div className="flex items-center justify-between gap-1">
+                                <span>{user.name}</span>
+                                <div className="flex items-center gap-1">
+                                  {user.shift.includes('早') && (
+                                    <span className="px-1 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>
+                                  )}
+                                  {user.shift.includes('晚') && (
+                                    <span className="px-1 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">晚</span>
+                                  )}
+                                </div>
                               </div>
-                              <div className="mt-3 text-xs md:text-sm text-gray-500">{user.department}</div>
+                             <div className="mt-2 text-xs md:text-sm text-gray-500">{user.department}</div>
                             </td>
                             {getMonthDays(selectedMonth).map(day => {
                               const dateStr = formatLocalDate(day);

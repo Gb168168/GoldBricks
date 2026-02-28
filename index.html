@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-64</title>
+    <title>員工假管理系統-65</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -139,6 +139,7 @@
             birthday: '',
             shift: [],
             annualLeave: 10,
+            autoWeekendHoliday: false,
             isAdmin: false,
             permissionRegions: [...regionList],
             permissionDepartments: [...departmentOptions]
@@ -170,6 +171,7 @@
                     phone: '0912-345-678',
                     birthday: '1980-01-01',
                     shift: ['早'],
+                    autoWeekendHoliday: false,
                     isAdmin: true,
                     permissionRegions: [...regionOptions],
                     permissionDepartments: [...departmentOptions],
@@ -187,6 +189,7 @@
                     phone: '0923-456-789',
                     birthday: '1990-05-15',
                     shift: ['早', '晚'],
+                    autoWeekendHoliday: false,
                     isAdmin: false,
                     permissionRegions: [],
                     permissionDepartments: [],
@@ -243,6 +246,7 @@
             phone: '0900-000-000',
             birthday: '1980-01-01',
             shift: ['早'],
+            autoWeekendHoliday: false,
             annualLeave: 365,
             isAdmin: true,
             permissionRegions: [...regionOptions],
@@ -266,6 +270,7 @@
                 if (!user?.isAdmin) {
                     return {
                         ...user,
+                        autoWeekendHoliday: Boolean(user?.autoWeekendHoliday),
                         permissionRegions: Array.isArray(user?.permissionRegions) ? user.permissionRegions : [],
                         permissionDepartments: Array.isArray(user?.permissionDepartments) ? user.permissionDepartments : []
                     };
@@ -277,6 +282,7 @@
 
                 return {
                     ...user,
+                    autoWeekendHoliday: Boolean(user?.autoWeekendHoliday),
                     permissionRegions: hasExplicitPermissions ? savedRegions : [...regionOptions],
                     permissionDepartments: hasExplicitPermissions ? savedDepartments : [...departmentOptions]
                 };
@@ -574,6 +580,7 @@
                     birthday: user.birthday,
                     shift: user.shift,
                     annualLeave: user.annualLeave,
+                    autoWeekendHoliday: Boolean(user.autoWeekendHoliday),
                     isAdmin: user.isAdmin || false,
                     permissionRegions: Array.isArray(user.permissionRegions) ? user.permissionRegions : [...managementRegionOptions],
                     permissionDepartments: Array.isArray(user.permissionDepartments) ? user.permissionDepartments : [...departmentOptions]
@@ -725,6 +732,7 @@
                     birthday: '',
                     shift: [],
                     annualLeave: 10,
+                    autoWeekendHoliday: false,
                     isAdmin: false,
                     permissionRegions: [...managementRegionOptions],
                     permissionDepartments: [...departmentOptions]
@@ -1008,6 +1016,17 @@
                 return date.getDay() === 0 || date.getDay() === 6;
             };
 
+            const shouldAutoMarkRestDay = (user, date) => {
+                if (!user?.autoWeekendHoliday) return false;
+                return isWeekend(date) || Boolean(isHoliday(date));
+            };
+
+            const shouldAutoMarkRestDayByDateStr = (user, dateStr) => {
+                const date = parseDateString(dateStr);
+                if (!date) return false;
+                return shouldAutoMarkRestDay(user, date);
+            };
+
              const isWithinOpenRange = (date) => {
                 const dateStr = formatLocalDate(date);
                 const { openStart, openEnd } = data.vacationSettings;
@@ -1064,6 +1083,8 @@
             };
 
             const handleToggleVacation = (userId, dateStr) => {
+                const targetUser = data.users.find(user => user.id === userId);
+                if (targetUser && shouldAutoMarkRestDayByDateStr(targetUser, dateStr)) return;
                 if (!currentUser.isAdmin && (!data.vacationSettings.openStart || !data.vacationSettings.openEnd)) return;
                 const isOpen = dateStr >= data.vacationSettings.openStart && dateStr <= data.vacationSettings.openEnd;
                 if (!currentUser.isAdmin && !isOpen) return;
@@ -1130,9 +1151,13 @@
                         .map(l => l.userId)
                 );
                 const vacationUserIds = new Set(
-                    Object.entries(data.vacationSchedule)
-                        .filter(([, userSchedule]) => Boolean(userSchedule?.[dateStr]))
-                        .map(([userId]) => userId)
+                    data.users
+                        .filter(user => {
+                            const hasCustomMarker = Boolean(data.vacationSchedule[user.id]?.[dateStr]);
+                            const hasAutoRestMarker = shouldAutoMarkRestDayByDateStr(user, dateStr);
+                            return hasCustomMarker || hasAutoRestMarker;
+                        })
+                        .map(user => user.id)
                 );
                 return data.users.filter(user => isVisibleStaff(user) && !onLeaveUserIds.has(user.id) && !vacationUserIds.has(user.id)).length;
             };
@@ -1144,9 +1169,13 @@
                         .map(l => l.userId)
                 );
                 const vacationUserIds = new Set(
-                    Object.entries(data.vacationSchedule)
-                        .filter(([, userSchedule]) => Boolean(userSchedule?.[dateStr]))
-                        .map(([userId]) => userId)
+                   data.users
+                        .filter(user => {
+                            const hasCustomMarker = Boolean(data.vacationSchedule[user.id]?.[dateStr]);
+                            const hasAutoRestMarker = shouldAutoMarkRestDayByDateStr(user, dateStr);
+                            return hasCustomMarker || hasAutoRestMarker;
+                        })
+                        .map(user => user.id)
                 );
                 return data.users.filter(user => isVisibleStaff(user) && !onLeaveUserIds.has(user.id) && !vacationUserIds.has(user.id));
             };
@@ -1574,6 +1603,18 @@
                                                 <label className="flex items-center space-x-2">
                                                     <input
                                                         type="checkbox"
+                                                        checked={newUserForm.autoWeekendHoliday}
+                                                        onChange={(e) => setNewUserForm({...newUserForm, autoWeekendHoliday: e.target.checked})}
+                                                        className="w-4 h-4"
+                                                    />
+                                                    <span className="text-sm md:text-base font-medium">週休二日 & 國定假日(休假表自動連動)</span>
+                                                </label>
+                                            </div>
+
+                                            <div className="md:col-span-2">
+                                                <label className="flex items-center space-x-2">
+                                                    <input
+                                                        type="checkbox"
                                                         checked={newUserForm.isAdmin}
                                                         onChange={(e) => setNewUserForm({...newUserForm, isAdmin: e.target.checked})}
                                                         className="w-4 h-4"
@@ -1650,6 +1691,7 @@
                                                             birthday: '',
                                                             shift: [],
                                                             annualLeave: 10,
+                                                            autoWeekendHoliday: false,
                                                             isAdmin: false,
                                                             permissionRegions: [...managementRegionOptions],
                                                             permissionDepartments: [...departmentOptions]
@@ -1745,6 +1787,7 @@
                                                                                                 <th className="px-4 py-3 text-left text-xs">Email</th>
                                                                                                 <th className="px-4 py-3 text-left text-xs">電話</th>
                                                                                                 <th className="px-4 py-3 text-left text-xs">班別</th>
+                                                                                                <th className="px-4 py-3 text-left text-xs">休假表連動</th>
                                                                                                 <th className="px-4 py-3 text-left text-xs">操作</th>
                                                                                             </tr>
                                                                                         </thead>
@@ -1763,6 +1806,13 @@
                                                                                                                 {user.shift.includes('早') && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">早</span>}
                                                                                                                 {user.shift.includes('晚') && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">晚</span>}
                                                                                                             </div>
+                                                                                                        </td>
+                                                                                                        <td className="px-4 py-3">
+                                                                                                            {user.autoWeekendHoliday ? (
+                                                                                                                <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded">週休/國定已連動</span>
+                                                                                                            ) : (
+                                                                                                                <span className="text-xs text-gray-400">未啟用</span>
+                                                                                                            )}
                                                                                                         </td>
                                                                                                         <td className="px-4 py-3">
                                                                                                             <div className="flex space-x-2">
@@ -2069,8 +2119,13 @@
                                                             parseDateString(l.startDate)?.getMonth() === selectedMonth.getMonth()
                                                         );
                                                         const isCurrentUser = user.id === currentUser.id;
-                                                        const markerCount = (data.vacationSchedule[user.id] && Object.values(data.vacationSchedule[user.id]).filter(Boolean).length) || 0;
-
+                                                        const markerCount = monthDays.filter(day => {
+                                                            const dateStr = formatLocalDate(day);
+                                                            const hasCustomMarker = Boolean(data.vacationSchedule[user.id]?.[dateStr]);
+                                                            const hasAutoRestMarker = shouldAutoMarkRestDay(user, day);
+                                                            return hasCustomMarker || hasAutoRestMarker;
+                                                        }).length;
+                                                        
                                                         return (
                                                             <tr key={user.id} className={isCurrentUser ? 'bg-indigo-50' : ''}>
                                                                 <td className="border-2 border-gray-400 p-1.5 text-center bg-white z-10">
@@ -2120,8 +2175,9 @@
                                                                     const holiday = isHoliday(day);
                                                                     const weekend = isWeekend(day);
                                                                     const customMarker = data.vacationSchedule[user.id]?.[dateStr];
+                                                                    const autoRestMarker = shouldAutoMarkRestDay(user, day);
                                                                     const isOpen = isWithinOpenRange(day);
-                                                                    const isEditable = currentUser.isAdmin || (isOpen && isCurrentUser);
+                                                                    const isEditable = !autoRestMarker && (currentUser.isAdmin || (isOpen && isCurrentUser));
                                                                     const markerDisplay = getMarkerDisplay(customMarker);
 
                                                                     return (
@@ -2138,6 +2194,8 @@
                                                                         >
                                                                                                                       {leave ? (
                                                                                 <span className="text-purple-700 font-semibold">請</span>
+                                                                            ) : autoRestMarker ? (
+                                                                                <span className="text-emerald-700 font-bold">休</span>
                                                                             ) : markerDisplay ? (
                                                                                 <span className={markerDisplay.className}>
                                                                                     {markerDisplay.symbol}

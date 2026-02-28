@@ -937,10 +937,10 @@ const EmployeeLeaveSystem = () => {
               </div>
               
              <div className="h-[72vh] overflow-auto rounded-lg border border-gray-200">
-                <table className="w-full border-collapse table-fixed text-sm md:text-base">
+                <table className="w-max min-w-full border-collapse table-fixed text-xs md:text-sm">
                   <thead>
                     <tr>
-                       <th className="border p-2 bg-gray-50 sticky top-0 z-30 w-28">
+                       <th className="border p-1.5 bg-gray-50 sticky top-0 z-30 w-20 md:w-24">
                       <div className="font-medium">人員篩選</div>
                       <div className="mt-2 flex flex-col gap-1.5">
                         <button
@@ -957,7 +957,7 @@ const EmployeeLeaveSystem = () => {
                         </button>
                       </div>
                      </th>
-                     <th className="border p-2 bg-gray-50 sticky top-0 z-40 w-28 align-top">
+                     <th className="border p-1.5 bg-gray-50 sticky top-0 z-40 w-24 md:w-28 align-top">
                        <div className="space-y-2">
                          <div className="flex items-center justify-center gap-2">
                            <span>人員</span>
@@ -972,24 +972,24 @@ const EmployeeLeaveSystem = () => {
                         return (
                           <th
                             key={day.toISOString()}
-                            className={`border p-2 min-w-[4.5rem] sticky top-0 z-20 ${
+                            className={`border p-1 min-w-[2.15rem] md:min-w-[2.5rem] sticky top-0 z-20 ${
                               holiday ? 'bg-red-100 text-red-800' :
                               weekend ? 'bg-blue-50 text-blue-800' :
                               'bg-gray-50'
                             }`}
                           >
-                           <div className="text-sm md:text-base font-semibold">{day.getDate()}</div>
-                           <div className="text-sm md:text-base font-normal leading-tight">
+                           <div className="text-xs md:text-sm font-semibold leading-tight">{day.getDate()}</div>
+                           <div className="text-[10px] md:text-xs font-normal leading-tight">
                               {holiday ? formatHolidayLabel(holiday.name) : ['日','一','二','三','四','五','六'][day.getDay()]}
                               {holiday ? holiday.name : ['日','一','二','三','四','五','六'][day.getDay()]}
                             </div>
-                           <div className="text-xs md:text-sm font-normal text-green-600 whitespace-nowrap tabular-nums">
+                           <div className="text-[10px] md:text-xs font-normal text-green-600 whitespace-nowrap tabular-nums">
                               上班{getWorkingCount(day)}人
                             </div>
                           </th>
                         );
                       })}
-                        <th className="border p-2 bg-gray-50 sticky top-0 z-20 w-24 whitespace-nowrap text-sm md:text-base">已選天數</th>
+                        <th className="border p-1.5 bg-gray-50 sticky top-0 z-20 w-20 md:w-24 whitespace-nowrap text-xs md:text-sm">已選天數</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1003,7 +1003,7 @@ const EmployeeLeaveSystem = () => {
                         
                         return (
                           <tr key={user.id}>
-                               <td className="border p-2 bg-white text-center">
+                              <td className="border p-1.5 bg-white text-center">
                               <button
                                 type="button"
                                 role="switch"
@@ -1025,7 +1025,7 @@ const EmployeeLeaveSystem = () => {
                                 />
                               </button>
                             </td>
-                            <td className="border p-2 font-medium bg-white text-sm md:text-base align-top">
+                            <td className="border p-1.5 font-medium bg-white text-xs md:text-sm align-top">
                               <div className="flex items-center justify-between gap-1">
                                 <span>{user.name}</span>
                                 <div className="flex items-center gap-1">
@@ -1052,7 +1052,7 @@ const EmployeeLeaveSystem = () => {
                                 <td
                                   key={day.toISOString()}
                                   onClick={() => handleToggleVacation(user.id, dateStr)}
-                                  className={`border p-2 min-w-[4.5rem] text-center ${
+                                  className={`border p-1 min-w-[2.15rem] md:min-w-[2.5rem] text-center ${
                                     leave ? 'bg-orange-100 text-orange-800 font-medium' : ''
                                     } ${isEditable ? 'cursor-pointer hover:bg-indigo-50' : ''}`}
                                 >
@@ -1068,7 +1068,7 @@ const EmployeeLeaveSystem = () => {
                                 </td>
                               );
                             })}
-                           <td className="border p-2 text-center font-medium text-indigo-600 w-24 whitespace-nowrap text-sm md:text-base">
+                           <td className="border p-1.5 text-center font-medium text-indigo-600 w-20 md:w-24 whitespace-nowrap text-xs md:text-sm">
                                      {(data.vacationSchedule[user.id] && Object.values(data.vacationSchedule[user.id]).filter(Boolean).length) || 0}
                             </td>
                           </tr>

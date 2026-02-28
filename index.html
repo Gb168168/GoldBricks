@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-91</title>
+    <title>員工假管理系統-92</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1454,6 +1454,16 @@
                 setAnnouncementForm(prev => ({ ...prev, content: text, contentHtml: html }));
             };
 
+            const handleInsertAnnouncementTable = () => {
+                if (!announcementEditorRef.current) return;
+                announcementEditorRef.current.focus();
+                const defaultTableHtml = '<table style="border-collapse:collapse;width:100%;margin:8px 0;"><tbody><tr><th style="border:1px solid #d1d5db;padding:8px;background:#f9fafb;">欄位 1</th><th style="border:1px solid #d1d5db;padding:8px;background:#f9fafb;">欄位 2</th></tr><tr><td style="border:1px solid #d1d5db;padding:8px;">內容 1</td><td style="border:1px solid #d1d5db;padding:8px;">內容 2</td></tr></tbody></table><p><br/></p>';
+                document.execCommand('insertHTML', false, defaultTableHtml);
+                const html = announcementEditorRef.current.innerHTML;
+                const text = announcementEditorRef.current.innerText;
+                setAnnouncementForm(prev => ({ ...prev, content: text, contentHtml: html }));
+            };
+            
             const handleAnnouncementEditorInput = (event) => {
                 const html = event.currentTarget.innerHTML;
                 const text = event.currentTarget.innerText;
@@ -1842,6 +1852,7 @@
                                                     <button type="button" onClick={() => handleAnnouncementCommand('justifyRight')} className="px-3 py-1 border rounded hover:bg-gray-50">靠右</button>
                                                     <button type="button" onClick={() => handleAnnouncementCommand('fontSize', 5)} className="px-3 py-1 border rounded hover:bg-gray-50">放大字體</button>
                                                     <button type="button" onClick={() => handleAnnouncementCommand('fontSize', 2)} className="px-3 py-1 border rounded hover:bg-gray-50">縮小字體</button>
+                                                    <button type="button" onClick={handleInsertAnnouncementTable} className="px-3 py-1 border rounded hover:bg-gray-50">插入表格</button>
                                                 </div>
                                                 <div
                                                     ref={announcementEditorRef}

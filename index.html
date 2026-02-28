@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-100</title>
+    <title>員工假管理系統-101</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1274,9 +1274,10 @@
             };
 
             const isVisibleStaff = (user) => Boolean(user);
+            const isVacationTableVisibleStaff = (user) => isVisibleStaff(user) && !isGoldBricksSuperUser(user);
 
             const baseVacationUsers = data.users
-                .filter(user => isVisibleStaff(user))
+                .filter(user => isVacationTableVisibleStaff(user))
                 .filter(user =>
                     (filterRegion === '全部' || user.region === filterRegion) &&
                     (filterDepartment === '全部' || user.department === filterDepartment) &&

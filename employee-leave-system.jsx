@@ -989,7 +989,7 @@ const EmployeeLeaveSystem = () => {
                           </th>
                         );
                       })}
-                        <th className="border p-1.5 bg-gray-50 sticky top-0 z-20 w-20 md:w-24 whitespace-nowrap text-xs md:text-sm">已選天數</th>
+                        <th className="border p-1.5 bg-gray-50 sticky top-0 z-20 w-[8rem] min-w-[8rem] max-w-[8rem] whitespace-nowrap text-xs md:text-sm">已選天數</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1068,7 +1068,7 @@ const EmployeeLeaveSystem = () => {
                                 </td>
                               );
                             })}
-                           <td className="border p-1.5 text-center font-medium text-indigo-600 w-20 md:w-24 whitespace-nowrap text-xs md:text-sm">
+                           <td className="border p-1.5 text-center font-medium text-indigo-600 w-[8rem] min-w-[8rem] max-w-[8rem] whitespace-nowrap text-xs md:text-sm">
                                      {(data.vacationSchedule[user.id] && Object.values(data.vacationSchedule[user.id]).filter(Boolean).length) || 0}
                             </td>
                           </tr>

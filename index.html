@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-96</title>
+    <title>員工假管理系統-97</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -180,8 +180,8 @@
                 {
                     id: 'A001',
                     title: '系統公告',
-                    content: '歡迎使用 GoldBricks 員工假勤系統，若有新流程會在此公告。',
-                    contentHtml: '歡迎使用 GoldBricks 員工假勤系統，若有新流程會在此公告。',
+                    content: '歡迎使用員工假勤系統，若有新流程會在此公告。',
+                    contentHtml: '歡迎使用員工假勤系統，若有新流程會在此公告。',
                     createdAt: new Date().toISOString(),
                     createdBy: '系統'
                 }
@@ -273,21 +273,32 @@
             document.cookie = `${key}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
         };
 
-        const mergeWithInitialData = (parsed = {}) => ({
-            ...initialData,
-            ...parsed,
-            users: normalizeUserPermissions(parsed.users || initialData.users),
-            managementCategories: Array.from(new Set([...(parsed.managementCategories || []), ...defaultManagementCategories])),
-            vacationSettings: {
-                ...initialData.vacationSettings,
-                ...parsed.vacationSettings
-            },
-            schedules: parsed.schedules || [],
-            vacationSchedule: parsed.vacationSchedule || {},
-            vacationNotes: parsed.vacationNotes || {},
-            announcements: parsed.announcements || initialData.announcements
-        });
+        const hasLegacyGoldBricksVacationData = (parsed = {}) => {
+            const announcements = Array.isArray(parsed.announcements) ? parsed.announcements : [];
+            return announcements.some(item => `${item?.title || ''}${item?.content || ''}${item?.contentHtml || ''}`.includes('GoldBricks'));
+        };
 
+        const mergeWithInitialData = (parsed = {}) => {
+            const shouldResetVacationData = hasLegacyGoldBricksVacationData(parsed);
+
+            return {
+                ...initialData,
+                ...parsed,
+                users: normalizeUserPermissions(parsed.users || initialData.users),
+                managementCategories: Array.from(new Set([...(parsed.managementCategories || []), ...defaultManagementCategories])),
+                vacationSettings: shouldResetVacationData
+                    ? { ...initialData.vacationSettings }
+                    : {
+                        ...initialData.vacationSettings,
+                        ...parsed.vacationSettings
+                    },
+                schedules: parsed.schedules || [],
+                vacationSchedule: shouldResetVacationData ? {} : (parsed.vacationSchedule || {}),
+                vacationNotes: shouldResetVacationData ? {} : (parsed.vacationNotes || {}),
+                announcements: parsed.announcements || initialData.announcements
+            };
+        };
+        
         const parseSavedData = (saved) => {
             if (!saved) return null;
 

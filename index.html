@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-90</title>
+    <title>員工假管理系統-91</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -2152,6 +2152,18 @@
                                             </div>
 
                                             <div className="md:col-span-2">
+                                                <label className="mt-3 flex items-center space-x-2 text-sm md:text-base">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={newUserForm.canManageAnnouncements}
+                                                        onChange={(e) => setNewUserForm({ ...newUserForm, canManageAnnouncements: e.target.checked })}
+                                                        className="w-4 h-4"
+                                                    />
+                                                    <span>可新增/編輯/隱藏/刪除公告</span>
+                                                </label>
+                                            </div>
+
+                                            <div className="md:col-span-2">
                                                 <label className="flex items-center space-x-2">
                                                     <input
                                                         type="checkbox"
@@ -2169,15 +2181,6 @@
                                                     <h4 className="text-sm md:text-base font-semibold text-indigo-700">權限管理</h4>
                                                     <span className="text-xs text-gray-500">可勾選公告管理，若為管理員可再勾選地區/部門權限</span>
                                                 </div>
-                                                <label className="mt-3 flex items-center space-x-2 text-sm md:text-base">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={newUserForm.canManageAnnouncements}
-                                                        onChange={(e) => setNewUserForm({ ...newUserForm, canManageAnnouncements: e.target.checked })}
-                                                        className="w-4 h-4"
-                                                    />
-                                                    <span>可新增/編輯/隱藏/刪除公告</span>
-                                                </label>
                                                 {newUserForm.isAdmin && (
                                                     <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-86</title>
+    <title>員工假管理系統-87</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -210,7 +210,16 @@
                 monthlyVacationDays: ''
             },
             vacationSchedule: {},
-            vacationNotes: {}
+            vacationNotes: {},
+            announcements: [
+                {
+                    id: 'A001',
+                    title: '系統公告',
+                    content: '歡迎使用 GoldBricks 員工假勤系統，若有新流程會在此公告。',
+                    createdAt: new Date().toISOString(),
+                    createdBy: '系統'
+                }
+            ]
         };
 
         // 國定假日資料
@@ -236,6 +245,7 @@
         const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
         const UI_MODE_STORAGE_KEY = 'leaveSystemUiMode';
         const DATA_STORAGE_KEY = 'leaveSystemData';
+        const ANNOUNCEMENT_READ_KEY_PREFIX = 'leaveSystemAnnouncementRead_';
         const VACATION_TAB_OFFSET_Y = '-22px';
         const SUPER_USER_PASSWORD = '000';
         const SUPER_USER = {
@@ -337,7 +347,8 @@
             },
             schedules: parsed.schedules || [],
             vacationSchedule: parsed.vacationSchedule || {},
-            vacationNotes: parsed.vacationNotes || {}
+            vacationNotes: parsed.vacationNotes || {},
+            announcements: parsed.announcements || initialData.announcements
         });
 
         const parseSavedData = (saved) => {
@@ -419,6 +430,14 @@
             const [newCategoryName, setNewCategoryName] = useState('');
             const [managementCategories, setManagementCategories] = useState(defaultManagementCategories);
             const [newUserForm, setNewUserForm] = useState(() => createNewUserForm(defaultManagementCategories));
+            const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '' });
+            const [announcementPopup, setAnnouncementPopup] = useState(null);
+            const sortedAnnouncements = [...(data.announcements || [])]
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const latestAnnouncement = sortedAnnouncements[0] || null;
+            const announcementReadKey = currentUser?.id ? `${ANNOUNCEMENT_READ_KEY_PREFIX}${currentUser.id}` : '';
+            const latestReadAnnouncementId = announcementReadKey ? storageGet(announcementReadKey) : '';
+            const hasUnreadAnnouncement = Boolean(latestAnnouncement && latestAnnouncement.id !== latestReadAnnouncementId);
             
             useEffect(() => {
                 storageSet(DATA_STORAGE_KEY, JSON.stringify(data));
@@ -562,6 +581,13 @@
                     return data.users[0].id;
                 });
             }, [data.users, currentUser]);
+
+            useEffect(() => {
+                if (!currentUser?.id || !latestAnnouncement) return;
+                if (hasUnreadAnnouncement) {
+                    setAnnouncementPopup(latestAnnouncement);
+                }
+            }, [currentUser?.id, latestAnnouncement?.id, hasUnreadAnnouncement]);
 
             const managementRegionOptions = Array.from(new Set([
                 ...managementCategories,
@@ -1368,6 +1394,7 @@
                 acc[user.department].push(user);
                 return acc;
             }, {});
+
             
              const getCompensatoryCellData = (userId, dateStr) => {
                 const matchedLeaves = data.leaves.filter(l =>
@@ -1393,6 +1420,47 @@
                 return `${totalHourComp}h`;
             };
 
+            const handleSaveAnnouncement = (e) => {
+                e.preventDefault();
+                if (!currentUser?.isAdmin) return;
+
+                const title = announcementForm.title.trim();
+                const content = announcementForm.content.trim();
+                if (!title || !content) {
+                    alert('請填寫完整公告標題與內容');
+                    return;
+                }
+
+                const newAnnouncement = {
+                    id: `A${Date.now()}`,
+                    title,
+                    content,
+                    createdAt: new Date().toISOString(),
+                    createdBy: currentUser.name
+                };
+
+                setData(prev => ({
+                    ...prev,
+                    announcements: [newAnnouncement, ...(prev.announcements || [])],
+                    auditLogs: [...prev.auditLogs, {
+                        timestamp: new Date().toISOString(),
+                        user: currentUser.name,
+                        action: '發佈公告',
+                        details: title
+                    }]
+                }));
+                setAnnouncementForm({ title: '', content: '' });
+                setAnnouncementPopup(newAnnouncement);
+                setActiveTab('announcement');
+            };
+
+            const handleMarkAnnouncementAsRead = () => {
+                if (!currentUser?.id || !latestAnnouncement) return;
+                const readKey = `${ANNOUNCEMENT_READ_KEY_PREFIX}${currentUser.id}`;
+                storageSet(readKey, latestAnnouncement.id);
+                setAnnouncementPopup(null);
+            };
+
             const handleResetData = () => {
                 if (window.confirm('確定要重置所有資料嗎?這將清除所有員工和請假紀錄!')) {
                     storageRemove(DATA_STORAGE_KEY);
@@ -1401,6 +1469,7 @@
             };
 
             const navigationTabs = [
+                { id: 'announcement', label: '公告欄', icon: Bell },
                 { id: 'management', label: '人員管理', icon: Users, admin: true },
                 { id: 'todayWorking', label: '當日上班人員', icon: Bell },
                 { id: 'vacation', label: '休假表', icon: Calendar },
@@ -1560,11 +1629,47 @@
                                     >
                                         <Icon size={18} />
                                         <span className="font-medium">{tab.label}</span>
+                                        {tab.id === 'announcement' && hasUnreadAnnouncement && (
+                                            <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">NEW</span>
+                                        )}
                                     </button>
                                 );
                             })}
                         </div>
                     </aside>
+
+                    {announcementPopup && (
+                        <div className="fixed inset-0 z-40 bg-black/40 flex items-center justify-center p-4">
+                            <div className="w-full max-w-lg bg-white rounded-xl shadow-xl p-5 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-bold text-indigo-700">公告提醒</h3>
+                                    <Bell size={20} className="text-indigo-500" />
+                                </div>
+                                <p className="font-semibold text-gray-800">{announcementPopup.title}</p>
+                                <p className="text-gray-600 whitespace-pre-wrap">{announcementPopup.content}</p>
+                                <div className="text-xs text-gray-400">
+                                    發佈者：{announcementPopup.createdBy}｜{new Date(announcementPopup.createdAt).toLocaleString('zh-TW')}
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        onClick={() => {
+                                            setActiveTab('announcement');
+                                            handleMarkAnnouncementAsRead();
+                                        }}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                                    >
+                                        前往公告欄
+                                    </button>
+                                    <button
+                                        onClick={handleMarkAnnouncementAsRead}
+                                        className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                    >
+                                        關閉
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                       <div
                         className={`fixed right-0 bottom-0 ${isDesktopMode ? 'left-64' : 'left-0 md:left-56 lg:left-64'} ${activeTab === 'vacation' ? 'overflow-hidden' : 'overflow-y-auto'} px-4 md:px-5 lg:px-6 py-6 pt-4`}
@@ -1573,6 +1678,69 @@
                             transform: 'translateY(-22px)'
                         }}
                     >
+                          {activeTab === 'announcement' && (
+                            <div className="space-y-4">
+                                <div className="flex flex-wrap justify-between items-center gap-3">
+                                    <h2 className="text-2xl font-bold">公告欄</h2>
+                                    <button
+                                        onClick={handleMarkAnnouncementAsRead}
+                                        className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                    >
+                                        標記最新公告已讀
+                                    </button>
+                                </div>
+
+                                {currentUser.isAdmin && (
+                                    <div className="bg-white rounded-lg shadow p-4">
+                                        <h3 className="text-lg font-bold mb-3">新增公告</h3>
+                                        <form onSubmit={handleSaveAnnouncement} className="space-y-3">
+                                            <input
+                                                type="text"
+                                                value={announcementForm.title}
+                                                onChange={(e) => setAnnouncementForm(prev => ({ ...prev, title: e.target.value }))}
+                                                className="w-full px-3 py-2 border rounded-lg"
+                                                placeholder="公告標題"
+                                                required
+                                            />
+                                            <textarea
+                                                value={announcementForm.content}
+                                                onChange={(e) => setAnnouncementForm(prev => ({ ...prev, content: e.target.value }))}
+                                                className="w-full px-3 py-2 border rounded-lg min-h-[120px]"
+                                                placeholder="公告內容"
+                                                required
+                                            />
+                                            <div className="flex justify-end">
+                                                <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                                                    發佈公告
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                )}
+
+                                <div className="space-y-3">
+                                    {sortedAnnouncements.length === 0 ? (
+                                        <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">目前尚無公告</div>
+                                    ) : (
+                                        sortedAnnouncements.map(item => (
+                                            <div key={item.id} className="bg-white rounded-lg shadow p-4">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <h3 className="text-lg font-semibold text-gray-800">{item.title}</h3>
+                                                    {latestAnnouncement?.id === item.id && hasUnreadAnnouncement && (
+                                                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">未讀</span>
+                                                    )}
+                                                </div>
+                                                <p className="mt-2 text-gray-700 whitespace-pre-wrap">{item.content}</p>
+                                                <p className="mt-3 text-xs text-gray-400">
+                                                    發佈者：{item.createdBy}｜{new Date(item.createdAt).toLocaleString('zh-TW')}
+                                                </p>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                          
                         {activeTab === 'todayWorking' && (
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">

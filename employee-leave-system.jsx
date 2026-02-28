@@ -1,44 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, Users, FileText, Clock, Clipboard, Download, Plus, Edit2, Trash2, Check, Bell, LogOut } from 'lucide-react';
+import { Calendar, Users, FileText, Clock, Clipboard, Download, Plus, Edit2, Trash2, Check, Bell } from 'lucide-react';
 
 // 初始化資料
 const initialData = {
-  users: [
-    {
-      id: 'E001',
-      username: 'admin',
-      password: 'admin123',
-      name: '管理員',
-      region: '台北',
-      department: '管理部',
-      category: '排班-8219',
-      position: '經理',
-      email: 'admin@company.com',
-      phone: '0912-345-678',
-      birthday: '1980-01-01',
-      shift: ['早'],
-      isAdmin: true,
-      annualLeave: 14,
-      usedAnnualLeave: 0
-    },
-    {
-      id: 'E002',
-      username: 'user001',
-      password: 'pass123',
-      name: '王小明',
-      region: '台北',
-      department: '業務部',
-      category: '排班-8219',
-      position: '專員',
-      email: 'wang@company.com',
-      phone: '0923-456-789',
-      birthday: '1990-05-15',
-      shift: ['早', '晚'],
-      isAdmin: false,
-      annualLeave: 10,
-      usedAnnualLeave: 2
-    }
-  ],
+  users: [],
   leaves: [],
   compensatoryLeaves: [],
   schedules: [],
@@ -48,7 +13,6 @@ const initialData = {
     monthlyVacationDays: ''
   },
   vacationSchedule: {},
-  auditLogs: [],
   bulletin: {
     content: '',
     updatedAt: ''
@@ -79,50 +43,27 @@ const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
 const UI_SCALE = 0.9;
 const VACATION_TAB_SCALE = UI_SCALE;
 const VACATION_TAB_OFFSET_Y = '0px';
-const SUPER_USER_PASSWORD = '000';
-const SUPER_USER = {
-  id: 'E000',
-  username: 'GoldBricks',
-  password: SUPER_USER_PASSWORD,
-  name: 'GoldBricks',
-  region: '總部',
-  department: '系統管理',
-  category: '排班-8219',
-  position: '最高管理者',
-  email: 'goldbricks@company.com',
-  phone: '0900-000-000',
-  birthday: '1980-01-01',
-  shift: ['早'],
-  isAdmin: true,
-  annualLeave: 365,
-  usedAnnualLeave: 0
+const DEFAULT_USER = {
+  id: '',
+  name: '訪客',
+  region: '',
+  department: '',
+  shift: [],
+  isAdmin: false
 };
-
-const ensureSuperUserExists = (users = []) => {
-  const hasSuperUser = users.some(user => user.id === SUPER_USER.id || user.username === SUPER_USER.username);
-  if (hasSuperUser) {
-    return users.map(user => (user.id === SUPER_USER.id || user.username === SUPER_USER.username
-      ? { ...user, ...SUPER_USER, isAdmin: true }
-      : user
-    ));
-  }
-
-  return [SUPER_USER, ...users];
-};
-
-const EmployeeLeaveSystem = () => {
+  const EmployeeLeaveSystem = () => {
   const [currentUser, setCurrentUser] = useState(() => {
     const savedData = localStorage.getItem('leaveSystemData');
     const savedUserId = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
 
-    if (!savedData || !savedUserId) return SUPER_USER;
+    if (!savedData || !savedUserId) return initialData.users[0] || DEFAULT_USER;
 
     try {
       const parsed = JSON.parse(savedData);
-      const users = ensureSuperUserExists(parsed.users || initialData.users);
-      return users.find(user => user.id === savedUserId) || users[0] || SUPER_USER;
+      const users = parsed.users || initialData.users;
+      return users.find(user => user.id === savedUserId) || users[0] || DEFAULT_USER;
     } catch (error) {
-      return SUPER_USER;
+      return initialData.users[0] || DEFAULT_USER;
     }
   });
   const [activeTab, setActiveTab] = useState('management');
@@ -130,13 +71,13 @@ const EmployeeLeaveSystem = () => {
     const saved = localStorage.getItem('leaveSystemData');
     if (!saved) return {
       ...initialData,
-      users: ensureSuperUserExists(initialData.users)
+      users: initialData.users
     };
     const parsed = JSON.parse(saved);
     return {
       ...initialData,
       ...parsed,
-      users: ensureSuperUserExists(parsed.users || initialData.users),
+      users: parsed.users || initialData.users,
       vacationSettings: {
         ...initialData.vacationSettings,
         ...parsed.vacationSettings
@@ -242,7 +183,7 @@ const EmployeeLeaveSystem = () => {
   
   useEffect(() => {
     if (!currentUser?.id) {
-      const defaultUser = data.users[0] || null;
+      const defaultUser = data.users[0] || DEFAULT_USER;
       if (defaultUser) {
         setCurrentUser(defaultUser);
       }
@@ -251,7 +192,7 @@ const EmployeeLeaveSystem = () => {
 
     const latestUser = data.users.find(user => user.id === currentUser.id);
     if (!latestUser) {
-      setCurrentUser(data.users[0] || null);
+      setCurrentUser(data.users[0] || DEFAULT_USER);
       setActiveTab('management');
       return;
     }
@@ -315,56 +256,13 @@ const EmployeeLeaveSystem = () => {
     }));
   };
   
- // 以密碼切換到最高管理者
-    const handleSuperUserLogin = () => {
-    const password = window.prompt('請輸入最高管理者密碼');
-    if (password === null) return;
 
-    if (password !== SUPER_USER_PASSWORD) {
-      alert('密碼錯誤，無法切換為 GoldBricks。');
-      return;
-    }
-
-    const superUser = data.users.find(user => user.id === SUPER_USER.id) || SUPER_USER;
-    setCurrentUser({ ...superUser, isAdmin: true });
-    setActiveTab('management');
-    alert('已切換為最高使用者 GoldBricks，可審核與設置所有人的假。');
-  };
-
-  // 將目前登入者升級為最高權限
-  const handlePromoteCurrentUser = () => {
-    if (!currentUser?.id || currentUser.isAdmin) return;
-
-    setData(prev => ({
-      ...prev,
-      users: prev.users.map(user =>
-        user.id === currentUser.id ? { ...user, isAdmin: true } : user
-      ),
-      auditLogs: [...prev.auditLogs, {
-        timestamp: new Date().toISOString(),
-        user: currentUser.name,
-        action: '升級權限',
-        target: currentUser.name,
-        details: '將目前登入者設為最高權限，可進行設定與審核'
-      }]
-    }));
-
-    alert('已將目前登入帳號升級為最高權限，可進行設定與審核。');
-  };
-  
   // 新增/編輯員工
   const handleSaveUser = (userData) => {
     if (editingUser) {
       setData(prev => ({
         ...prev,
-        users: prev.users.map(u => u.id === editingUser.id ? { ...u, ...userData } : u),
-        auditLogs: [...prev.auditLogs, {
-          timestamp: new Date().toISOString(),
-          user: currentUser.name,
-          action: '編輯員工',
-          target: userData.name,
-          details: `修改員工資料`
-        }]
+        users: prev.users.map(u => u.id === editingUser.id ? { ...u, ...userData } : u)
       }));
     } else {
       const newUser = {
@@ -376,14 +274,7 @@ const EmployeeLeaveSystem = () => {
       };
       setData(prev => ({
         ...prev,
-        users: [...prev.users, newUser],
-        auditLogs: [...prev.auditLogs, {
-          timestamp: new Date().toISOString(),
-          user: currentUser.name,
-          action: '新增員工',
-          target: userData.name,
-          details: `新增員工資料`
-        }]
+        users: [...prev.users, newUser]
       }));
     }
     setShowAddUser(false);
@@ -396,14 +287,7 @@ const EmployeeLeaveSystem = () => {
       const user = data.users.find(u => u.id === userId);
       setData(prev => ({
         ...prev,
-        users: prev.users.filter(u => u.id !== userId),
-        auditLogs: [...prev.auditLogs, {
-          timestamp: new Date().toISOString(),
-          user: currentUser.name,
-          action: '刪除員工',
-          target: user.name,
-          details: `刪除員工資料`
-        }]
+         users: prev.users.filter(u => u.id !== userId)
       }));
     }
   };
@@ -413,10 +297,10 @@ const EmployeeLeaveSystem = () => {
     e.preventDefault();
     const newLeave = {
       id: Date.now().toString(),
-      userId: currentUser.id,
-      userName: currentUser.name,
-      department: currentUser.department,
-      region: currentUser.region,
+      userId: currentUser?.id || '',
+      userName: currentUser?.name || '未指定',
+      department: currentUser?.department || '',
+      region: currentUser?.region || '',
       ...newLeaveForm,
       status: '待審核',
       submittedAt: new Date().toISOString()
@@ -424,14 +308,7 @@ const EmployeeLeaveSystem = () => {
     
     setData(prev => ({
       ...prev,
-      leaves: [...prev.leaves, newLeave],
-      auditLogs: [...prev.auditLogs, {
-        timestamp: new Date().toISOString(),
-        user: currentUser.name,
-        action: '送出請假申請',
-        target: currentUser.name,
-        details: `${newLeaveForm.type} ${newLeaveForm.startDate} ~ ${newLeaveForm.endDate}`
-      }]
+      leaves: [...prev.leaves, newLeave]
     }));
     
     setNewLeaveForm({
@@ -452,14 +329,7 @@ const EmployeeLeaveSystem = () => {
       ...prev,
       leaves: prev.leaves.map(l => 
         l.id === leaveId ? { ...l, status, approvedBy: currentUser.name, approvedAt: new Date().toISOString() } : l
-      ),
-      auditLogs: [...prev.auditLogs, {
-        timestamp: new Date().toISOString(),
-        user: currentUser.name,
-        action: status === '已核准' ? '核准請假' : '拒絕請假',
-        target: leave.userName,
-        details: `${leave.type} ${leave.startDate} ~ ${leave.endDate}`
-      }]
+     )
     }));
   };
 
@@ -654,26 +524,8 @@ const EmployeeLeaveSystem = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-800">員工假勤系統</h1>
-                <p className="text-sm md:text-base text-gray-500">歡迎, {currentUser.name} {currentUser.isAdmin && '(管理員)'}</p>
+                <p className="text-sm md:text-base text-gray-500">歡迎, {currentUser?.name || '訪客'} {currentUser?.isAdmin && '(管理員)'}</p>
               </div>
-            </div>
-
-            {!currentUser.isAdmin && (
-                <button
-                  onClick={handlePromoteCurrentUser}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                >
-                  設為最高權限
-                </button>
-              )}
-            <div className="flex items-center space-x-2 md:space-x-4">
-              <button
-                onClick={handleSuperUserLogin}
-                className="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                <LogOut size={18} />
-                <span>輸入密碼進入 GoldBricks</span>
-              </button>
             </div>
           </div>
         </div>
@@ -890,23 +742,6 @@ const EmployeeLeaveSystem = () => {
               </div>
             </div>
 
-            {/* 操作紀錄 */}
-            <div className="bg-white rounded-lg shadow p-4">
-              <h3 className="text-lg font-bold mb-4">操作紀錄</h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {data.auditLogs.slice(-10).reverse().map((log, idx) => (
-                   <div key={idx} className="text-sm md:text-base p-2 bg-gray-50 rounded">
-                    <span className="text-gray-500">{new Date(log.timestamp).toLocaleString('zh-TW')}</span>
-                    {' - '}
-                    <span className="font-medium">{log.user}</span>
-                    {' '}
-                    <span className="text-indigo-600">{log.action}</span>
-                    {' - '}
-                    <span>{log.details}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
 

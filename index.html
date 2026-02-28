@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-88</title>
+    <title>員工假管理系統-89</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -143,7 +143,8 @@
             autoWeekendHoliday: false,
             isAdmin: false,
             permissionRegions: [...regionList],
-            permissionDepartments: [...departmentOptions]
+            permissionDepartments: [...departmentOptions],
+            canManageAnnouncements: false
         });
         
         const firebaseConfig = {
@@ -178,6 +179,7 @@
                     isAdmin: true,
                     permissionRegions: [...regionOptions],
                     permissionDepartments: [...departmentOptions],
+                    canManageAnnouncements: true,
                     annualLeave: 14,
                     usedAnnualLeave: 0
                 },
@@ -196,6 +198,7 @@
                     isAdmin: false,
                     permissionRegions: [],
                     permissionDepartments: [],
+                    canManageAnnouncements: false,
                     annualLeave: 10,
                     usedAnnualLeave: 2
                 }
@@ -265,7 +268,8 @@
             annualLeave: 365,
             isAdmin: true,
             permissionRegions: [...regionOptions],
-            permissionDepartments: [...departmentOptions]
+            permissionDepartments: [...departmentOptions],
+            canManageAnnouncements: true
         };
 
         const ensureSuperUserExists = (users = []) => {
@@ -287,7 +291,8 @@
                         ...user,
                         autoWeekendHoliday: Boolean(user?.autoWeekendHoliday),
                         permissionRegions: Array.isArray(user?.permissionRegions) ? user.permissionRegions : [],
-                        permissionDepartments: Array.isArray(user?.permissionDepartments) ? user.permissionDepartments : []
+                        permissionDepartments: Array.isArray(user?.permissionDepartments) ? user.permissionDepartments : [],
+                        canManageAnnouncements: Boolean(user?.canManageAnnouncements)
                     };
                 }
 
@@ -299,7 +304,8 @@
                     ...user,
                     autoWeekendHoliday: Boolean(user?.autoWeekendHoliday),
                     permissionRegions: hasExplicitPermissions ? savedRegions : [...regionOptions],
-                    permissionDepartments: hasExplicitPermissions ? savedDepartments : [...departmentOptions]
+                    permissionDepartments: hasExplicitPermissions ? savedDepartments : [...departmentOptions],
+                    canManageAnnouncements: typeof user?.canManageAnnouncements === 'boolean' ? user.canManageAnnouncements : true
                 };
             });
 
@@ -434,6 +440,8 @@
             const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '', contentHtml: '' });
             const announcementEditorRef = useRef(null);
             const [announcementPopup, setAnnouncementPopup] = useState(null);
+            const [editingAnnouncementId, setEditingAnnouncementId] = useState('');
+            const [expandedAnnouncementId, setExpandedAnnouncementId] = useState('');
             
             useEffect(() => {
                 if (!announcementEditorRef.current) return;
@@ -445,6 +453,8 @@
             }, [announcementForm.contentHtml]);
             const sortedAnnouncements = [...(data.announcements || [])]
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const canManageAnnouncements = Boolean(currentUser?.isAdmin && currentUser?.canManageAnnouncements);
+            const visibleAnnouncements = sortedAnnouncements.filter(item => canManageAnnouncements || !item.isHidden);
             const latestAnnouncement = sortedAnnouncements[0] || null;
             const announcementReadKey = currentUser?.id ? `${ANNOUNCEMENT_READ_KEY_PREFIX}${currentUser.id}` : '';
             const latestReadAnnouncementId = announcementReadKey ? storageGet(announcementReadKey) : '';
@@ -631,7 +641,8 @@
                             ...user,
                             isAdmin: true,
                             permissionRegions: [...regionOptions],
-                            permissionDepartments: [...departmentOptions]
+                            permissionDepartments: [...departmentOptions],
+                            canManageAnnouncements: true
                         };
                     }),
                     auditLogs: [...prev.auditLogs, {
@@ -732,7 +743,8 @@
                     autoWeekendHoliday: Boolean(user.autoWeekendHoliday),
                     isAdmin: user.isAdmin || false,
                     permissionRegions: Array.isArray(user.permissionRegions) ? user.permissionRegions : [...managementRegionOptions],
-                    permissionDepartments: Array.isArray(user.permissionDepartments) ? user.permissionDepartments : [...departmentOptions]
+                    permissionDepartments: Array.isArray(user.permissionDepartments) ? user.permissionDepartments : [...departmentOptions],
+                    canManageAnnouncements: Boolean(user.canManageAnnouncements)
                 });
                 setShowAddUser(true);
             };
@@ -884,7 +896,8 @@
                     autoWeekendHoliday: false,
                     isAdmin: false,
                     permissionRegions: [...managementRegionOptions],
-                    permissionDepartments: [...departmentOptions]
+                    permissionDepartments: [...departmentOptions],
+                    canManageAnnouncements: false
                 });
 
                 setShowAddUser(false);
@@ -1449,7 +1462,10 @@
 
             const handleSaveAnnouncement = (e) => {
                 e.preventDefault();
-                if (!currentUser?.isAdmin) return;
+                if (!canManageAnnouncements) {
+                    alert('僅限具公告管理權限者可新增或編輯公告');
+                    return;
+                }
 
                 const title = announcementForm.title.trim();
                 const content = announcementForm.content.trim();
@@ -1459,28 +1475,103 @@
                     return;
                 }
 
-                const newAnnouncement = {
-                    id: `A${Date.now()}`,
+                const now = new Date().toISOString();
+                const savedAnnouncement = {
+                    id: editingAnnouncementId || `A${Date.now()}`,
                     title,
                     content,
                     contentHtml,
-                    createdAt: new Date().toISOString(),
-                    createdBy: currentUser.name
+                    createdAt: editingAnnouncementId
+                        ? (sortedAnnouncements.find(item => item.id === editingAnnouncementId)?.createdAt || now)
+                        : now,
+                    createdBy: editingAnnouncementId
+                        ? (sortedAnnouncements.find(item => item.id === editingAnnouncementId)?.createdBy || currentUser.name)
+                        : currentUser.name,
+                    updatedAt: now,
+                    updatedBy: currentUser.name,
+                    isHidden: editingAnnouncementId
+                        ? Boolean(sortedAnnouncements.find(item => item.id === editingAnnouncementId)?.isHidden)
+                        : false
                 };
 
                 setData(prev => ({
                     ...prev,
-                    announcements: [newAnnouncement, ...(prev.announcements || [])],
+                    announcements: editingAnnouncementId
+                        ? (prev.announcements || []).map(item => (item.id === editingAnnouncementId ? savedAnnouncement : item))
+                        : [savedAnnouncement, ...(prev.announcements || [])],
                     auditLogs: [...prev.auditLogs, {
-                        timestamp: new Date().toISOString(),
+                        timestamp: now,
                         user: currentUser.name,
-                        action: '發佈公告',
+                        action: editingAnnouncementId ? '編輯公告' : '發佈公告',
                         details: title
                     }]
                 }));
                 setAnnouncementForm({ title: '', content: '', contentHtml: '' });
-                setAnnouncementPopup(newAnnouncement);
+                setEditingAnnouncementId('');
+                setExpandedAnnouncementId(savedAnnouncement.id);
+                setAnnouncementPopup(savedAnnouncement);
                 setActiveTab('announcement');
+            };
+
+            const handleEditAnnouncement = (announcement) => {
+                if (!canManageAnnouncements) {
+                    alert('僅限具公告管理權限者可編輯公告');
+                    return;
+                }
+                setEditingAnnouncementId(announcement.id);
+                setAnnouncementForm({
+                    title: announcement.title || '',
+                    content: announcement.content || '',
+                    contentHtml: announcement.contentHtml || announcement.content || ''
+                });
+                setExpandedAnnouncementId(announcement.id);
+            };
+
+            const handleToggleHideAnnouncement = (announcement) => {
+                if (!canManageAnnouncements) {
+                    alert('僅限具公告管理權限者可隱藏公告');
+                    return;
+                }
+                const nextHidden = !announcement.isHidden;
+                setData(prev => ({
+                    ...prev,
+                    announcements: (prev.announcements || []).map(item => (
+                        item.id === announcement.id ? { ...item, isHidden: nextHidden, updatedAt: new Date().toISOString(), updatedBy: currentUser.name } : item
+                    )),
+                    auditLogs: [...prev.auditLogs, {
+                        timestamp: new Date().toISOString(),
+                        user: currentUser.name,
+                        action: nextHidden ? '隱藏公告' : '顯示公告',
+                        details: announcement.title
+                    }]
+                }));
+            };
+
+            const handleDeleteAnnouncement = (announcement) => {
+                if (!canManageAnnouncements) {
+                    alert('僅限具公告管理權限者可刪除公告');
+                    return;
+                }
+                if (!window.confirm(`確定要刪除公告「${announcement.title}」嗎？`)) return;
+
+                setData(prev => ({
+                    ...prev,
+                    announcements: (prev.announcements || []).filter(item => item.id !== announcement.id),
+                    auditLogs: [...prev.auditLogs, {
+                        timestamp: new Date().toISOString(),
+                        user: currentUser.name,
+                        action: '刪除公告',
+                        details: announcement.title
+                    }]
+                }));
+
+                if (editingAnnouncementId === announcement.id) {
+                    setEditingAnnouncementId('');
+                    setAnnouncementForm({ title: '', content: '', contentHtml: '' });
+                }
+                if (expandedAnnouncementId === announcement.id) {
+                    setExpandedAnnouncementId('');
+                }
             };
 
             const handleMarkAnnouncementAsRead = () => {
@@ -1723,9 +1814,9 @@
                                     </button>
                                 </div>
 
-                                {currentUser.isAdmin && (
+                                {canManageAnnouncements && (
                                     <div className="bg-white rounded-lg shadow p-4">
-                                        <h3 className="text-lg font-bold mb-3">新增公告</h3>
+                                        <h3 className="text-lg font-bold mb-3">{editingAnnouncementId ? '編輯公告' : '新增公告'}</h3>
                                         <form onSubmit={handleSaveAnnouncement} className="space-y-3">
                                             <input
                                                 type="text"
@@ -1761,9 +1852,21 @@
                                                     data-placeholder="公告內容"
                                                 />
                                             </div>
-                                            <div className="flex justify-end">
+                                            <div className="flex justify-end gap-2">
+                                                {editingAnnouncementId && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setEditingAnnouncementId('');
+                                                            setAnnouncementForm({ title: '', content: '', contentHtml: '' });
+                                                        }}
+                                                        className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                                    >
+                                                        取消編輯
+                                                    </button>
+                                                )}
                                                 <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                                                    發佈公告
+                                                    {editingAnnouncementId ? '更新公告' : '發佈公告'}
                                                 </button>
                                             </div>
                                         </form>
@@ -1771,27 +1874,56 @@
                                 )}
 
                                 <div className="space-y-3">
-                                    {sortedAnnouncements.length === 0 ? (
+                                    {visibleAnnouncements.length === 0 ? (
                                         <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">目前尚無公告</div>
                                     ) : (
-                                        sortedAnnouncements.map(item => (
-                                            <div key={item.id} className="bg-white rounded-lg shadow p-4">
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <h3 className="text-lg font-semibold text-gray-800">{item.title}</h3>
-                                                    {latestAnnouncement?.id === item.id && hasUnreadAnnouncement && (
-                                                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">未讀</span>
+                                        visibleAnnouncements.map(item => {
+                                            const isExpanded = expandedAnnouncementId === item.id;
+                                            return (
+                                                <div key={item.id} className="bg-white rounded-lg shadow p-4">
+                                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setExpandedAnnouncementId(prev => (prev === item.id ? '' : item.id))}
+                                                            className="text-left flex-1"
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <h3 className="text-lg font-semibold text-gray-800">{item.title}</h3>
+                                                                {item.isHidden && <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">已隱藏</span>}
+                                                                {latestAnnouncement?.id === item.id && hasUnreadAnnouncement && (
+                                                                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">未讀</span>
+                                                                )}
+                                                            </div>
+                                                            <p className="mt-1 text-xs text-gray-400">點擊標題浮動展開內容</p>
+                                                        </button>
+                                                        {canManageAnnouncements && (
+                                                            <div className="flex items-center gap-2">
+                                                                <button type="button" onClick={() => handleEditAnnouncement(item)} className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200">編輯</button>
+                                                                <button type="button" onClick={() => handleToggleHideAnnouncement(item)} className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200">{item.isHidden ? '取消隱藏' : '隱藏'}</button>
+                                                                <button type="button" onClick={() => handleDeleteAnnouncement(item)} className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200">刪除</button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {isExpanded && (
+                                                        <div className="fixed inset-0 z-40 bg-black/40 flex items-center justify-center p-4">
+                                                            <div className="w-full max-w-2xl bg-white rounded-xl shadow-xl p-5">
+                                                                <div className="flex items-center justify-between gap-3">
+                                                                    <h4 className="text-xl font-bold text-indigo-700">{item.title}</h4>
+                                                                    <button type="button" onClick={() => setExpandedAnnouncementId('')} className="text-gray-500 hover:text-gray-700">✕</button>
+                                                                </div>
+                                                                {item.contentHtml ? (
+                                                                    <div className="mt-3 text-gray-700 max-h-[50vh] overflow-y-auto" dangerouslySetInnerHTML={{ __html: item.contentHtml }} />
+                                                                ) : (
+                                                                    <p className="mt-3 text-gray-700 whitespace-pre-wrap max-h-[50vh] overflow-y-auto">{item.content}</p>
+                                                                )}
+                                                                <p className="mt-3 text-xs text-gray-400">發佈者：{item.createdBy}｜{new Date(item.createdAt).toLocaleString('zh-TW')}</p>
+                                                            </div>
+                                                        </div>
                                                     )}
                                                 </div>
-                                                {item.contentHtml ? (
-                                                    <div className="mt-2 text-gray-700" dangerouslySetInnerHTML={{ __html: item.contentHtml }} />
-                                                ) : (
-                                                    <p className="mt-2 text-gray-700 whitespace-pre-wrap">{item.content}</p>
-                                                )}
-                                                <p className="mt-3 text-xs text-gray-400">
-                                                    發佈者：{item.createdBy}｜{new Date(item.createdAt).toLocaleString('zh-TW')}
-                                                </p>
-                                            </div>
-                                        ))
+                                                  );
+                                        })
                                     )}
                                 </div>
                             </div>
@@ -2038,6 +2170,15 @@
                                                         <h4 className="text-sm md:text-base font-semibold text-indigo-700">權限管理</h4>
                                                         <span className="text-xs text-gray-500">僅勾選的地區/部門可審核或編輯員工資料</span>
                                                     </div>
+                                                    <label className="mt-3 flex items-center space-x-2 text-sm md:text-base">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={newUserForm.canManageAnnouncements}
+                                                            onChange={(e) => setNewUserForm({ ...newUserForm, canManageAnnouncements: e.target.checked })}
+                                                            className="w-4 h-4"
+                                                        />
+                                                        <span>可新增/編輯/隱藏/刪除公告</span>
+                                                    </label>
                                                      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div>
                                                             <p className="text-sm md:text-base font-medium text-gray-700 mb-2">地區</p>
@@ -2102,7 +2243,8 @@
                                                             autoWeekendHoliday: false,
                                                             isAdmin: false,
                                                             permissionRegions: [...managementRegionOptions],
-                                                            permissionDepartments: [...departmentOptions]
+                                                            permissionDepartments: [...departmentOptions],
+                                                            canManageAnnouncements: false
                                                         });
                                                     }}
                                                     className="px-6 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"

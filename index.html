@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-97</title>
+    <title>員工假管理系統-98</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -273,29 +273,71 @@
             document.cookie = `${key}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
         };
 
-        const hasLegacyGoldBricksVacationData = (parsed = {}) => {
+            const hasLegacyGoldBricksVacationData = (parsed = {}) => {
             const announcements = Array.isArray(parsed.announcements) ? parsed.announcements : [];
             return announcements.some(item => `${item?.title || ''}${item?.content || ''}${item?.contentHtml || ''}`.includes('GoldBricks'));
         };
 
-        const mergeWithInitialData = (parsed = {}) => {
-            const shouldResetVacationData = hasLegacyGoldBricksVacationData(parsed);
+            const sanitizeLegacyGoldBricksData = (parsed = {}) => {
+            const users = Array.isArray(parsed.users) ? parsed.users : [];
+            const shouldRemoveUser = (user = {}) => {
+                const shiftList = Array.isArray(user.shift) ? user.shift : [];
+                return user?.name === 'GoldBricks'
+                    && user?.department === '系統管理'
+                    && shiftList.includes('早');
+            };
+
+            const removedUserIds = new Set(users.filter(shouldRemoveUser).map(user => user.id));
+            const nextUsers = users.filter(user => !removedUserIds.has(user.id));
+
+            const nextLeaves = (Array.isArray(parsed.leaves) ? parsed.leaves : [])
+                .filter(leave => !removedUserIds.has(leave.userId));
+
+            const nextVacationSchedule = Object.entries(parsed.vacationSchedule || {}).reduce((acc, [userId, schedule]) => {
+                if (!removedUserIds.has(userId)) acc[userId] = schedule;
+                return acc;
+            }, {});
+
+            const nextVacationNotes = Object.entries(parsed.vacationNotes || {}).reduce((acc, [userId, notes]) => {
+                if (removedUserIds.has(userId)) return acc;
+                const filteredNotes = Object.entries(notes || {}).reduce((noteAcc, [date, note]) => {
+                    if (!`${note || ''}`.includes('排班-8219')) {
+                        noteAcc[date] = note;
+                    }
+                    return noteAcc;
+                }, {});
+                acc[userId] = filteredNotes;
+                return acc;
+            }, {});
 
             return {
-                ...initialData,
                 ...parsed,
-                users: normalizeUserPermissions(parsed.users || initialData.users),
-                managementCategories: Array.from(new Set([...(parsed.managementCategories || []), ...defaultManagementCategories])),
+                users: nextUsers,
+                leaves: nextLeaves,
+                vacationSchedule: nextVacationSchedule,
+                vacationNotes: nextVacationNotes
+            };
+        };
+
+        const mergeWithInitialData = (parsed = {}) => {
+           const sanitizedParsed = sanitizeLegacyGoldBricksData(parsed);
+            const shouldResetVacationData = hasLegacyGoldBricksVacationData(sanitizedParsed);
+            
+            return {
+                ...initialData,
+                ...sanitizedParsed,
+                users: normalizeUserPermissions(sanitizedParsed.users || initialData.users),
+                managementCategories: Array.from(new Set([...(sanitizedParsed.managementCategories || []), ...defaultManagementCategories])),
                 vacationSettings: shouldResetVacationData
                     ? { ...initialData.vacationSettings }
                     : {
                         ...initialData.vacationSettings,
-                        ...parsed.vacationSettings
+                       ...sanitizedParsed.vacationSettings
                     },
-                schedules: parsed.schedules || [],
-                vacationSchedule: shouldResetVacationData ? {} : (parsed.vacationSchedule || {}),
-                vacationNotes: shouldResetVacationData ? {} : (parsed.vacationNotes || {}),
-                announcements: parsed.announcements || initialData.announcements
+                schedules: sanitizedParsed.schedules || [],
+                vacationSchedule: shouldResetVacationData ? {} : (sanitizedParsed.vacationSchedule || {}),
+                vacationNotes: shouldResetVacationData ? {} : (sanitizedParsed.vacationNotes || {}),
+                announcements: sanitizedParsed.announcements || initialData.announcements
             };
         };
         

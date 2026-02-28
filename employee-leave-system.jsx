@@ -52,6 +52,8 @@ const DEFAULT_USER = {
   isAdmin: false
 };
 
+const VACATION_LEAVE_TYPE_FILTERS = ['全部', '特休', '年假', '病假', '事假', '喪假', '旅遊假', '生理假'];
+
 const ensureGoldBricksFullAccess = (users = []) => (
   users.map(user => (user?.name === 'GoldBricks' ? { ...user, isAdmin: true } : user))
 );
@@ -99,6 +101,7 @@ const ensureGoldBricksFullAccess = (users = []) => (
   const [filterShift, setFilterShift] = useState('全部');
   const [pendingVacationUserFilter, setPendingVacationUserFilter] = useState([]);
   const [appliedVacationUserFilter, setAppliedVacationUserFilter] = useState([]);
+  const [vacationLeaveTypeFilter, setVacationLeaveTypeFilter] = useState('全部');
   const [showVacationSettings, setShowVacationSettings] = useState(false);
   const [collapsedAnnualDepartments, setCollapsedAnnualDepartments] = useState({});
   const [editingUser, setEditingUser] = useState(null);
@@ -222,6 +225,25 @@ const ensureGoldBricksFullAccess = (users = []) => (
     ? baseVacationUsers.filter(user => appliedVacationUserFilter.includes(user.id))
     : baseVacationUsers;
 
+    const vacationUsersByLeaveType = visibleVacationUsers.filter(user => {
+    if (vacationLeaveTypeFilter === '全部') return true;
+
+    const selectedYear = selectedMonth.getFullYear();
+    const selectedMonthIndex = selectedMonth.getMonth();
+    const monthStart = new Date(selectedYear, selectedMonthIndex, 1);
+    const monthEnd = new Date(selectedYear, selectedMonthIndex + 1, 0);
+
+    return data.leaves.some(leave => {
+      if (leave.userId !== user.id || leave.status !== '已核准' || leave.type !== vacationLeaveTypeFilter) {
+        return false;
+      }
+
+      const leaveStart = new Date(leave.startDate);
+      const leaveEnd = new Date(leave.endDate);
+      return leaveStart <= monthEnd && leaveEnd >= monthStart;
+    });
+  });
+    
   const annualOverviewUsers = data.users.filter(user => (
     (filterRegion === '全部' || user.region === filterRegion) &&
     (filterDepartment === '全部' || user.department === filterDepartment)
@@ -794,6 +816,15 @@ const ensureGoldBricksFullAccess = (users = []) => (
                   <option>早</option>
                   <option>晚</option>
                 </select>
+                <select
+                  value={vacationLeaveTypeFilter}
+                  onChange={(e) => setVacationLeaveTypeFilter(e.target.value)}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  {VACATION_LEAVE_TYPE_FILTERS.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
                 <button
                   onClick={() => exportToCSV('leaves')}
                   className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -901,7 +932,7 @@ const ensureGoldBricksFullAccess = (users = []) => (
                 </div>
                 {appliedVacationUserFilter.length > 0 && (
                   <p className="mb-2 text-xs md:text-sm text-indigo-600">
-                    已套用人員篩選，共 {visibleVacationUsers.length} 人
+                    已套用人員篩選，共 {vacationUsersByLeaveType.length} 人
                   </p>
                 )}
               </div>
@@ -966,7 +997,7 @@ const ensureGoldBricksFullAccess = (users = []) => (
                     </tr>
                   </thead>
                   <tbody>
-                    {visibleVacationUsers
+                    {vacationUsersByLeaveType
                       .map(user => {
                         const userLeaves = data.leaves.filter(l => 
                           l.userId === user.id && 
@@ -1050,7 +1081,7 @@ const ensureGoldBricksFullAccess = (users = []) => (
                           </tr>
                         );
                       })}
-                    {visibleVacationUsers.length === 0 && (
+                   {vacationUsersByLeaveType.length === 0 && (
                       <tr>
                         <td colSpan={getMonthDays(selectedMonth).length + 3} className="border p-4 text-center text-gray-500">
                           沒有符合條件的人員

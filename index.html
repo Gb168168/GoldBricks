@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-72</title>
+    <title>員工假管理系統-73</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -2128,7 +2128,6 @@
                                                 下個月
                                             </button>
                                         </div>
-                                         <p className="mb-2 text-xs text-gray-500">欄位已再壓縮，桌機可一次看到整個月份；手機仍可左右滑動查看每天休假與上班人數。</p>
                                         {appliedVacationUserFilter.length > 0 && (
                                             <p className="mb-2 text-xs md:text-sm text-indigo-600">已套用人員篩選，共 {visibleVacationUsers.length} 人</p>
                                         )}
@@ -2224,13 +2223,15 @@
                                             </thead>
                                             <tbody>
                                                 {visibleVacationUsers
-                                                    .map(user => {
+                                                    .map((user, userIndex) => {
                                                        const userLeaves = data.leaves.filter(l =>
                                                             l.userId === user.id &&
                                                             l.status === '已核准' &&
                                                             parseDateString(l.startDate)?.getMonth() === selectedMonth.getMonth()
                                                         );
                                                         const isCurrentUser = user.id === currentUser.id;
+                                                        const isFirstRow = userIndex === 0;
+                                                        const isLastRow = userIndex === visibleVacationUsers.length - 1;
                                                         const markerCount = monthDays.filter(day => {
                                                             const dateStr = formatLocalDate(day);
                                                             const hasCustomMarker = Boolean(data.vacationSchedule[user.id]?.[dateStr]);
@@ -2240,7 +2241,7 @@
                                                         
                                                         return (
                                                             <tr key={user.id} className={`h-16 ${isCurrentUser ? 'bg-indigo-50' : ''}`}>
-                                                                <td className="border-2 border-gray-400 p-1.5 text-center bg-white z-10">
+                                                                <td className={`border-2 border-gray-300 p-1.5 text-center bg-white z-10 ${isFirstRow ? 'border-t-4 border-t-red-500' : ''} ${isLastRow ? 'border-b-4 border-b-red-500' : ''} border-l-4 border-l-red-500`}>
                                                                     <button
                                                                         type="button"
                                                                         role="switch"
@@ -2262,7 +2263,7 @@
                                                                         />
                                                                     </button>
                                                                 </td>
-                                                                <td className="border-2 border-gray-400 p-2 font-medium bg-white z-20 align-top">
+                                                                <td className={`border-2 border-gray-300 p-2 font-medium bg-white z-20 align-top ${isFirstRow ? 'border-t-4 border-t-red-500' : ''} ${isLastRow ? 'border-b-4 border-b-red-500' : ''}`}>
                                                                     <div className="flex items-center justify-between gap-2">
                                                                         <div>
                                                                             {user.name}
@@ -2295,7 +2296,7 @@
                                                                     return (
                                                                         <td
                                                                             key={day.toISOString()}
-                                                                            className={`border p-1 text-center h-10 ${vacationDayCellWidthClass} ${
+                                                                            className={`border p-1 text-center h-10 ${vacationDayCellWidthClass} ${isFirstRow ? 'border-t-4 border-t-red-500' : ''} ${isLastRow ? 'border-b-4 border-b-red-500' : ''} ${
                                                                                 leave ? 'bg-orange-100 text-orange-900 font-bold border-orange-300' :
                                                                                 holiday ? 'bg-red-50 border-red-200' :
                                                                                 weekend ? 'bg-blue-50 border-blue-200' :
@@ -2316,7 +2317,7 @@
                                                                         </td>
                                                                     );
                                                                 })}
-                                                                <td className="border-2 border-gray-400 p-1.5 text-center font-bold text-sm text-indigo-700 bg-yellow-50 sticky right-0 z-10 min-w-[5rem] whitespace-nowrap">
+                                                                <td className={`border-2 border-gray-300 p-1.5 text-center font-bold text-sm text-indigo-700 bg-yellow-50 sticky right-0 z-10 min-w-[5rem] whitespace-nowrap ${isFirstRow ? 'border-t-4 border-t-red-500' : ''} ${isLastRow ? 'border-b-4 border-b-red-500' : ''} border-r-4 border-r-red-500`}>
                                                                     {markerCount}
                                                                 </td>
                                                             </tr>

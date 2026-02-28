@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-66</title>
+    <title>員工假管理系統-67</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -232,6 +232,7 @@
 
         const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
         const UI_MODE_STORAGE_KEY = 'leaveSystemUiMode';
+        const DATA_STORAGE_KEY = 'leaveSystemData';
         const VACATION_TAB_OFFSET_Y = '-22px';
         const SUPER_USER_PASSWORD = '000';
         const SUPER_USER = {
@@ -288,10 +289,44 @@
                 };
             });
 
+        const readCookieValue = (key) => {
+            const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const matched = document.cookie.match(new RegExp(`(?:^|; )${escapedKey}=([^;]*)`));
+            return matched ? decodeURIComponent(matched[1]) : null;
+        };
+
+        const storageGet = (key) => {
+            try {
+                const value = localStorage.getItem(key);
+                if (value !== null) return value;
+            } catch (error) {
+                // fallback to cookie when localStorage is blocked on mobile webviews
+            }
+            return readCookieValue(key);
+        };
+
+        const storageSet = (key, value) => {
+            try {
+                localStorage.setItem(key, value);
+            } catch (error) {
+                // ignore and fallback to cookie below
+            }
+            document.cookie = `${key}=${encodeURIComponent(value)}; path=/; max-age=31536000; SameSite=Lax`;
+        };
+
+        const storageRemove = (key) => {
+            try {
+                localStorage.removeItem(key);
+            } catch (error) {
+                // ignore and fallback to cookie below
+            }
+            document.cookie = `${key}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+        };
+
         const EmployeeLeaveSystem = () => {
              const [currentUser, setCurrentUser] = useState(() => {
-                const savedData = localStorage.getItem('leaveSystemData');
-                const savedUserId = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
+                const savedData = storageGet(DATA_STORAGE_KEY);
+                const savedUserId = storageGet(CURRENT_USER_STORAGE_KEY);
 
                 if (!savedData || !savedUserId) return initialData.users[0] || null;
 
@@ -305,11 +340,11 @@
             });
             const [activeTab, setActiveTab] = useState('vacation');
             const [uiMode, setUiMode] = useState(() => {
-                const savedMode = localStorage.getItem(UI_MODE_STORAGE_KEY);
+                const savedMode = storageGet(UI_MODE_STORAGE_KEY);
                 return savedMode === 'mobile' ? 'mobile' : 'desktop';
             });
             const [data, setData] = useState(() => {
-                const saved = localStorage.getItem('leaveSystemData');
+                const saved = storageGet(DATA_STORAGE_KEY);
                      if (!saved) return {
                         ...initialData,
                         users: normalizeUserPermissions(ensureSuperUserExists(initialData.users))
@@ -364,19 +399,19 @@
             const [newUserForm, setNewUserForm] = useState(() => createNewUserForm(defaultManagementCategories));
             
             useEffect(() => {
-                localStorage.setItem('leaveSystemData', JSON.stringify(data));
+                storageSet(DATA_STORAGE_KEY, JSON.stringify(data));
             }, [data]);
 
             useEffect(() => {
                 if (currentUser?.id) {
-                    localStorage.setItem(CURRENT_USER_STORAGE_KEY, currentUser.id);
+                    storageSet(CURRENT_USER_STORAGE_KEY, currentUser.id);
                 } else {
-                    localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+                    storageRemove(CURRENT_USER_STORAGE_KEY);
                 }
             }, [currentUser]);
 
              useEffect(() => {
-                localStorage.setItem(UI_MODE_STORAGE_KEY, uiMode);
+                storageSet(UI_MODE_STORAGE_KEY, uiMode);
             }, [uiMode]);
 
             useEffect(() => {
@@ -1214,7 +1249,7 @@
 
             const handleResetData = () => {
                 if (window.confirm('確定要重置所有資料嗎?這將清除所有員工和請假紀錄!')) {
-                    localStorage.removeItem('leaveSystemData');
+                    storageRemove(DATA_STORAGE_KEY);
                     window.location.reload();
                 }
             };

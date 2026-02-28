@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-71</title>
+    <title>員工假管理系統-72</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1340,7 +1340,7 @@
             const monthDays = getMonthDays(selectedMonth);
             const isDesktopMode = uiMode === 'desktop';
             const vacationDayCellWidthClass = isDesktopMode
-                ? 'w-[1.8rem] min-w-[1.8rem]'
+                ? 'w-[1.55rem] min-w-[1.55rem]'
                 : 'w-10 min-w-[2.5rem]';
 
             const handleStartSession = () => {
@@ -2128,7 +2128,7 @@
                                                 下個月
                                             </button>
                                         </div>
-                                        <p className="mb-2 text-xs text-gray-500">欄位已壓縮成整月視圖，手機仍可左右滑動查看每天休假與上班人數。</p>
+                                         <p className="mb-2 text-xs text-gray-500">欄位已再壓縮，桌機可一次看到整個月份；手機仍可左右滑動查看每天休假與上班人數。</p>
                                         {appliedVacationUserFilter.length > 0 && (
                                             <p className="mb-2 text-xs md:text-sm text-indigo-600">已套用人員篩選，共 {visibleVacationUsers.length} 人</p>
                                         )}

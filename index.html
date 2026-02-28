@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-67</title>
+    <title>員工假管理系統-68</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         html,
@@ -26,7 +27,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
         // Lucide Icons 組件
         const Users = ({ size = 24, className = "" }) => (
@@ -155,7 +156,9 @@
             measurementId: 'G-YY69T47198'
         };
 
-        // 保留 Firebase 設定供未來擴充，目前流程未使用 Firebase 驗證。
+        const firebaseApp = firebase.apps.length ? firebase.app() : firebase.initializeApp(firebaseConfig);
+        const db = firebaseApp.firestore();
+        const sharedStateDoc = db.collection('sharedState').doc('main');
 
         // 初始化資料
         const initialData = {
@@ -323,6 +326,30 @@
             document.cookie = `${key}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
         };
 
+        const mergeWithInitialData = (parsed = {}) => ({
+            ...initialData,
+            ...parsed,
+            users: normalizeUserPermissions(ensureSuperUserExists(parsed.users || initialData.users)),
+            managementCategories: Array.from(new Set([...(parsed.managementCategories || []), ...defaultManagementCategories])),
+            vacationSettings: {
+                ...initialData.vacationSettings,
+                ...parsed.vacationSettings
+            },
+            schedules: parsed.schedules || [],
+            vacationSchedule: parsed.vacationSchedule || {},
+            vacationNotes: parsed.vacationNotes || {}
+        });
+
+        const parseSavedData = (saved) => {
+            if (!saved) return null;
+
+            try {
+                return JSON.parse(saved);
+            } catch (error) {
+                return null;
+            }
+        };
+        
         const EmployeeLeaveSystem = () => {
              const [currentUser, setCurrentUser] = useState(() => {
                 const savedData = storageGet(DATA_STORAGE_KEY);
@@ -345,25 +372,17 @@
             });
             const [data, setData] = useState(() => {
                 const saved = storageGet(DATA_STORAGE_KEY);
-                     if (!saved) return {
+                     const parsed = parseSavedData(saved);
+
+                     if (!parsed) return {
                         ...initialData,
                         users: normalizeUserPermissions(ensureSuperUserExists(initialData.users))
                     };
-                const parsed = JSON.parse(saved);
-                return {
-                    ...initialData,
-                    ...parsed,
-                    users: normalizeUserPermissions(ensureSuperUserExists(parsed.users || initialData.users)),
-                    managementCategories: Array.from(new Set([...(parsed.managementCategories || []), ...defaultManagementCategories])),
-                    vacationSettings: {
-                        ...initialData.vacationSettings,
-                        ...parsed.vacationSettings
-                    },
-                    schedules: parsed.schedules || [],
-                    vacationSchedule: parsed.vacationSchedule || {},
-                    vacationNotes: parsed.vacationNotes || {}
-                };
+                
+                return mergeWithInitialData(parsed);
             });
+            const [isCloudReady, setIsCloudReady] = useState(false);
+            const cloudSaveTimerRef = useRef(null);
 
             const [selectedMonth, setSelectedMonth] = useState(new Date(2026, 1)); // 2月
             const [workingViewDate, setWorkingViewDate] = useState(new Date());
@@ -403,6 +422,37 @@
             }, [data]);
 
             useEffect(() => {
+                let isMounted = true;
+
+                const hydrateFromCloud = async () => {
+                    try {
+                        const snapshot = await sharedStateDoc.get();
+                        const cloudPayload = snapshot.data();
+
+                        if (!isMounted || !cloudPayload?.data) return;
+
+                        setData(mergeWithInitialData(cloudPayload.data));
+
+                        if (cloudPayload.currentUserId) {
+                            storageSet(CURRENT_USER_STORAGE_KEY, cloudPayload.currentUserId);
+                        }
+                    } catch (error) {
+                        console.warn('Cloud sync unavailable, fallback to local storage only.', error);
+                    } finally {
+                        if (isMounted) {
+                            setIsCloudReady(true);
+                        }
+                    }
+                };
+
+                hydrateFromCloud();
+
+                return () => {
+                    isMounted = false;
+                };
+            }, []);
+            
+            useEffect(() => {
                 if (currentUser?.id) {
                     storageSet(CURRENT_USER_STORAGE_KEY, currentUser.id);
                 } else {
@@ -413,6 +463,30 @@
              useEffect(() => {
                 storageSet(UI_MODE_STORAGE_KEY, uiMode);
             }, [uiMode]);
+
+            useEffect(() => {
+                if (!isCloudReady) return;
+
+                if (cloudSaveTimerRef.current) {
+                    clearTimeout(cloudSaveTimerRef.current);
+                }
+
+                cloudSaveTimerRef.current = setTimeout(() => {
+                    sharedStateDoc.set({
+                        data,
+                        currentUserId: currentUser?.id || null,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true }).catch((error) => {
+                        console.warn('Cloud save failed, local data is still available.', error);
+                    });
+                }, 600);
+
+                return () => {
+                    if (cloudSaveTimerRef.current) {
+                        clearTimeout(cloudSaveTimerRef.current);
+                    }
+                };
+            }, [data, currentUser, isCloudReady]);
 
             useEffect(() => {
                 document.body.style.overflow = 'hidden';

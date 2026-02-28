@@ -71,8 +71,8 @@ const holidays2026 = [
 
 const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
 const UI_SCALE = 0.9;
-const VACATION_TAB_SCALE = 0.84;
-const VACATION_TAB_OFFSET_Y = '-10px';
+const VACATION_TAB_SCALE = UI_SCALE;
+const VACATION_TAB_OFFSET_Y = '0px';
 const SUPER_USER_PASSWORD = '000';
 const SUPER_USER = {
   id: 'E000',
@@ -936,7 +936,7 @@ const EmployeeLeaveSystem = () => {
                 )}
               </div>
               
-             <div className="max-h-[65vh] overflow-auto rounded-lg border border-gray-200">
+             <div className="h-[72vh] overflow-auto rounded-lg border border-gray-200">
                 <table className="w-full border-collapse table-fixed text-sm md:text-base">
                   <thead>
                     <tr>

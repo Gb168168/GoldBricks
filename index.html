@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-81</title>
+    <title>員工假管理系統-82</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -406,6 +406,7 @@
             });
             const [showScheduleModal, setShowScheduleModal] = useState(false);
             const [selectedScheduleDate, setSelectedScheduleDate] = useState('');
+            const [expandedScheduleDate, setExpandedScheduleDate] = useState('');
             const [scheduleForm, setScheduleForm] = useState({ title: '', content: '' });
 
             const [showAddUser, setShowAddUser] = useState(false);
@@ -933,6 +934,10 @@
                 setSelectedScheduleDate(dateStr);
                 setScheduleForm({ title: '', content: '' });
                 setShowScheduleModal(true);
+            };
+
+             const toggleScheduleDateExpand = (dateStr) => {
+                setExpandedScheduleDate(prev => (prev === dateStr ? '' : dateStr));
             };
 
             const handleScheduleSubmit = (e) => {
@@ -2780,7 +2785,7 @@
                                                         weekend ? 'bg-blue-50' :
                                                         'bg-white'
                                                     } hover:shadow-md cursor-pointer transition-shadow`}
-                                                   onClick={() => openScheduleModal(dateStr)}
+                                                    onClick={() => toggleScheduleDateExpand(dateStr)}
                                                 >
                                                    <div className="font-bold text-sm md:text-base mb-1">
                                                         {day.getDate()}
@@ -2789,21 +2794,7 @@
                                                     <div className="space-y-1">
                                                         {schedules.map(schedule => (
                                                             <div key={schedule.id} className="text-xs bg-indigo-100 text-indigo-800 p-1 rounded">
-                                                                <div className="flex items-start justify-between gap-1">
-                                                                    <div className="font-medium">{schedule.title}</div>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleDeleteSchedule(schedule.id);
-                                                                        }}
-                                                                        className="text-red-600 hover:text-red-800"
-                                                                        title="刪除行程"
-                                                                    >
-                                                                        <Trash2 size={14} />
-                                                                    </button>
-                                                                </div>
-                                                                <div className="text-xs">{schedule.content}</div>
+                                                                <div className="font-medium">{schedule.title}</div>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -2811,11 +2802,50 @@
                                             );
                                         })}
                                     </div>
+                                    
+                                    {expandedScheduleDate && (
+                                        <div className="mt-6 border border-indigo-200 rounded-lg p-4 bg-indigo-50/40">
+                                            <div className="flex items-center justify-between gap-3 mb-3">
+                                                <h4 className="text-base md:text-lg font-bold text-indigo-800">
+                                                    {expandedScheduleDate} 排程明細
+                                                </h4>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => openScheduleModal(expandedScheduleDate)}
+                                                    className="px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm md:text-base"
+                                                >
+                                                    新增排程
+                                                </button>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {(data.schedules?.filter(s => s.date === expandedScheduleDate) || []).length > 0 ? (
+                                                    (data.schedules?.filter(s => s.date === expandedScheduleDate) || []).map(schedule => (
+                                                        <div key={schedule.id} className="bg-white border border-indigo-100 rounded p-3">
+                                                            <div className="flex items-start justify-between gap-2">
+                                                                <div className="font-medium text-indigo-900">{schedule.title}</div>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleDeleteSchedule(schedule.id)}
+                                                                    className="text-red-600 hover:text-red-800"
+                                                                    title="刪除行程"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </div>
+                                                            <div className="mt-1 text-sm md:text-base text-gray-700">{schedule.content}</div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <p className="text-sm md:text-base text-gray-600">此日期目前沒有排程項目。</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                     <p className="text-sm md:text-base text-blue-800">
-                                        💡 點擊日期可以新增排程。排程資料會自動儲存。
+                                        💡 月曆僅顯示排程標題；點擊日期可展開全部項目並新增排程。
                                     </p>
                                 </div>
 

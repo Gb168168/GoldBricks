@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-103</title>
+    <title>員工假管理系統-104</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -431,7 +431,7 @@
             const [showVacationSettings, setShowVacationSettings] = useState(false);
             const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
             const [selectedLoginUserId, setSelectedLoginUserId] = useState('');
-            const [isSessionStarted, setIsSessionStarted] = useState(false);
+            const [isSessionStarted, setIsSessionStarted] = useState(() => Boolean(storageGet(CURRENT_USER_STORAGE_KEY)));
             const [newLeaveForm, setNewLeaveForm] = useState({
                 type: '特休',
                 startDate: '',
@@ -571,6 +571,20 @@
             }, []);
             useEffect(() => {
                   if (!currentUser?.id) {
+                   const savedUserId = storageGet(CURRENT_USER_STORAGE_KEY);
+                    if (!savedUserId) {
+                        setIsSessionStarted(false);
+                        return;
+                    }
+
+                    const restoredUser = data.users.find(user => user.id === savedUserId);
+                    if (!restoredUser) {
+                        setIsSessionStarted(false);
+                        return;
+                    }
+
+                    setCurrentUser(normalizeUserPermissions([restoredUser])[0]);
+                    setIsSessionStarted(true);
                     return;
                 }
 
@@ -578,6 +592,7 @@
                 if (!latestUser) {
                     setCurrentUser(data.users[0] || null);
                     setActiveTab('vacation');
+                    setIsSessionStarted(Boolean(data.users[0]));
                     return;
                 }
 
@@ -585,6 +600,7 @@
                 if (JSON.stringify(normalizedLatestUser) !== JSON.stringify(currentUser)) {
                     setCurrentUser(normalizedLatestUser);
                 }
+                setIsSessionStarted(true);
             }, [data.users, currentUser]);
 
              useEffect(() => {

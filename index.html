@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-99</title>
+    <title>員工假管理系統-100</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -216,8 +216,34 @@
 
         const isGoldBricksSuperUser = (user = {}) => user?.name === 'GoldBricks';
         
+        const createGoldBricksAdminAccount = () => ({
+            id: 'GB001',
+            username: 'goldbricks',
+            name: 'GoldBricks',
+            region: regionOptions[0] || '',
+            department: departmentOptions[0] || '',
+            category: '',
+            position: '最高權限管理者',
+            email: buildCompanyEmail('goldbricks'),
+            phone: '',
+            birthday: '',
+            shift: [],
+            annualLeave: 365,
+            autoWeekendHoliday: false,
+            isAdmin: true,
+            permissionRegions: [...regionOptions],
+            permissionDepartments: [...departmentOptions],
+            canManageAnnouncements: true
+        });
+
+        const ensureGoldBricksAdminAccount = (users = []) => {
+            const sourceUsers = Array.isArray(users) ? users : [];
+            const hasGoldBricks = sourceUsers.some(user => isGoldBricksSuperUser(user));
+            return hasGoldBricks ? sourceUsers : [createGoldBricksAdminAccount(), ...sourceUsers];
+        };
+        
         const normalizeUserPermissions = (users = []) =>
-            users.map(user => {
+            ensureGoldBricksAdminAccount(users).map(user => {
                const forceAdmin = Boolean(user?.isAdmin) || isGoldBricksSuperUser(user);
                if (!forceAdmin) {
                     return {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-102</title>
+    <title>員工假管理系統-103</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -571,10 +571,6 @@
             }, []);
             useEffect(() => {
                   if (!currentUser?.id) {
-                    const defaultUser = data.users[0] || null;
-                    if (defaultUser) {
-                        setCurrentUser(defaultUser);
-                    }
                     return;
                 }
 
@@ -616,10 +612,15 @@
                 if (!data.users.length) return;
                 setSelectedLoginUserId(prev => {
                     if (prev && data.users.some(user => user.id === prev)) return prev;
-                    if (currentUser?.id && data.users.some(user => user.id === currentUser.id)) return currentUser.id;
                     return data.users[0].id;
                 });
-            }, [data.users, currentUser]);
+             }, [data.users]);
+
+            const handleLogout = () => {
+                setCurrentUser(null);
+                setIsSessionStarted(false);
+                setIsMobileMenuOpen(false);
+            };
 
             useEffect(() => {
                 if (!currentUser?.id || !latestAnnouncement) return;
@@ -1724,9 +1725,9 @@
                 : 'w-10 min-w-[2.5rem]';
 
             const handleStartSession = () => {
-                const loginUser = data.users.find(user => user.id === selectedLoginUserId) || data.users[0] || null;
+                const loginUser = data.users.find(user => user.id === selectedLoginUserId) || null;
                 if (!loginUser) {
-                    alert('目前沒有可登入的員工資料，請先新增員工。');
+                    alert('請先選擇登入使用者。');
                     return;
                 }
                 setCurrentUser(loginUser);
@@ -1820,6 +1821,13 @@
                                         className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100"
                                     >
                                         切換為{isDesktopMode ? '手機版' : '桌機版'}
+                                    </button>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 flex items-center gap-2"
+                                    >
+                                        <LogOut size={16} />
+                                        登出
                                     </button>
                                 </div>
                             </div>

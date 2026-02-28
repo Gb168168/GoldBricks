@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-62</title>
+    <title>員工假管理系統-63</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1354,7 +1354,7 @@
                     </aside>
 
                       <div
-                        className={`fixed right-0 bottom-0 ${isDesktopMode ? 'left-64' : 'left-0 md:left-56 lg:left-64'} overflow-y-auto px-4 md:px-5 lg:px-6 py-6 pt-4`}
+                        className={`fixed right-0 bottom-0 ${isDesktopMode ? 'left-64' : 'left-0 md:left-56 lg:left-64'} ${activeTab === 'vacation' ? 'overflow-hidden' : 'overflow-y-auto'} px-4 md:px-5 lg:px-6 py-6 pt-4`}
                         style={{
                             top: '7rem',
                             transform: 'translateY(-22px)'
@@ -1816,7 +1816,7 @@
                         )}
 
                         {activeTab === 'vacation' && (
-                            <div className="flex min-h-[calc(100vh-12rem)] flex-col gap-4">
+                            <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden">
                                 <div className="flex justify-between items-center">
                                     <h2 className="text-2xl font-bold">休假表</h2>
                                     <div className="flex space-x-2">
@@ -2153,19 +2153,19 @@
                                                         );
                                                     })}
                                                <tr className="bg-green-50">  
-                                                    <td className="border-2 border-gray-400 p-1.5 sticky bottom-0 z-30 bg-green-100"></td>
-                                                    <td className="border-2 border-gray-400 p-1.5 font-bold text-center sticky bottom-0 z-30 bg-green-100">上班人數</td>
+                                                    <td className="border-2 border-gray-400 p-1.5 sticky bottom-2 z-30 bg-green-100"></td>
+                                                    <td className="border-2 border-gray-400 p-1.5 font-bold text-center sticky bottom-2 z-30 bg-green-100">上班人數</td>
                                                     {monthDays.map(day => {
                                                         return (
                                                             <td
                                                                 key={`count-${day.toISOString()}`}
-                                                                className={`border-2 border-gray-300 p-2 text-center font-bold text-green-700 bg-green-50 sticky bottom-0 z-20 ${isDesktopMode ? 'w-[3.2rem] min-w-[3.2rem]' : 'w-10 min-w-[2.5rem]'}`}
+                                                                className={`border-2 border-gray-300 p-2 text-center font-bold text-green-700 bg-green-50 sticky bottom-2 z-20 ${isDesktopMode ? 'w-[3.2rem] min-w-[3.2rem]' : 'w-10 min-w-[2.5rem]'}`}
                                                             >
                                                                 {getWorkingCount(day)}
                                                                 </td>
                                                 );
                                             })}
-                                                    <td className="border-2 border-gray-400 p-1.5 sticky right-0 bottom-0 z-30 bg-green-100"></td>
+                                                    <td className="border-2 border-gray-400 p-1.5 sticky right-0 bottom-2 z-30 bg-green-100"></td>
                                                 </tr>
                                             </tbody>
                                         </table>

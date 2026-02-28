@@ -146,6 +146,7 @@ const EmployeeLeaveSystem = () => {
   const [pendingVacationUserFilter, setPendingVacationUserFilter] = useState([]);
   const [appliedVacationUserFilter, setAppliedVacationUserFilter] = useState([]);
   const [showVacationSettings, setShowVacationSettings] = useState(false);
+  const [collapsedAnnualDepartments, setCollapsedAnnualDepartments] = useState({});
   const [editingUser, setEditingUser] = useState(null);
   const [selectedVacationMarker, setSelectedVacationMarker] = useState('▲');
   const [newLeaveForm, setNewLeaveForm] = useState({
@@ -210,6 +211,20 @@ const EmployeeLeaveSystem = () => {
     ? baseVacationUsers.filter(user => appliedVacationUserFilter.includes(user.id))
     : baseVacationUsers;
 
+  const annualOverviewUsers = data.users.filter(user => (
+    (filterRegion === '全部' || user.region === filterRegion) &&
+    (filterDepartment === '全部' || user.department === filterDepartment)
+  ));
+
+  const annualDepartmentGroups = annualOverviewUsers.reduce((groups, user) => {
+    const departmentName = user.department || '未分類';
+    if (!groups[departmentName]) {
+      groups[departmentName] = [];
+    }
+    groups[departmentName].push(user);
+    return groups;
+  }, {});
+
   useEffect(() => {
     const validUserIds = new Set(baseVacationUsers.map(user => user.id));
     setPendingVacationUserFilter(prev => prev.filter(id => validUserIds.has(id)));
@@ -231,6 +246,13 @@ const EmployeeLeaveSystem = () => {
   const handleClearVacationUserFilter = () => {
     setPendingVacationUserFilter([]);
     setAppliedVacationUserFilter([]);
+  };
+
+  const handleToggleAnnualDepartment = (department) => {
+    setCollapsedAnnualDepartments(prev => ({
+      ...prev,
+      [department]: !prev[department]
+    }));
   };
   
  // 以密碼切換到最高管理者
@@ -1293,58 +1315,92 @@ const EmployeeLeaveSystem = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">員工</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">部門</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">地區</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">總特休</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">已使用</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">剩餘</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">使用日期</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {data.users
-                    .filter(u => 
-                      (filterRegion === '全部' || u.region === filterRegion) &&
-                      (filterDepartment === '全部' || u.department === filterDepartment)
-                    )
-                    .map(user => {
-                      const annualLeaves = data.leaves.filter(l => 
-                        l.userId === user.id && 
-                        l.type === '特休' && 
-                        l.status === '已核准'
-                      );
-                      
-                      return (
-                        <tr key={user.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm md:text-base font-medium">{user.name}</td>
-                          <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
-                          <td className="px-4 py-3 text-sm md:text-base">{user.region}</td>
-                          <td className="px-4 py-3 text-sm md:text-base">{user.annualLeave} 天</td>
-                          <td className="px-4 py-3 text-sm md:text-base text-orange-600">{annualLeaves.length} 天</td>
-                          <td className="px-4 py-3 text-sm md:text-base">
-                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">
-                              {user.annualLeave - annualLeaves.length} 天
-                            </span>
-                          </td>
-                           <td className="px-4 py-3 text-sm md:text-base">
-                            <div className="space-y-1">
-                              {annualLeaves.map(leave => (
-                                <div key={leave.id} className="text-xs text-gray-600">
-                                  {leave.startDate} ~ {leave.endDate}
-                                </div>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
+        <div className="space-y-3">
+              {Object.entries(annualDepartmentGroups).map(([departmentName, users]) => {
+                const isCollapsed = collapsedAnnualDepartments[departmentName];
+                const totalAnnualLeave = users.reduce((sum, user) => sum + (user.annualLeave || 0), 0);
+                const totalUsedLeave = users.reduce((sum, user) => {
+                  const annualLeaves = data.leaves.filter(leave => (
+                    leave.userId === user.id &&
+                    leave.type === '特休' &&
+                    leave.status === '已核准'
+                  ));
+                  return sum + annualLeaves.length;
+                }, 0);
+
+                return (
+                  <div key={departmentName} className="bg-white rounded-lg shadow overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleAnnualDepartment(departmentName)}
+                      className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between text-left"
+                    >
+                      <div>
+                        <div className="text-sm md:text-base font-semibold text-gray-800">{departmentName}</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          人數：{users.length}｜總特休：{totalAnnualLeave} 天｜已使用：{totalUsedLeave} 天
+                        </div>
+                      </div>
+                      <span className="text-xs text-indigo-600">{isCollapsed ? '展開 ▼' : '收合 ▲'}</span>
+                    </button>
+
+                    {!isCollapsed && (
+                      <table className="w-full">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">員工</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">部門</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">地區</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">總特休</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">已使用</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">剩餘</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">使用日期</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {users.map(user => {
+                            const annualLeaves = data.leaves.filter(leave => (
+                              leave.userId === user.id &&
+                              leave.type === '特休' &&
+                              leave.status === '已核准'
+                            ));
+
+                            return (
+                              <tr key={user.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-sm md:text-base font-medium">{user.name}</td>
+                                <td className="px-4 py-3 text-sm md:text-base">{user.department}</td>
+                                <td className="px-4 py-3 text-sm md:text-base">{user.region}</td>
+                                <td className="px-4 py-3 text-sm md:text-base">{user.annualLeave} 天</td>
+                                <td className="px-4 py-3 text-sm md:text-base text-orange-600">{annualLeaves.length} 天</td>
+                                <td className="px-4 py-3 text-sm md:text-base">
+                                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">
+                                    {user.annualLeave - annualLeaves.length} 天
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm md:text-base">
+                                  <div className="space-y-1">
+                                    {annualLeaves.map(leave => (
+                                      <div key={leave.id} className="text-xs text-gray-600">
+                                        {leave.startDate} ~ {leave.endDate}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                );
+              })}
+
+              {Object.keys(annualDepartmentGroups).length === 0 && (
+                <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+                  目前沒有符合條件的特休資料
+                </div>
+              )}
             </div>
           </div>
         )}

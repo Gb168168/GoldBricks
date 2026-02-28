@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-92</title>
+    <title>員工假管理系統-93</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1463,6 +1463,87 @@
                 const text = announcementEditorRef.current.innerText;
                 setAnnouncementForm(prev => ({ ...prev, content: text, contentHtml: html }));
             };
+
+            const getSelectedAnnouncementTableCell = () => {
+                const editor = announcementEditorRef.current;
+                const selection = window.getSelection();
+
+                if (!editor || !selection || selection.rangeCount === 0) return null;
+
+                let node = selection.anchorNode;
+                if (!node) return null;
+                if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+                if (!node || !editor.contains(node)) return null;
+
+                return node.closest('td, th');
+            };
+
+            const syncAnnouncementEditorContent = () => {
+                if (!announcementEditorRef.current) return;
+                const html = announcementEditorRef.current.innerHTML;
+                const text = announcementEditorRef.current.innerText;
+                setAnnouncementForm(prev => ({ ...prev, content: text, contentHtml: html }));
+            };
+
+            const handleAddAnnouncementTableColumn = () => {
+                const cell = getSelectedAnnouncementTableCell();
+                if (!cell) {
+                    alert('請先將游標放在表格內，再新增欄位');
+                    return;
+                }
+
+                const row = cell.parentElement;
+                const table = cell.closest('table');
+                if (!row || !table) return;
+
+                const cellIndex = Array.from(row.children).indexOf(cell);
+                Array.from(table.rows).forEach((currentRow, rowIndex) => {
+                    const referenceCell = currentRow.children[cellIndex] || currentRow.lastElementChild;
+                    const newCell = document.createElement(referenceCell?.tagName?.toLowerCase() || (rowIndex === 0 ? 'th' : 'td'));
+                    newCell.setAttribute('style', referenceCell?.getAttribute('style') || 'border:1px solid #d1d5db;padding:8px;');
+
+                    if (newCell.tagName === 'TH') {
+                        newCell.style.background = '#f9fafb';
+                        newCell.textContent = `欄位 ${currentRow.children.length + 1}`;
+                    }
+
+                    const insertAfterTarget = currentRow.children[cellIndex];
+                    if (insertAfterTarget && insertAfterTarget.nextSibling) {
+                        currentRow.insertBefore(newCell, insertAfterTarget.nextSibling);
+                    } else {
+                        currentRow.appendChild(newCell);
+                    }
+                });
+
+                syncAnnouncementEditorContent();
+            };
+
+            const handleRemoveAnnouncementTableColumn = () => {
+                const cell = getSelectedAnnouncementTableCell();
+                if (!cell) {
+                    alert('請先將游標放在表格內，再刪除欄位');
+                    return;
+                }
+
+                const row = cell.parentElement;
+                const table = cell.closest('table');
+                if (!row || !table) return;
+
+                const columnCount = row.children.length;
+                if (columnCount <= 1) {
+                    alert('表格至少需保留 1 欄');
+                    return;
+                }
+
+                const cellIndex = Array.from(row.children).indexOf(cell);
+                Array.from(table.rows).forEach(currentRow => {
+                    if (currentRow.children[cellIndex]) {
+                        currentRow.removeChild(currentRow.children[cellIndex]);
+                    }
+                });
+
+                syncAnnouncementEditorContent();
+            };
             
             const handleAnnouncementEditorInput = (event) => {
                 const html = event.currentTarget.innerHTML;
@@ -1853,6 +1934,8 @@
                                                     <button type="button" onClick={() => handleAnnouncementCommand('fontSize', 5)} className="px-3 py-1 border rounded hover:bg-gray-50">放大字體</button>
                                                     <button type="button" onClick={() => handleAnnouncementCommand('fontSize', 2)} className="px-3 py-1 border rounded hover:bg-gray-50">縮小字體</button>
                                                     <button type="button" onClick={handleInsertAnnouncementTable} className="px-3 py-1 border rounded hover:bg-gray-50">插入表格</button>
+                                                    <button type="button" onClick={handleAddAnnouncementTableColumn} className="px-3 py-1 border rounded hover:bg-gray-50">新增欄位</button>
+                                                    <button type="button" onClick={handleRemoveAnnouncementTableColumn} className="px-3 py-1 border rounded hover:bg-gray-50">刪除欄位</button>
                                                 </div>
                                                 <div
                                                     ref={announcementEditorRef}

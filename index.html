@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-87</title>
+    <title>員工假管理系統-88</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -216,6 +216,7 @@
                     id: 'A001',
                     title: '系統公告',
                     content: '歡迎使用 GoldBricks 員工假勤系統，若有新流程會在此公告。',
+                    contentHtml: '歡迎使用 GoldBricks 員工假勤系統，若有新流程會在此公告。',
                     createdAt: new Date().toISOString(),
                     createdBy: '系統'
                 }
@@ -430,8 +431,18 @@
             const [newCategoryName, setNewCategoryName] = useState('');
             const [managementCategories, setManagementCategories] = useState(defaultManagementCategories);
             const [newUserForm, setNewUserForm] = useState(() => createNewUserForm(defaultManagementCategories));
-            const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '' });
+            const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '', contentHtml: '' });
+            const announcementEditorRef = useRef(null);
             const [announcementPopup, setAnnouncementPopup] = useState(null);
+            
+            useEffect(() => {
+                if (!announcementEditorRef.current) return;
+                const currentHtml = announcementEditorRef.current.innerHTML;
+                const nextHtml = announcementForm.contentHtml || '';
+                if (currentHtml !== nextHtml) {
+                    announcementEditorRef.current.innerHTML = nextHtml;
+                }
+            }, [announcementForm.contentHtml]);
             const sortedAnnouncements = [...(data.announcements || [])]
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             const latestAnnouncement = sortedAnnouncements[0] || null;
@@ -1420,12 +1431,29 @@
                 return `${totalHourComp}h`;
             };
 
+            const handleAnnouncementCommand = (command, value = null) => {
+                if (!announcementEditorRef.current) return;
+                announcementEditorRef.current.focus();
+                document.execCommand('styleWithCSS', false, true);
+                document.execCommand(command, false, value);
+                const html = announcementEditorRef.current.innerHTML;
+                const text = announcementEditorRef.current.innerText;
+                setAnnouncementForm(prev => ({ ...prev, content: text, contentHtml: html }));
+            };
+
+            const handleAnnouncementEditorInput = (event) => {
+                const html = event.currentTarget.innerHTML;
+                const text = event.currentTarget.innerText;
+                setAnnouncementForm(prev => ({ ...prev, content: text, contentHtml: html }));
+            };
+
             const handleSaveAnnouncement = (e) => {
                 e.preventDefault();
                 if (!currentUser?.isAdmin) return;
 
                 const title = announcementForm.title.trim();
                 const content = announcementForm.content.trim();
+                const contentHtml = (announcementForm.contentHtml || '').trim();
                 if (!title || !content) {
                     alert('請填寫完整公告標題與內容');
                     return;
@@ -1435,6 +1463,7 @@
                     id: `A${Date.now()}`,
                     title,
                     content,
+                    contentHtml,
                     createdAt: new Date().toISOString(),
                     createdBy: currentUser.name
                 };
@@ -1449,7 +1478,7 @@
                         details: title
                     }]
                 }));
-                setAnnouncementForm({ title: '', content: '' });
+                setAnnouncementForm({ title: '', content: '', contentHtml: '' });
                 setAnnouncementPopup(newAnnouncement);
                 setActiveTab('announcement');
             };
@@ -1646,7 +1675,11 @@
                                     <Bell size={20} className="text-indigo-500" />
                                 </div>
                                 <p className="font-semibold text-gray-800">{announcementPopup.title}</p>
-                                <p className="text-gray-600 whitespace-pre-wrap">{announcementPopup.content}</p>
+                                {announcementPopup.contentHtml ? (
+                                    <div className="text-gray-600" dangerouslySetInnerHTML={{ __html: announcementPopup.contentHtml }} />
+                                ) : (
+                                    <p className="text-gray-600 whitespace-pre-wrap">{announcementPopup.content}</p>
+                                )}
                                 <div className="text-xs text-gray-400">
                                     發佈者：{announcementPopup.createdBy}｜{new Date(announcementPopup.createdAt).toLocaleString('zh-TW')}
                                 </div>
@@ -1702,13 +1735,32 @@
                                                 placeholder="公告標題"
                                                 required
                                             />
-                                            <textarea
-                                                value={announcementForm.content}
-                                                onChange={(e) => setAnnouncementForm(prev => ({ ...prev, content: e.target.value }))}
-                                                className="w-full px-3 py-2 border rounded-lg min-h-[120px]"
-                                                placeholder="公告內容"
-                                                required
-                                            />
+                                            <div className="space-y-2">
+                                                <div className="flex flex-wrap gap-2">
+                                                    <input
+                                                        type="color"
+                                                        title="字體顏色"
+                                                        onChange={(e) => handleAnnouncementCommand('foreColor', e.target.value)}
+                                                        className="w-10 h-10 border rounded cursor-pointer"
+                                                    />
+                                                    <button type="button" onClick={() => handleAnnouncementCommand('bold')} className="px-3 py-1 border rounded hover:bg-gray-50 font-bold">B</button>
+                                                    <button type="button" onClick={() => handleAnnouncementCommand('italic')} className="px-3 py-1 border rounded hover:bg-gray-50 italic">I</button>
+                                                    <button type="button" onClick={() => handleAnnouncementCommand('underline')} className="px-3 py-1 border rounded hover:bg-gray-50 underline">U</button>
+                                                    <button type="button" onClick={() => handleAnnouncementCommand('justifyLeft')} className="px-3 py-1 border rounded hover:bg-gray-50">靠左</button>
+                                                    <button type="button" onClick={() => handleAnnouncementCommand('justifyCenter')} className="px-3 py-1 border rounded hover:bg-gray-50">置中</button>
+                                                    <button type="button" onClick={() => handleAnnouncementCommand('justifyRight')} className="px-3 py-1 border rounded hover:bg-gray-50">靠右</button>
+                                                    <button type="button" onClick={() => handleAnnouncementCommand('fontSize', 5)} className="px-3 py-1 border rounded hover:bg-gray-50">放大字體</button>
+                                                    <button type="button" onClick={() => handleAnnouncementCommand('fontSize', 2)} className="px-3 py-1 border rounded hover:bg-gray-50">縮小字體</button>
+                                                </div>
+                                                <div
+                                                    ref={announcementEditorRef}
+                                                    contentEditable
+                                                    suppressContentEditableWarning
+                                                    onInput={handleAnnouncementEditorInput}
+                                                    className="w-full px-3 py-2 border rounded-lg min-h-[120px] focus:outline-none"
+                                                    data-placeholder="公告內容"
+                                                />
+                                            </div>
                                             <div className="flex justify-end">
                                                 <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
                                                     發佈公告
@@ -1730,7 +1782,11 @@
                                                         <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">未讀</span>
                                                     )}
                                                 </div>
-                                                <p className="mt-2 text-gray-700 whitespace-pre-wrap">{item.content}</p>
+                                                {item.contentHtml ? (
+                                                    <div className="mt-2 text-gray-700" dangerouslySetInnerHTML={{ __html: item.contentHtml }} />
+                                                ) : (
+                                                    <p className="mt-2 text-gray-700 whitespace-pre-wrap">{item.content}</p>
+                                                )}
                                                 <p className="mt-3 text-xs text-gray-400">
                                                     發佈者：{item.createdBy}｜{new Date(item.createdAt).toLocaleString('zh-TW')}
                                                 </p>

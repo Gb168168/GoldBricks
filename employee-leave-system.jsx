@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Users, FileText, Clock, Clipboard, Download, Plus, Edit2, Trash2, Check, Bell, LogOut } from 'lucide-react';
 
 // 初始化資料
@@ -46,7 +46,11 @@ const initialData = {
     monthlyVacationDays: ''
   },
   vacationSchedule: {},
-  auditLogs: []
+  auditLogs: [],
+  bulletin: {
+    content: '',
+    updatedAt: ''
+  }
 };
 
 // 國定假日資料
@@ -139,6 +143,7 @@ const EmployeeLeaveSystem = () => {
   });
 
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const bulletinEditorRef = useRef(null);
   const [workingViewDate, setWorkingViewDate] = useState(new Date());
   const [filterRegion, setFilterRegion] = useState('全部');
   const [filterDepartment, setFilterDepartment] = useState('全部');
@@ -156,7 +161,30 @@ const EmployeeLeaveSystem = () => {
     reason: '',
     hours: 8
   });
+  const [bulletinDraft, setBulletinDraft] = useState(() => data.bulletin?.content || '');
 
+  useEffect(() => {
+    setBulletinDraft(data.bulletin?.content || '');
+  }, [data.bulletin?.content]);
+
+  const handleBulletinCommand = (command, value = null) => {
+    if (!bulletinEditorRef.current) return;
+    bulletinEditorRef.current.focus();
+    document.execCommand('styleWithCSS', false, true);
+    document.execCommand(command, false, value);
+    setBulletinDraft(bulletinEditorRef.current.innerHTML);
+  };
+
+  const handleSaveBulletin = () => {
+    setData(prev => ({
+      ...prev,
+      bulletin: {
+        content: bulletinDraft,
+        updatedAt: new Date().toISOString()
+      }
+    }));
+  };
+  
   // 儲存資料到 localStorage
   useEffect(() => {
     localStorage.setItem('leaveSystemData', JSON.stringify(data));
@@ -680,7 +708,45 @@ const EmployeeLeaveSystem = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white rounded-lg shadow p-4 space-y-4">
+              <div className="border border-orange-200 rounded-lg p-4 bg-orange-50">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-bold text-orange-700">公告欄</h3>
+                  {data.bulletin?.updatedAt && (
+                    <span className="text-xs text-orange-600">
+                      最後更新：{new Date(data.bulletin.updatedAt).toLocaleString('zh-TW')}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <input
+                    type="color"
+                    title="字體顏色"
+                    onChange={(e) => handleBulletinCommand('foreColor', e.target.value)}
+                    className="w-10 h-10 border rounded cursor-pointer"
+                  />
+                  <button type="button" onClick={() => handleBulletinCommand('bold')} className="px-3 py-1 border rounded hover:bg-white font-bold">B</button>
+                  <button type="button" onClick={() => handleBulletinCommand('italic')} className="px-3 py-1 border rounded hover:bg-white italic">I</button>
+                  <button type="button" onClick={() => handleBulletinCommand('underline')} className="px-3 py-1 border rounded hover:bg-white underline">U</button>
+                  <button type="button" onClick={() => handleBulletinCommand('justifyLeft')} className="px-3 py-1 border rounded hover:bg-white">靠左</button>
+                  <button type="button" onClick={() => handleBulletinCommand('justifyCenter')} className="px-3 py-1 border rounded hover:bg-white">置中</button>
+                  <button type="button" onClick={() => handleBulletinCommand('justifyRight')} className="px-3 py-1 border rounded hover:bg-white">靠右</button>
+                  <button type="button" onClick={() => handleBulletinCommand('fontSize', 5)} className="px-3 py-1 border rounded hover:bg-white">放大字體</button>
+                  <button type="button" onClick={() => handleBulletinCommand('fontSize', 2)} className="px-3 py-1 border rounded hover:bg-white">縮小字體</button>
+                  <button type="button" onClick={handleSaveBulletin} className="px-4 py-1 bg-orange-600 text-white rounded hover:bg-orange-700">儲存公告</button>
+                </div>
+
+                <div
+                  ref={bulletinEditorRef}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onInput={(e) => setBulletinDraft(e.currentTarget.innerHTML)}
+                  dangerouslySetInnerHTML={{ __html: bulletinDraft }}
+                  className="w-full min-h-[120px] bg-white border rounded-lg p-3 focus:outline-none"
+                />
+              </div>
+              
               <p className="text-lg font-medium text-indigo-700 mb-3">今日上班總人數：{todayWorkingUsers.length} 人</p>
               {todayWorkingUsers.length === 0 ? (
                 <p className="text-gray-500">今日無上班人員。</p>

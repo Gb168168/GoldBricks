@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-95</title>
+    <title>員工假管理系統-96</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -164,48 +164,7 @@
 
         // 初始化資料
         const initialData = {
-            users: [
-                {
-                    id: 'E001',
-                    username: '001',
-                    name: '管理員',
-                    region: '新竹區',
-                    department: '管理部',
-                    category: '排班-8219',
-                    position: '經理',
-                    email: 'admin@company.com',
-                    phone: '0912-345-678',
-                    birthday: '1980-01-01',
-                    shift: ['早'],
-                    autoWeekendHoliday: false,
-                    isAdmin: true,
-                    permissionRegions: [...regionOptions],
-                    permissionDepartments: [...departmentOptions],
-                    canManageAnnouncements: true,
-                    annualLeave: 14,
-                    usedAnnualLeave: 0
-                },
-                {
-                    id: 'E002',
-                    username: '002',
-                    name: '王小明',
-                    region: '台中區',
-                    department: 'TSE',
-                    category: '排班-8219',
-                    position: '專員',
-                    email: 'wang@company.com',
-                    phone: '0923-456-789',
-                    birthday: '1990-05-15',
-                    shift: ['早', '晚'],
-                    autoWeekendHoliday: false,
-                    isAdmin: false,
-                    permissionRegions: [],
-                    permissionDepartments: [],
-                    canManageAnnouncements: false,
-                    annualLeave: 10,
-                    usedAnnualLeave: 2
-                }
-            ],
+            users: [],
             leaves: [],
             schedules: [],
             auditLogs: [],
@@ -254,39 +213,6 @@
         const DATA_STORAGE_KEY = 'leaveSystemData';
         const ANNOUNCEMENT_READ_KEY_PREFIX = 'leaveSystemAnnouncementRead_';
         const VACATION_TAB_OFFSET_Y = '-22px';
-        const SUPER_USER_PASSWORD = '000';
-        const SUPER_USER = {
-            id: 'E000',
-            username: 'GoldBricks',
-            password: SUPER_USER_PASSWORD,
-            name: 'GoldBricks',
-            region: '總部',
-            department: '系統管理',
-            category: '排班-8219',
-            position: '最高管理者',
-            email: 'goldbricks@company.com',
-            phone: '0900-000-000',
-            birthday: '1980-01-01',
-            shift: ['早'],
-            autoWeekendHoliday: false,
-            annualLeave: 365,
-            isAdmin: true,
-            permissionRegions: [...regionOptions],
-            permissionDepartments: [...departmentOptions],
-            canManageAnnouncements: true
-        };
-
-        const ensureSuperUserExists = (users = []) => {
-            const hasSuperUser = users.some(user => user.id === SUPER_USER.id || user.username === SUPER_USER.username);
-            if (!hasSuperUser) {
-                return [SUPER_USER, ...users];
-            }
-
-            return users.map(user => (user.id === SUPER_USER.id || user.username === SUPER_USER.username
-                ? { ...user, ...SUPER_USER, isAdmin: true, permissionRegions: [...regionOptions], permissionDepartments: [...departmentOptions] }
-                : user
-            ));
-        };
 
          const normalizeUserPermissions = (users = []) =>
             users.map(user => {
@@ -350,7 +276,7 @@
         const mergeWithInitialData = (parsed = {}) => ({
             ...initialData,
             ...parsed,
-            users: normalizeUserPermissions(ensureSuperUserExists(parsed.users || initialData.users)),
+            users: normalizeUserPermissions(parsed.users || initialData.users),
             managementCategories: Array.from(new Set([...(parsed.managementCategories || []), ...defaultManagementCategories])),
             vacationSettings: {
                 ...initialData.vacationSettings,
@@ -372,8 +298,8 @@
             }
         };
         
-        const EmployeeLeaveSystem = () => {
-             const [currentUser, setCurrentUser] = useState(() => {
+                const EmployeeLeaveSystem = () => {
+                const [currentUser, setCurrentUser] = useState(() => {
                 const savedData = storageGet(DATA_STORAGE_KEY);
                 const savedUserId = storageGet(CURRENT_USER_STORAGE_KEY);
 
@@ -381,7 +307,7 @@
 
                 try {
                     const parsed = JSON.parse(savedData);
-                    const users = ensureSuperUserExists(parsed.users || initialData.users);
+                    const users = parsed.users || initialData.users;
                     return users.find(user => user.id === savedUserId) || users[0] || initialData.users[0] || null;
                 } catch (error) {
                     return initialData.users[0] || null;
@@ -398,7 +324,7 @@
 
                      if (!parsed) return {
                         ...initialData,
-                        users: normalizeUserPermissions(ensureSuperUserExists(initialData.users))
+                        users: normalizeUserPermissions(initialData.users)
                     };
                 
                 return mergeWithInitialData(parsed);
@@ -547,7 +473,7 @@
 
            useEffect(() => {
                 setData(prev => {
-                    const normalizedUsers = normalizeUserPermissions(ensureSuperUserExists(prev.users || []));
+                    const normalizedUsers = normalizeUserPermissions(prev.users || []);
                     const changed = JSON.stringify(normalizedUsers) !== JSON.stringify(prev.users || []);
                     if (!changed) return prev;
                     return {
@@ -618,48 +544,6 @@
                 ...managementCategories,
                 ...data.users.map(user => user.region).filter(Boolean)
             ]));
-
-            const handleSuperUserLogin = () => {
-                const password = window.prompt('請輸入最高管理者密碼');
-                if (password === null) return;
-
-                if (password !== SUPER_USER_PASSWORD) {
-                    alert('密碼錯誤，無法切換為 GoldBricks。');
-                    return;
-                }
-
-                const superUser = data.users.find(user => user.id === SUPER_USER.id) || SUPER_USER;
-                setCurrentUser({ ...superUser, isAdmin: true, permissionRegions: [...regionOptions], permissionDepartments: [...departmentOptions] });
-                setActiveTab('management');
-                alert('已切換為最高使用者 GoldBricks，可審核與設置所有人的假。');
-            };
-
-            const handlePromoteCurrentUser = () => {
-                if (!currentUser?.id || currentUser.isAdmin) return;
-
-                setData(prev => ({
-                    ...prev,
-                    users: prev.users.map(user => {
-                        if (user.id !== currentUser.id) return user;
-                        return {
-                            ...user,
-                            isAdmin: true,
-                            permissionRegions: [...regionOptions],
-                            permissionDepartments: [...departmentOptions],
-                            canManageAnnouncements: true
-                        };
-                    }),
-                    auditLogs: [...prev.auditLogs, {
-                        timestamp: new Date().toISOString(),
-                        user: currentUser.name,
-                        action: '升級權限',
-                        details: '將目前登入者設為最高權限，可進行設定與審核'
-                    }]
-                }));
-
-                alert('已將目前登入帳號升級為最高權限，可進行設定與審核。');
-            };
-
             const handleDeleteUser = (userId) => {
                 const user = data.users.find(u => u.id === userId);
                 if (!user || !canManageUser(user)) {
@@ -1303,7 +1187,7 @@
                 });
             };
 
-            const isVisibleStaff = (user) => user.id !== SUPER_USER.id;
+            const isVisibleStaff = (user) => Boolean(user);
 
             const baseVacationUsers = data.users
                 .filter(user => isVisibleStaff(user))
@@ -1829,14 +1713,6 @@
                                     >
                                         切換為{isDesktopMode ? '手機版' : '桌機版'}
                                     </button>
-                                     {!currentUser.isAdmin && (
-                                        <button onClick={handlePromoteCurrentUser} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                                            設為最高權限
-                                        </button>
-                                    )}
-                                    <button onClick={handleSuperUserLogin} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-                                        輸入密碼進入 GoldBricks
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1933,12 +1809,6 @@
                             <div className="space-y-4">
                                 <div className="flex flex-wrap justify-between items-center gap-3">
                                     <h2 className="text-2xl font-bold">公告欄</h2>
-                                    <button
-                                        onClick={handleMarkAnnouncementAsRead}
-                                        className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-                                    >
-                                        標記最新公告已讀
-                                    </button>
                                 </div>
 
                                 {canManageAnnouncements && (
@@ -2538,25 +2408,6 @@
                                     })}
                                 </div>
 
-                                <div className="bg-white rounded-lg shadow p-4">
-                                    <h3 className="text-lg font-bold mb-4">操作紀錄</h3>
-                                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                                        {data.auditLogs.slice(-10).reverse().map((log, idx) => (
-                                            <div key={idx} className="text-sm md:text-base p-2 bg-gray-50 rounded">
-                                                <span className="text-gray-500">{new Date(log.timestamp).toLocaleString('zh-TW')}</span>
-                                                {' - '}
-                                                <span className="font-medium">{log.user}</span>
-                                                {' '}
-                                                <span className="text-indigo-600">{log.action}</span>
-                                                {' - '}
-                                                <span>{log.details}</span>
-                                            </div>
-                                        ))}
-                                        {data.auditLogs.length === 0 && (
-                                            <p className="text-center text-gray-500 py-4">目前沒有操作紀錄</p>
-                                        )}
-                                    </div>
-                                </div>
                             </div>
                         )}
 

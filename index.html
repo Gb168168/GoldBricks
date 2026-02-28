@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-93</title>
+    <title>員工假管理系統-94</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1518,6 +1518,37 @@
                 syncAnnouncementEditorContent();
             };
 
+            const handleAddAnnouncementTableRow = () => {
+                const cell = getSelectedAnnouncementTableCell();
+                if (!cell) {
+                    alert('請先將游標放在表格內，再新增列');
+                    return;
+                }
+
+                const row = cell.parentElement;
+                if (!row) return;
+
+                const newRow = row.cloneNode(true);
+                Array.from(newRow.children).forEach((currentCell, cellIndex) => {
+                    const sourceCell = row.children[cellIndex];
+                    const shouldUseHeader = sourceCell?.tagName === 'TH';
+                    const nextCell = shouldUseHeader ? document.createElement('td') : currentCell;
+                    const style = sourceCell?.getAttribute('style') || 'border:1px solid #d1d5db;padding:8px;';
+
+                    if (shouldUseHeader) {
+                        nextCell.setAttribute('style', style);
+                        currentCell.replaceWith(nextCell);
+                    } else {
+                        currentCell.setAttribute('style', style);
+                    }
+
+                    (shouldUseHeader ? nextCell : currentCell).innerHTML = '&nbsp;';
+                });
+
+                row.insertAdjacentElement('afterend', newRow);
+                syncAnnouncementEditorContent();
+            };
+
             const handleRemoveAnnouncementTableColumn = () => {
                 const cell = getSelectedAnnouncementTableCell();
                 if (!cell) {
@@ -1935,6 +1966,7 @@
                                                     <button type="button" onClick={() => handleAnnouncementCommand('fontSize', 2)} className="px-3 py-1 border rounded hover:bg-gray-50">縮小字體</button>
                                                     <button type="button" onClick={handleInsertAnnouncementTable} className="px-3 py-1 border rounded hover:bg-gray-50">插入表格</button>
                                                     <button type="button" onClick={handleAddAnnouncementTableColumn} className="px-3 py-1 border rounded hover:bg-gray-50">新增欄位</button>
+                                                    <button type="button" onClick={handleAddAnnouncementTableRow} className="px-3 py-1 border rounded hover:bg-gray-50">新增列</button>
                                                     <button type="button" onClick={handleRemoveAnnouncementTableColumn} className="px-3 py-1 border rounded hover:bg-gray-50">刪除欄位</button>
                                                 </div>
                                                 <div

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-84</title>
+    <title>員工假管理系統-85</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -392,6 +392,7 @@
             const [pendingVacationUserFilter, setPendingVacationUserFilter] = useState([]);
             const [appliedVacationUserFilter, setAppliedVacationUserFilter] = useState([]);
             const [selectedAnnualUserId, setSelectedAnnualUserId] = useState('');
+            const [collapsedAnnualDepartments, setCollapsedAnnualDepartments] = useState({});
             const [selectedVacationMarker, setSelectedVacationMarker] = useState('▲-black');
             const [showVacationSettings, setShowVacationSettings] = useState(false);
             const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -1261,6 +1262,23 @@
                 ? baseVacationUsers.filter(user => appliedVacationUserFilter.includes(user.id))
                 : baseVacationUsers;
 
+            const annualOverviewUsers = data.users
+                .filter(user => isVisibleStaff(user))
+                .filter(user =>
+                    (filterRegion === '全部' || user.region === filterRegion) &&
+                    (filterDepartment === '全部' || user.department === filterDepartment) &&
+                    (filterShift === '全部' || user.shift.includes(filterShift))
+                );
+
+            const annualDepartmentGroups = annualOverviewUsers.reduce((groups, user) => {
+                const departmentName = user.department || '未分類';
+                if (!groups[departmentName]) {
+                    groups[departmentName] = [];
+                }
+                groups[departmentName].push(user);
+                return groups;
+            }, {});
+
             useEffect(() => {
                 const validUserIds = new Set(baseVacationUsers.map(user => user.id));
                 setPendingVacationUserFilter(prev => prev.filter(id => validUserIds.has(id)));
@@ -1282,6 +1300,13 @@
             const handleClearVacationUserFilter = () => {
                 setPendingVacationUserFilter([]);
                 setAppliedVacationUserFilter([]);
+            };
+
+            const handleToggleAnnualDepartment = (department) => {
+                setCollapsedAnnualDepartments(prev => ({
+                    ...prev,
+                    [department]: !prev[department]
+                }));
             };
 
             const getWorkingCount = (date) => {
@@ -2524,50 +2549,83 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div className="bg-white rounded-lg shadow overflow-x-auto">
-                                    <table className="w-full">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-4 py-3 text-left">員工</th>
-                                                <th className="px-4 py-3 text-left">地區</th>
-                                                <th className="px-4 py-3 text-left">部門</th>
-                                                <th className="px-4 py-3 text-left">班別</th>
-                                                <th className="px-4 py-3 text-left">總特休</th>
-                                                <th className="px-4 py-3 text-left">已使用</th>
-                                                <th className="px-4 py-3 text-left">剩餘</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {data.users.filter(user => isVisibleStaff(user) &&
-                                                (filterRegion === '全部' || user.region === filterRegion) &&
-                                                (filterDepartment === '全部' || user.department === filterDepartment) &&
-                                                (filterShift === '全部' || user.shift.includes(filterShift))
-                                            ).map(user => {
-                                                const used = data.leaves.filter(l => l.userId === user.id && l.type === '特休' && l.status === '已核准').length;
-                                                return (
-                                                    <tr key={user.id}>
-                                                         <td className="px-4 py-3">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setSelectedAnnualUserId(user.id)}
-                                                                className="text-blue-600 hover:text-blue-800 hover:underline"
-                                                            >
-                                                                {user.name}
-                                                            </button>
-                                                        </td>
-                                                        <td className="px-4 py-3">{user.region}</td>
-                                                        <td className="px-4 py-3">{user.department}</td>
-                                                        <td className="px-4 py-3">{user.shift.join('/')}</td>
-                                                        <td className="px-4 py-3">{user.annualLeave} 天</td>
-                                                        <td className="px-4 py-3">{used} 天</td>
-                                                        <td className="px-4 py-3">
-                                                            <span className="px-2 py-1 bg-green-100 rounded">{user.annualLeave - used} 天</span>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
+                                <div className="space-y-3">
+                                    {Object.entries(annualDepartmentGroups).map(([departmentName, users]) => {
+                                        const isCollapsed = collapsedAnnualDepartments[departmentName] ?? false;
+                                        const totalAnnualLeave = users.reduce((sum, user) => sum + (user.annualLeave || 0), 0);
+                                        const totalUsedLeave = users.reduce((sum, user) => {
+                                            const used = data.leaves.filter(l => l.userId === user.id && l.type === '特休' && l.status === '已核准').length;
+                                            return sum + used;
+                                        }, 0);
+
+                                        return (
+                                            <div key={departmentName} className="bg-white rounded-lg shadow overflow-hidden">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleAnnualDepartment(departmentName)}
+                                                    className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between text-left"
+                                                >
+                                                    <div>
+                                                        <div className="text-sm md:text-base font-semibold text-gray-800">{departmentName}</div>
+                                                        <div className="text-xs text-gray-500 mt-1">
+                                                            人數：{users.length}｜總特休：{totalAnnualLeave} 天｜已使用：{totalUsedLeave} 天
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-xs text-indigo-600">{isCollapsed ? '展開 ▼' : '收合 ▲'}</span>
+                                                </button>
+
+                                                {!isCollapsed && (
+                                                    <div className="overflow-x-auto">
+                                                        <table className="w-full">
+                                                            <thead className="bg-gray-50">
+                                                                <tr>
+                                                                    <th className="px-4 py-3 text-left">員工</th>
+                                                                    <th className="px-4 py-3 text-left">地區</th>
+                                                                    <th className="px-4 py-3 text-left">部門</th>
+                                                                    <th className="px-4 py-3 text-left">班別</th>
+                                                                    <th className="px-4 py-3 text-left">總特休</th>
+                                                                    <th className="px-4 py-3 text-left">已使用</th>
+                                                                    <th className="px-4 py-3 text-left">剩餘</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {users.map(user => {
+                                                                    const used = data.leaves.filter(l => l.userId === user.id && l.type === '特休' && l.status === '已核准').length;
+                                                                    return (
+                                                                        <tr key={user.id}>
+                                                                            <td className="px-4 py-3">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => setSelectedAnnualUserId(user.id)}
+                                                                                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                                                                                >
+                                                                                    {user.name}
+                                                                                </button>
+                                                                            </td>
+                                                                            <td className="px-4 py-3">{user.region}</td>
+                                                                            <td className="px-4 py-3">{user.department}</td>
+                                                                            <td className="px-4 py-3">{user.shift.join('/')}</td>
+                                                                            <td className="px-4 py-3">{user.annualLeave} 天</td>
+                                                                            <td className="px-4 py-3">{used} 天</td>
+                                                                            <td className="px-4 py-3">
+                                                                                <span className="px-2 py-1 bg-green-100 rounded">{user.annualLeave - used} 天</span>
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+
+                                    {Object.keys(annualDepartmentGroups).length === 0 && (
+                                        <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+                                            目前沒有符合條件的特休資料
+                                        </div>
+                                    )}
                                 </div>
 
                                 {selectedAnnualUserId && (() => {

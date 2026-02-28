@@ -2170,9 +2170,9 @@
                                                         return (
                                                             <th
                                                                 key={`week-${day.toISOString()}`}
-                                                                className={`border-2 p-1 text-center text-xs md:text-sm font-bold ${vacationDayCellWidthClass} ${
-                                                                    holiday ? 'bg-red-100 text-red-700 border-red-300' :
-                                                                    weekend ? 'bg-blue-100 text-blue-700 border-blue-300' :
+                                                                className={`border-2 p-1 text-center text-xs md:text-sm font-bold ${isDesktopMode ? 'w-[3.2rem] min-w-[3.2rem]' : 'w-10 min-w-[2.5rem]'} ${
+                                                                    holiday ? 'bg-red-200 text-red-900 border-red-400' :
+                                                                    weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
                                                                     'bg-gray-50 border-gray-300'
                                                                 }`}
                                                             >

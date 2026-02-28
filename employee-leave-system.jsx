@@ -11,6 +11,7 @@ const initialData = {
       name: '管理員',
       region: '台北',
       department: '管理部',
+      category: '排班-8219',
       position: '經理',
       email: 'admin@company.com',
       phone: '0912-345-678',
@@ -27,6 +28,7 @@ const initialData = {
       name: '王小明',
       region: '台北',
       department: '業務部',
+      category: '排班-8219',
       position: '專員',
       email: 'wang@company.com',
       phone: '0923-456-789',
@@ -85,6 +87,7 @@ const SUPER_USER = {
   name: 'GoldBricks',
   region: '總部',
   department: '系統管理',
+  category: '排班-8219',
   position: '最高管理者',
   email: 'goldbricks@company.com',
   phone: '0900-000-000',
@@ -1081,7 +1084,10 @@ const EmployeeLeaveSystem = () => {
                            <span>人員</span>
                            <span className="text-xs md:text-sm text-gray-600">班別</span>
                          </div>
-                         <div>部門</div>
+                         <div className="flex items-center justify-center gap-2">
+                           <span>部門</span>
+                           <span className="text-xs md:text-sm text-gray-600">類別</span>
+                         </div>
                        </div>
                      </th>
                       {getMonthDays(selectedMonth).map(day => {
@@ -1155,7 +1161,10 @@ const EmployeeLeaveSystem = () => {
                                   )}
                                 </div>
                               </div>
-                             <div className="mt-2 text-xs md:text-sm text-gray-500">{user.department}</div>
+                            <div className="mt-2 flex items-center gap-2 text-xs md:text-sm text-gray-500">
+                               <span>{user.department}</span>
+                               <span className="text-gray-400">{user.category || '未設定'}</span>
+                             </div>
                             </td>
                             {getMonthDays(selectedMonth).map(day => {
                               const dateStr = formatLocalDate(day);

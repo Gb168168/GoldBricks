@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-89</title>
+    <title>員工假管理系統-90</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -453,7 +453,7 @@
             }, [announcementForm.contentHtml]);
             const sortedAnnouncements = [...(data.announcements || [])]
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            const canManageAnnouncements = Boolean(currentUser?.isAdmin && currentUser?.canManageAnnouncements);
+            const canManageAnnouncements = Boolean(currentUser?.canManageAnnouncements);
             const visibleAnnouncements = sortedAnnouncements.filter(item => canManageAnnouncements || !item.isHidden);
             const latestAnnouncement = sortedAnnouncements[0] || null;
             const announcementReadKey = currentUser?.id ? `${ANNOUNCEMENT_READ_KEY_PREFIX}${currentUser.id}` : '';
@@ -2164,22 +2164,22 @@
                                                 </label>
                                             </div>
 
-                                           {newUserForm.isAdmin && (
-                                                <div className="md:col-span-2 rounded-lg border border-indigo-100 bg-indigo-50 p-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <h4 className="text-sm md:text-base font-semibold text-indigo-700">權限管理</h4>
-                                                        <span className="text-xs text-gray-500">僅勾選的地區/部門可審核或編輯員工資料</span>
-                                                    </div>
-                                                    <label className="mt-3 flex items-center space-x-2 text-sm md:text-base">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={newUserForm.canManageAnnouncements}
-                                                            onChange={(e) => setNewUserForm({ ...newUserForm, canManageAnnouncements: e.target.checked })}
-                                                            className="w-4 h-4"
-                                                        />
-                                                        <span>可新增/編輯/隱藏/刪除公告</span>
-                                                    </label>
-                                                     <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                           <div className="md:col-span-2 rounded-lg border border-indigo-100 bg-indigo-50 p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-sm md:text-base font-semibold text-indigo-700">權限管理</h4>
+                                                    <span className="text-xs text-gray-500">可勾選公告管理，若為管理員可再勾選地區/部門權限</span>
+                                                </div>
+                                                <label className="mt-3 flex items-center space-x-2 text-sm md:text-base">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={newUserForm.canManageAnnouncements}
+                                                        onChange={(e) => setNewUserForm({ ...newUserForm, canManageAnnouncements: e.target.checked })}
+                                                        className="w-4 h-4"
+                                                    />
+                                                    <span>可新增/編輯/隱藏/刪除公告</span>
+                                                </label>
+                                                {newUserForm.isAdmin && (
+                                                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div>
                                                             <p className="text-sm md:text-base font-medium text-gray-700 mb-2">地區</p>
                                                             <div className="space-y-2">
@@ -2213,8 +2213,8 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                           )}
+                                                  )}
+                                           </div>
 
                                             <div className="md:col-span-2 flex space-x-2">
                                                <button

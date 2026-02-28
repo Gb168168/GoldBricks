@@ -30,5 +30,3 @@
 2. **不要使用無痕模式**（無痕模式常會隔離或清除 `localStorage`）。
 3. 若雲端同步失效，本系統會改用瀏覽器 `localStorage` 的 `leaveSystemData`，
    此時只會在「同一裝置＋同一瀏覽器」共用資料；若清除網站資料會回到初始資料。
-index.html
-index.html

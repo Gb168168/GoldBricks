@@ -185,6 +185,35 @@ const EmployeeLeaveSystem = () => {
     }));
   };
   
+  const handleInsertBulletinTableRow = () => {
+    if (!bulletinEditorRef.current) return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const startNode = range.startContainer;
+    const startElement = startNode.nodeType === Node.ELEMENT_NODE
+      ? startNode
+      : startNode.parentElement;
+
+    if (!startElement) return;
+
+    const currentRow = startElement.closest('tr');
+    if (!currentRow) return;
+
+    const table = currentRow.closest('table');
+    if (!table || !bulletinEditorRef.current.contains(table)) return;
+
+    const newRow = currentRow.cloneNode(true);
+    newRow.querySelectorAll('th, td').forEach(cell => {
+      cell.innerHTML = '&nbsp;';
+    });
+
+    currentRow.insertAdjacentElement('afterend', newRow);
+    setBulletinDraft(bulletinEditorRef.current.innerHTML);
+  };
+  
   // 儲存資料到 localStorage
   useEffect(() => {
     localStorage.setItem('leaveSystemData', JSON.stringify(data));
@@ -734,6 +763,7 @@ const EmployeeLeaveSystem = () => {
                   <button type="button" onClick={() => handleBulletinCommand('justifyRight')} className="px-3 py-1 border rounded hover:bg-white">靠右</button>
                   <button type="button" onClick={() => handleBulletinCommand('fontSize', 5)} className="px-3 py-1 border rounded hover:bg-white">放大字體</button>
                   <button type="button" onClick={() => handleBulletinCommand('fontSize', 2)} className="px-3 py-1 border rounded hover:bg-white">縮小字體</button>
+                  <button type="button" onClick={handleInsertBulletinTableRow} className="px-3 py-1 border rounded hover:bg-white">新增列</button>
                   <button type="button" onClick={handleSaveBulletin} className="px-4 py-1 bg-orange-600 text-white rounded hover:bg-orange-700">儲存公告</button>
                 </div>
 

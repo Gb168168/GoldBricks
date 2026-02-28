@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-65</title>
+    <title>員工假管理系統-66</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1875,7 +1875,7 @@
                                             onChange={(e) => setFilterRegion(e.target.value)}
                                             className="px-4 py-2 border rounded-lg"
                                         >
-                                            <option>地區</option>
+                                            <option value="全部">全部</option>
                                             <option>新竹區</option>
                                             <option>台中區</option>
                                             <option>嘉義區</option>
@@ -1885,7 +1885,7 @@
                                             onChange={(e) => setFilterDepartment(e.target.value)}
                                             className="px-4 py-2 border rounded-lg"
                                         >
-                                            <option>部門</option>
+                                            <option value="全部">全部</option>
                                             <option>管理部</option>
                                             <option>TSE</option>
                                             <option>FAE</option>
@@ -1899,7 +1899,7 @@
                                             onChange={(e) => setFilterShift(e.target.value)}
                                             className="px-4 py-2 border rounded-lg"
                                         >
-                                            <option>班別</option>
+                                            <option value="全部">全部</option>
                                             <option>早</option>
                                             <option>晚</option>
                                         </select>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-68</title>
+    <title>員工假管理系統-69</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -2131,7 +2131,7 @@
                                         )}
                                     </div>
                                     
-                                    <div className={`flex-1 ${isDesktopMode ? 'min-h-[68vh]' : 'min-h-[56vh]'} overflow-x-auto overflow-y-auto rounded-lg border border-gray-200 touch-pan-x`}>
+                                    <div className={`flex-1 ${isDesktopMode ? 'h-[34rem]' : 'min-h-[56vh]'} overflow-x-auto overflow-y-auto rounded-lg border border-gray-200 touch-pan-x`}>
                                         <table className="min-w-max border-collapse text-xs md:text-sm table-auto">
                                            <thead className="sticky top-0 z-30">
                                                 <tr>
@@ -2236,7 +2236,7 @@
                                                         }).length;
                                                         
                                                         return (
-                                                            <tr key={user.id} className={isCurrentUser ? 'bg-indigo-50' : ''}>
+                                                            <tr key={user.id} className={`h-16 ${isCurrentUser ? 'bg-indigo-50' : ''}`}>
                                                                 <td className="border-2 border-gray-400 p-1.5 text-center bg-white z-10">
                                                                     <button
                                                                         type="button"
@@ -2319,9 +2319,11 @@
                                                             </tr>
                                                         );
                                                     })}
-                                               <tr className="bg-green-50">  
-                                                    <td className="border-2 border-gray-400 p-1.5 sticky bottom-2 z-30 bg-green-100"></td>
-                                                    <td className="border-2 border-gray-400 p-1.5 font-bold text-center sticky bottom-2 z-30 bg-green-100">上班人數</td>
+                                               </tbody>
+                                            <tfoot className="sticky bottom-0 z-20">
+                                                <tr className="bg-green-50">
+                                                    <td className="border-2 border-gray-400 p-1.5 bg-green-100"></td>
+                                                    <td className="border-2 border-gray-400 p-1.5 font-bold text-center bg-green-100">上班人數</td>
                                                     {monthDays.map(day => {
                                                         return (
                                                             <td
@@ -2329,12 +2331,12 @@
                                                                 className={`border-2 border-gray-300 p-2 text-center font-bold text-green-700 bg-green-50 sticky bottom-2 z-20 ${isDesktopMode ? 'w-[3.2rem] min-w-[3.2rem]' : 'w-10 min-w-[2.5rem]'}`}
                                                             >
                                                                 {getWorkingCount(day)}
-                                                                </td>
-                                                );
-                                            })}
-                                                    <td className="border-2 border-gray-400 p-1.5 sticky right-0 bottom-2 z-30 bg-green-100"></td>
+                                                               </td>
+                                                        );
+                                                    })}
+                                                    <td className="border-2 border-gray-400 p-1.5 bg-green-100"></td>
                                                 </tr>
-                                            </tbody>
+                                             </tfoot>
                                         </table>
                                     </div>
                                 </div>

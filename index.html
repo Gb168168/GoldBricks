@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-106</title>
+    <title>員工假管理系統-107</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -3277,7 +3277,7 @@
                                        <table className="min-w-full border-collapse text-xs md:text-sm table-auto">
                                             <thead className="sticky top-0 z-30">
                                                 <tr>
-                                                    <th className="sticky left-0 bg-gray-50 px-4 py-2 border min-w-[196px] align-top">
+                                                    <th className="sticky left-0 bg-gray-50 px-2 py-2 border w-[150px] align-top">
                                                         <div className="space-y-1">
                                                             <div className="flex items-center justify-between gap-2 font-semibold">
                                                                 <span>人員</span>
@@ -3318,7 +3318,7 @@
                                                         const currentMonthStats = getCompStats(user.id, selectedMonth);
                                                         return (
                                                             <tr key={user.id} className="hover:bg-gray-50">
-                                                               <td className="sticky left-0 bg-white px-4 py-2 border font-medium min-w-[196px]">
+                                                               <th className="sticky left-0 bg-gray-50 px-2 py-2 border w-[150px] align-top">
                                                                     <div className="space-y-1 leading-tight">
                                                                         <div className="flex items-center justify-between gap-2">
                                                                             <span className="font-semibold">{user.name || '-'}</span>

@@ -1392,9 +1392,86 @@ const ensureGoldBricksFullAccess = (users = []) => (
 
         {/* 補休表 */}
         {activeTab === 'compensatory' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">補休表</h2>
-            <p className="text-gray-500">補休功能開發中...</p>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-800">補休表</h2>
+              <span className="text-sm md:text-base text-gray-500">補休功能開發中（僅調整表格版型）</span>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-white pb-3">
+                <div className="flex justify-between items-center mb-4">
+                  <button
+                    onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))}
+                    className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  >
+                    上個月
+                  </button>
+                  <h3 className="text-xl font-bold">
+                    {selectedMonth.getFullYear()}年 {selectedMonth.getMonth() + 1}月
+                  </h3>
+                  <button
+                    onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))}
+                    className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  >
+                    下個月
+                  </button>
+                </div>
+              </div>
+
+              <div className="h-[72vh] overflow-auto rounded-lg border border-gray-200">
+                <table className="w-max min-w-full border-collapse table-fixed text-xs md:text-sm">
+                  <thead>
+                    <tr>
+                      <th className="border p-1.5 bg-gray-50 sticky top-0 z-30 w-24 md:w-28">人員</th>
+                      {getMonthDays(selectedMonth).map(day => {
+                        const holiday = isHoliday(day);
+                        const weekend = isWeekend(day);
+                        return (
+                          <th
+                            key={day.toISOString()}
+                            className={`border p-1 min-w-[2.15rem] md:min-w-[2.5rem] sticky top-0 z-20 ${
+                              holiday ? 'bg-red-100 text-red-800' :
+                              weekend ? 'bg-blue-50 text-blue-800' :
+                              'bg-gray-50'
+                            }`}
+                          >
+                            <div className="text-xs md:text-sm font-semibold leading-tight">{day.getDate()}</div>
+                            <div className="text-[10px] md:text-xs font-normal leading-tight">
+                              {holiday ? formatHolidayLabel(holiday.name) : ['日', '一', '二', '三', '四', '五', '六'][day.getDay()]}
+                            </div>
+                          </th>
+                        );
+                      })}
+                      <th className="border p-1.5 bg-gray-50 sticky top-0 z-20 w-[8rem] min-w-[8rem] max-w-[8rem] whitespace-nowrap text-xs md:text-sm">已選天數</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleVacationUsers.map(user => (
+                      <tr key={user.id}>
+                        <td className="border p-1.5 font-medium bg-white text-xs md:text-sm">{user.name}</td>
+                        {getMonthDays(selectedMonth).map(day => (
+                          <td
+                            key={`${user.id}-${day.toISOString()}`}
+                            className="border p-1 min-w-[2.15rem] md:min-w-[2.5rem] text-center"
+                          ></td>
+                        ))}
+                        <td className="border p-1.5 text-center font-medium text-indigo-600 w-[8rem] min-w-[8rem] max-w-[8rem] whitespace-nowrap text-xs md:text-sm">
+                          0
+                        </td>
+                      </tr>
+                    ))}
+                    {visibleVacationUsers.length === 0 && (
+                      <tr>
+                        <td colSpan={getMonthDays(selectedMonth).length + 2} className="border p-4 text-center text-gray-500">
+                          沒有符合條件的人員
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
 

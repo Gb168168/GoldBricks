@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-112</title>
+    <title>員工假管理系統-113</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -242,10 +242,20 @@
             const hasGoldBricks = sourceUsers.some(user => isGoldBricksSuperUser(user));
             return hasGoldBricks ? sourceUsers : [createGoldBricksAdminAccount(), ...sourceUsers];
         };
-        
+
+        const isAdminFlagEnabled = (value) => {
+            if (typeof value === 'boolean') return value;
+            if (typeof value === 'number') return value === 1;
+            if (typeof value === 'string') {
+                const normalized = value.trim().toLowerCase();
+                return normalized === 'true' || normalized === '1';
+            }
+            return false;
+        };
+
         const normalizeUserPermissions = (users = []) =>
             ensureGoldBricksAdminAccount(users).map(user => {
-               const forceAdmin = Boolean(user?.isAdmin) || isGoldBricksSuperUser(user);
+               const forceAdmin = isAdminFlagEnabled(user?.isAdmin) || isGoldBricksSuperUser(user);
                if (!forceAdmin) {
                     return {
                         ...user,

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-104</title>
+    <title>員工假管理系統-105</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -3209,7 +3209,7 @@
 
                         {/* 補休表 */}
                         {activeTab === 'compensatory' && (
-                            <div className="space-y-4">
+                            <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden">
                                 <div className="flex justify-between items-center">
                                     <h2 className="text-2xl font-bold">補休表</h2>
                                     <div className="flex space-x-2">
@@ -3256,7 +3256,7 @@
                                     </div>
                                 </div>
 
-                              <div className="bg-white rounded-lg shadow p-4">
+                              <div className="bg-white rounded-lg shadow p-4 flex flex-1 min-h-0 flex-col">
                                     <div className="flex items-center justify-between mb-4">
                                         <button
                                             onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1, 1))}
@@ -3273,9 +3273,9 @@
                                         </button>
                                     </div>
 
-                                    <div className="overflow-x-auto">
-                                       <table className="w-full text-sm">
-                                            <thead>
+                                    <div className={`flex-1 ${isDesktopMode ? 'min-h-[68vh]' : 'min-h-[56vh]'} overflow-x-auto overflow-y-auto rounded-lg border border-gray-200 touch-pan-x`}>
+                                       <table className="min-w-full border-collapse text-xs md:text-sm table-auto">
+                                            <thead className="sticky top-0 z-30">
                                                 <tr>
                                                     <th className="sticky left-0 bg-gray-50 px-4 py-2 border">員工</th>
                                                     <th className="px-4 py-2 border">地區</th>

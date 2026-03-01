@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-114</title>
+    <title>員工假管理系統-115</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -503,9 +503,6 @@
 
                         setData(mergeWithInitialData(cloudPayload.data));
 
-                        if (cloudPayload.currentUserId) {
-                            storageSet(CURRENT_USER_STORAGE_KEY, cloudPayload.currentUserId);
-                        }
                     } catch (error) {
                         console.warn('Cloud sync unavailable, fallback to local storage only.', error);
                     } finally {
@@ -544,10 +541,8 @@
                 cloudSaveTimerRef.current = setTimeout(() => {
                     sharedStateDoc.set({
                         data,
-                        currentUserId: currentUser?.id || null,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true }).catch((error) => {
-                        console.warn('Cloud save failed, local data is still available.', error);
                     });
                 }, 600);
 

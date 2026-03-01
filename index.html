@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-109</title>
+    <title>員工假管理系統-110</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -3321,15 +3321,9 @@
                                             <thead className="sticky top-0 z-30">
                                                 <tr>
                                                     <th className="sticky left-0 z-20 bg-gray-50 px-2 py-2 border w-36 align-top">
-                                                        <div className="space-y-1">
-                                                            <div className="flex items-center justify-between gap-2 font-semibold">
-                                                                <span>人員</span>
-                                                                <span className="text-xs md:text-sm text-gray-600">班別</span>
-                                                            </div>
-                                                            <div className="flex items-center justify-between gap-2 font-semibold">
-                                                                <span>地區</span>
-                                                                <span className="text-xs md:text-sm text-gray-600">部門</span>
-                                                            </div>
+                                                        <div className="space-y-1 text-center font-semibold">
+                                                            <div>部門</div>
+                                                            <div>人員</div>
                                                         </div>
                                                     </th>
                                                     {monthDays.map(day => {
@@ -3363,14 +3357,8 @@
                                                             <tr key={user.id} className="hover:bg-gray-50">
                                                                <th className="sticky left-0 z-20 bg-gray-50 px-2 py-2 border w-36 align-top">
                                                                     <div className="space-y-1 leading-tight">
-                                                                        <div className="flex items-center justify-between gap-2">
-                                                                            <span className="font-semibold">{user.name || '-'}</span>
-                                                                            <span className="text-gray-600">{user.shift?.join('/') || '-'}</span>
-                                                                        </div>
-                                                                        <div className="flex items-center justify-between gap-2">
-                                                                            <span className="text-gray-600">{user.region || '-'}</span>
-                                                                            <span className="text-gray-600">{user.department || '-'}</span>
-                                                                        </div>
+                                                                       <div className="text-gray-600">{user.department || '-'}</div>
+                                                                        <div className="font-semibold">{user.name || '-'}</div>
                                                                     </div>
                                                                 </th>
                                                                 {monthDays.map(day => {

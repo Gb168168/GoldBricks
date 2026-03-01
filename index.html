@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-117</title>
+    <title>員工假管理系統-118</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1778,13 +1778,15 @@
                 : 'w-10 min-w-[2.5rem]';
 
             const handleStartSession = () => {
-                const normalizedUsers = normalizeUserPermissions(data.users || []);
-                const loginUser = normalizedUsers.find(user => user.id === selectedLoginUserId) || null;
-                if (!loginUser) {
+                 const selectedUser = (data.users || []).find(user => user.id === selectedLoginUserId) || null;
+                 if (!selectedUser) {
                     alert('請先選擇登入使用者。');
                     return;
                 }
-                setCurrentUser(loginUser);
+                
+                const normalizedSelectedUser = normalizeUserPermissions([selectedUser])[0];
+                setCurrentUser(normalizedSelectedUser);
+                storageSet(CURRENT_USER_STORAGE_KEY, normalizedSelectedUser.id);
                 setIsSessionStarted(true);
             };
 

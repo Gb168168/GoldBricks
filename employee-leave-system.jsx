@@ -58,6 +58,43 @@ const ensureGoldBricksFullAccess = (users = []) => (
   users.map(user => (user?.name === 'GoldBricks' ? { ...user, isAdmin: true } : user))
 );
 
+const normalizeUserPermissions = (users = []) => ensureGoldBricksFullAccess(users);
+
+const storageSet = (key, value) => {
+  localStorage.setItem(key, value);
+};
+
+const mergeUsersByIdUnion = (existingUsers = [], incomingUsers = []) => {
+  const userMap = new Map();
+
+  existingUsers.forEach((user) => {
+    if (user?.id) {
+      userMap.set(user.id, user);
+    }
+  });
+
+  incomingUsers.forEach((user) => {
+    if (!user?.id) return;
+    userMap.set(user.id, {
+      ...(userMap.get(user.id) || {}),
+      ...user
+    });
+  });
+
+  return normalizeUserPermissions(Array.from(userMap.values()));
+};
+
+const mergeWithInitialData = (payload = {}) => ({
+  ...initialData,
+  ...payload,
+  users: normalizeUserPermissions(payload.users || initialData.users),
+  vacationSettings: {
+    ...initialData.vacationSettings,
+    ...(payload.vacationSettings || {})
+  },
+  vacationSchedule: payload.vacationSchedule || {}
+});
+
   const EmployeeLeaveSystem = () => {
   const [currentUser, setCurrentUser] = useState(() => {
     const savedData = localStorage.getItem('leaveSystemData');
@@ -74,6 +111,11 @@ const ensureGoldBricksFullAccess = (users = []) => (
     }
   });
   const [activeTab, setActiveTab] = useState('management');
+  const [isSessionStarted, setIsSessionStarted] = useState(false);
+  const [selectedLoginUserId, setSelectedLoginUserId] = useState(() => {
+    const savedUserId = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
+    return savedUserId || '';
+  });
   const [data, setData] = useState(() => {
     const saved = localStorage.getItem('leaveSystemData');
     if (!saved) return {
@@ -287,7 +329,32 @@ const ensureGoldBricksFullAccess = (users = []) => (
       [department]: !prev[department]
     }));
   };
-  
+    
+  const hydrateFromCloudPayload = (cloudPayload) => {
+    setData(prev => {
+      const cloudMerged = mergeWithInitialData(cloudPayload.data);
+      const unionUsers = mergeUsersByIdUnion(prev.users, cloudMerged.users);
+
+      return {
+        ...cloudMerged,
+        users: unionUsers
+      };
+    });
+  };
+
+  const handleStartSession = () => {
+    const selectedUser = (data.users || []).find(u => u.id === selectedLoginUserId) || null;
+    if (!selectedUser) {
+      alert('請先選擇登入使用者。');
+      return;
+    }
+
+    const normalizedSelectedUser = normalizeUserPermissions([selectedUser])[0];
+    setCurrentUser(normalizedSelectedUser);
+    storageSet(CURRENT_USER_STORAGE_KEY, normalizedSelectedUser.id);
+    setIsSessionStarted(true);
+  };
+    
 
   // 新增/編輯員工
   const handleSaveUser = (userData) => {

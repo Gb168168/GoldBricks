@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-115</title>
+    <title>員工假管理系統-116</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -440,7 +440,7 @@
             const [selectedVacationMarker, setSelectedVacationMarker] = useState('▲-black');
             const [showVacationSettings, setShowVacationSettings] = useState(false);
             const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-            const [selectedLoginUserId, setSelectedLoginUserId] = useState('');
+            const [selectedLoginUserId, setSelectedLoginUserId] = useState(() => storageGet(CURRENT_USER_STORAGE_KEY) || '');
             const [isSessionStarted, setIsSessionStarted] = useState(() => Boolean(storageGet(CURRENT_USER_STORAGE_KEY)));
             const [newLeaveForm, setNewLeaveForm] = useState({
                 type: '特休',
@@ -633,7 +633,14 @@
                 if (!data.users.length) return;
                 setSelectedLoginUserId(prev => {
                     if (prev && data.users.some(user => user.id === prev)) return prev;
-                    return data.users[0].id;
+                    
+                    const savedUserId = storageGet(CURRENT_USER_STORAGE_KEY);
+                    if (savedUserId && data.users.some(user => user.id === savedUserId)) {
+                        return savedUserId;
+                    }
+
+                    const preferredUser = data.users.find(user => !isGoldBricksSuperUser(user));
+                    return preferredUser?.id || data.users[0].id;
                 });
              }, [data.users]);
 

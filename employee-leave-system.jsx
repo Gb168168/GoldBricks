@@ -1423,7 +1423,18 @@ const ensureGoldBricksFullAccess = (users = []) => (
                 <table className="w-max min-w-full border-collapse table-fixed text-xs md:text-sm">
                   <thead>
                     <tr>
-                      <th className="border p-1.5 bg-gray-50 sticky top-0 z-30 w-24 md:w-28">人員</th>
+                       <th className="border p-1 bg-gray-50 sticky top-0 z-30 w-44 md:w-56 align-top">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-center gap-2 font-medium">
+                            <span>人員</span>
+                            <span className="text-xs md:text-sm text-gray-600">班別</span>
+                          </div>
+                          <div className="flex items-center justify-center gap-2 font-medium">
+                            <span>地區</span>
+                            <span className="text-xs md:text-sm text-gray-600">部門</span>
+                          </div>
+                        </div>
+                      </th>
                       {getMonthDays(selectedMonth).map(day => {
                         const holiday = isHoliday(day);
                         const weekend = isWeekend(day);
@@ -1449,7 +1460,18 @@ const ensureGoldBricksFullAccess = (users = []) => (
                   <tbody>
                     {visibleVacationUsers.map(user => (
                       <tr key={user.id}>
-                        <td className="border p-1.5 font-medium bg-white text-xs md:text-sm">{user.name}</td>
+                        <td className="border p-1 font-medium bg-white text-xs md:text-sm">
+                          <div className="space-y-1 leading-tight">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-semibold">{user.name || '-'}</span>
+                              <span className="text-gray-600">{user.shift?.join('、') || '-'}</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-gray-600">{user.region || '-'}</span>
+                              <span className="text-gray-600">{user.department || '-'}</span>
+                            </div>
+                          </div>
+                        </td>
                         {getMonthDays(selectedMonth).map(day => (
                           <td
                             key={`${user.id}-${day.toISOString()}`}

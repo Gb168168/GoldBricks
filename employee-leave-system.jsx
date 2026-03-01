@@ -1424,15 +1424,9 @@ const ensureGoldBricksFullAccess = (users = []) => (
                   <thead>
                     <tr>
                        <th className="border p-1 bg-gray-50 sticky top-0 z-30 w-44 md:w-56 align-top">
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-center gap-2 font-medium">
-                            <span>人員</span>
-                            <span className="text-xs md:text-sm text-gray-600">班別</span>
-                          </div>
-                          <div className="flex items-center justify-center gap-2 font-medium">
-                            <span>地區</span>
-                            <span className="text-xs md:text-sm text-gray-600">部門</span>
-                          </div>
+                       <div className="space-y-1 text-center font-medium">
+                          <div>部門</div>
+                          <div>人員</div>
                         </div>
                       </th>
                       {getMonthDays(selectedMonth).map(day => {
@@ -1462,14 +1456,8 @@ const ensureGoldBricksFullAccess = (users = []) => (
                       <tr key={user.id}>
                         <td className="border p-1 font-medium bg-white text-xs md:text-sm">
                           <div className="space-y-1 leading-tight">
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-semibold">{user.name || '-'}</span>
-                              <span className="text-gray-600">{user.shift?.join('、') || '-'}</span>
-                            </div>
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-gray-600">{user.region || '-'}</span>
-                              <span className="text-gray-600">{user.department || '-'}</span>
-                            </div>
+                            <div className="text-gray-600">{user.department || '-'}</div>
+                            <div className="font-semibold">{user.name || '-'}</div>
                           </div>
                         </td>
                         {getMonthDays(selectedMonth).map(day => (

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>員工假管理系統-119</title>
+    <title>員工假管理系統-120</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -210,7 +210,6 @@
         ];
 
         const CURRENT_USER_STORAGE_KEY = 'leaveSystemCurrentUserId';
-        const UI_MODE_STORAGE_KEY = 'leaveSystemUiMode';
         const DATA_STORAGE_KEY = 'leaveSystemData';
         const ANNOUNCEMENT_READ_KEY_PREFIX = 'leaveSystemAnnouncementRead_';
         const VACATION_TAB_OFFSET_Y = '-22px';
@@ -409,10 +408,6 @@
                 }
             });
             const [activeTab, setActiveTab] = useState('vacation');
-            const [uiMode, setUiMode] = useState(() => {
-                const savedMode = storageGet(UI_MODE_STORAGE_KEY);
-                return savedMode === 'mobile' ? 'mobile' : 'desktop';
-            });
             const [data, setData] = useState(() => {
                 const saved = storageGet(DATA_STORAGE_KEY);
                      const parsed = parseSavedData(saved);
@@ -439,7 +434,6 @@
             const [collapsedAnnualDepartments, setCollapsedAnnualDepartments] = useState({});
             const [selectedVacationMarker, setSelectedVacationMarker] = useState('▲-black');
             const [showVacationSettings, setShowVacationSettings] = useState(false);
-            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
             const [selectedLoginUserId, setSelectedLoginUserId] = useState(() => storageGet(CURRENT_USER_STORAGE_KEY) || '');
             const [isSessionStarted, setIsSessionStarted] = useState(() => Boolean(storageGet(CURRENT_USER_STORAGE_KEY)));
             const [newLeaveForm, setNewLeaveForm] = useState({
@@ -517,10 +511,6 @@
                     storageRemove(CURRENT_USER_STORAGE_KEY);
                 }
             }, [currentUser]);
-
-             useEffect(() => {
-                storageSet(UI_MODE_STORAGE_KEY, uiMode);
-            }, [uiMode]);
 
             useEffect(() => {
                 if (!isCloudReady) return;
@@ -638,7 +628,6 @@
             const handleLogout = () => {
                 setCurrentUser(null);
                 setIsSessionStarted(false);
-                setIsMobileMenuOpen(false);
             };
 
             useEffect(() => {
@@ -1763,10 +1752,7 @@
                 { id: 'annual', label: '特休', icon: Calendar }
             ];
             const monthDays = getMonthDays(selectedMonth);
-            const isDesktopMode = uiMode === 'desktop';
-            const vacationDayCellWidthClass = isDesktopMode
-                ? 'w-[1.55rem] min-w-[1.55rem]'
-                : 'w-10 min-w-[2.5rem]';
+            const vacationDayCellWidthClass = 'w-[1.55rem] min-w-[1.55rem]';
 
             const handleStartSession = () => {
                  const selectedUser = (data.users || []).find(user => user.id === selectedLoginUserId) || null;
@@ -1787,7 +1773,7 @@
                         <div className="w-full max-w-xl bg-white rounded-2xl shadow-lg border border-slate-200 p-6 md:p-8 space-y-6">
                             <div>
                                 <h1 className="text-2xl md:text-3xl font-bold text-slate-800">員工假勤系統登入</h1>
-                                <p className="mt-2 text-slate-500">請先選擇使用者與顯示版本。</p>
+                                <p className="mt-2 text-slate-500">請先選擇登入使用者。</p>
                             </div>
 
                             <label className="block space-y-2">
@@ -1805,26 +1791,6 @@
                                 </select>
                             </label>
 
-                            <div className="space-y-2">
-                                <p className="text-sm font-medium text-slate-700">畫面版本</p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => setUiMode('desktop')}
-                                        className={`rounded-xl border px-4 py-3 text-left transition-colors ${uiMode === 'desktop' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-300 hover:bg-slate-50'}`}
-                                    >
-                                        <p className="font-semibold">桌機版</p>
-                                        <p className="text-xs mt-1 text-slate-500">欄位完整、適合大畫面或需要完整管理功能。</p>
-                                    </button>
-                                    <button
-                                        onClick={() => setUiMode('mobile')}
-                                        className={`rounded-xl border px-4 py-3 text-left transition-colors ${uiMode === 'mobile' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-300 hover:bg-slate-50'}`}
-                                    >
-                                        <p className="font-semibold">手機版</p>
-                                        <p className="text-xs mt-1 text-slate-500">字體與間距較大，操作區塊更集中。</p>
-                                    </button>
-                                </div>
-                            </div>
-
                             <button
                                 onClick={handleStartSession}
                                 className="w-full rounded-lg bg-indigo-600 text-white py-2.5 font-medium hover:bg-indigo-700"
@@ -1838,20 +1804,13 @@
 
             
             return (
-                <div className={`h-screen ${isDesktopMode ? 'min-w-[1200px] w-full text-base' : 'w-screen text-sm md:text-base'} overflow-hidden bg-gray-50`}>
+                <div className="h-screen min-w-[1200px] w-full text-base overflow-hidden bg-gray-50">
                     <div className="fixed top-0 left-0 right-0 z-30 bg-white">
                     <nav className="bg-white shadow-sm border-b">
                      <div className="w-full px-4 py-4">
                             <div className="flex flex-wrap justify-between items-center gap-3">
                                 <div className="flex items-center gap-4 min-w-0">
                                     <div className="flex items-center space-x-3 min-w-0">
-                                        <button
-                                        onClick={() => setIsMobileMenuOpen(prev => !prev)}
-                                        className={`${isDesktopMode ? 'hidden' : 'md:hidden'} p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50`}
-                                        aria-label="切換選單"
-                                    >
-                                        ☰
-                                    </button>
                                         <div className="bg-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
                                             <Users size={24} className="text-white" />
                                         </div>
@@ -1863,12 +1822,6 @@
                                 </div>
 
                                 <div className="flex items-center space-x-2 md:space-x-4">
-                                    <button
-                                        onClick={() => setUiMode(prev => prev === 'desktop' ? 'mobile' : 'desktop')}
-                                        className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100"
-                                    >
-                                        切換為{isDesktopMode ? '手機版' : '桌機版'}
-                                    </button>
                                     <button
                                         onClick={handleLogout}
                                         className="px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 flex items-center gap-2"
@@ -1883,18 +1836,8 @@
 
                    </div>
 
-                   {!isDesktopMode && isMobileMenuOpen && (
-                        <button
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="fixed inset-0 z-30 bg-black/30 md:hidden"
-                            aria-label="關閉選單"
-                        />
-                    )}
-
                     <aside
-                        className={isDesktopMode
-                            ? 'fixed top-20 left-0 bottom-0 z-20 w-64 bg-white border-r shadow-sm overflow-y-auto pt-0 translate-x-0'
-                            : `fixed top-0 left-0 bottom-0 z-40 w-64 max-w-[85vw] bg-white border-r shadow-sm overflow-y-auto pt-24 transform transition-transform duration-200 md:top-20 md:z-20 md:pt-0 md:w-56 lg:w-64 md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                        className="fixed top-20 left-0 bottom-0 z-20 w-64 bg-white border-r shadow-sm overflow-y-auto pt-0 translate-x-0"
                     >
                         <div className="p-3 space-y-1">
                            {navigationTabs.map(tab => {
@@ -1905,7 +1848,6 @@
                                         key={tab.id}
                                         onClick={() => {
                                             setActiveTab(tab.id);
-                                            if (!isDesktopMode) setIsMobileMenuOpen(false);
                                         }}
                                         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors text-left ${
                                             activeTab === tab.id
@@ -1962,7 +1904,7 @@
                     )}
 
                       <div
-                        className={`fixed right-0 bottom-0 ${isDesktopMode ? 'left-64' : 'left-0 md:left-56 lg:left-64'} ${activeTab === 'vacation' ? 'overflow-hidden' : 'overflow-y-auto'} px-4 md:px-5 lg:px-6 py-6 pt-4`}
+                        className={`fixed right-0 bottom-0 left-64 ${activeTab === 'vacation' ? 'overflow-hidden' : 'overflow-y-auto'} px-4 md:px-5 lg:px-6 py-6 pt-4`}
                         style={{
                             top: '7rem',
                             transform: 'translateY(-22px)'
@@ -2739,7 +2681,7 @@
                                         )}
                                     </div>
                                     
-                                    <div className={`flex-1 ${isDesktopMode ? 'min-h-[68vh]' : 'min-h-[56vh]'} overflow-x-auto overflow-y-auto rounded-lg border border-gray-200 touch-pan-x`}>
+                                   <div className="flex-1 min-h-[68vh] overflow-x-auto overflow-y-auto rounded-lg border border-gray-200 touch-pan-x">
                                         <table className="min-w-full border-collapse text-xs md:text-sm table-auto">
                                            <thead className="sticky top-0 z-30">
                                                 <tr>
@@ -2779,7 +2721,7 @@
                                                         return (
                                                             <th
                                                                 key={`week-${day.toISOString()}`}
-                                                                className={`border-2 p-1 text-center text-xs md:text-sm font-bold ${isDesktopMode ? 'w-[2.5rem] min-w-[2.5rem]' : 'w-10 min-w-[2.5rem]'} ${
+                                                                className={`border-2 p-1 text-center text-xs md:text-sm font-bold w-[2.5rem] min-w-[2.5rem] ${
                                                                     holiday ? 'bg-red-200 text-red-900 border-red-400' :
                                                                     weekend ? 'bg-blue-200 text-blue-900 border-blue-400' :
                                                                     'bg-gray-50 border-gray-300'
@@ -3322,7 +3264,7 @@
                                         </button>
                                     </div>
 
-                                    <div className={`flex-1 ${isDesktopMode ? 'min-h-[68vh]' : 'min-h-[56vh]'} overflow-x-auto overflow-y-auto rounded-lg border border-gray-200 touch-pan-x`}>
+                                    <div className="flex-1 min-h-[68vh] overflow-x-auto overflow-y-auto rounded-lg border border-gray-200 touch-pan-x">
                                        <table className="min-w-full border-collapse text-xs md:text-sm table-auto">
                                             <thead className="sticky top-0 z-30">
                                                 <tr>
